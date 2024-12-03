@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Fido2CredentialApi } from "../api/fido2-credential.api";
 
 export class Fido2CredentialData {

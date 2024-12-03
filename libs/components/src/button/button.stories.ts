@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Meta, StoryObj } from "@storybook/angular";
 
 import { ButtonComponent } from "./button.component";

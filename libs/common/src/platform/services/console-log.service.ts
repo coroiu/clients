@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LogService as LogServiceAbstraction } from "../abstractions/log.service";
 import { LogLevelType } from "../enums/log-level-type.enum";
 

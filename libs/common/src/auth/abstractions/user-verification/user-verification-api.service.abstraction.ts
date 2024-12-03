@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SecretVerificationRequest } from "../../models/request/secret-verification.request";
 import { VerifyOTPRequest } from "../../models/request/verify-otp.request";
 import { MasterPasswordPolicyResponse } from "../../models/response/master-password-policy.response";

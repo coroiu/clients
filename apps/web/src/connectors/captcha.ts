@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { b64Decode, getQsParam } from "./common";
 
 declare let hcaptcha: any;

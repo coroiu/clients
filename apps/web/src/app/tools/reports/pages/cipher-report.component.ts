@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, ViewChild, ViewContainerRef, OnDestroy } from "@angular/core";
 import { BehaviorSubject, Observable, Subject, takeUntil } from "rxjs";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BaseResponse } from "../../../models/response/base.response";
 import { CipherRepromptType } from "../../enums/cipher-reprompt-type";
 import { CardApi } from "../api/card.api";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { KdfType } from "@bitwarden/key-management";
 
 import { BaseResponse } from "../../../models/response/base.response";

@@ -1,4 +1,5 @@
-﻿import { getQsParam } from "./common";
+// @ts-strict-ignore
+import { getQsParam } from "./common";
 
 require("./sso.scss");
 

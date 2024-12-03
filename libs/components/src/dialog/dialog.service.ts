@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   DEFAULT_DIALOG_CONFIG,
   Dialog,

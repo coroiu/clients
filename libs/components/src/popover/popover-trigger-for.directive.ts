@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Overlay, OverlayConfig, OverlayRef } from "@angular/cdk/overlay";
 import { TemplatePortal } from "@angular/cdk/portal";
 import {

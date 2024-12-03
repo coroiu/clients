@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /**
  * Use as a Decorator on async functions, it will limit how many times the function can be
  * in-flight at a time.

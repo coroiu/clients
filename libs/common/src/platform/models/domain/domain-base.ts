@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ConditionalExcept, ConditionalKeys, Constructor } from "type-fest";
 
 import { View } from "../../../models/view/view";

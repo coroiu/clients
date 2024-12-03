@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SecureNoteType } from "../../enums";
 import { SecureNoteApi } from "../api/secure-note.api";
 

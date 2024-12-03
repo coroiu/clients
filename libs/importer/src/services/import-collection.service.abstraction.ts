@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CollectionView } from "@bitwarden/admin-console/common";
 
 export abstract class ImportCollectionServiceAbstraction {

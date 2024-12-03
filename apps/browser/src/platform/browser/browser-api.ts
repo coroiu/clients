@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { DeviceType } from "@bitwarden/common/enums";

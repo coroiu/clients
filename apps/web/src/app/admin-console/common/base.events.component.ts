@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 

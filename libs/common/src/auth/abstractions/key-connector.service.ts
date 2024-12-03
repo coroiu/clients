@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Organization } from "../../admin-console/models/domain/organization";
 import { UserId } from "../../types/guid";
 import { IdentityTokenResponse } from "../models/response/identity-token.response";

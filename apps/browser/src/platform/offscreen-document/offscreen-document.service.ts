@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 
 import { OffscreenDocumentService } from "./abstractions/offscreen-document";

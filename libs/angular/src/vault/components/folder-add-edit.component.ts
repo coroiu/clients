@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { Validators, FormBuilder } from "@angular/forms";
 import { firstValueFrom } from "rxjs";

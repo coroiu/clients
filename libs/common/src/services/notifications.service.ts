@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import * as signalR from "@microsoft/signalr";
 import * as signalRMsgPack from "@microsoft/signalr-protocol-msgpack";
 import { firstValueFrom, Subscription } from "rxjs";

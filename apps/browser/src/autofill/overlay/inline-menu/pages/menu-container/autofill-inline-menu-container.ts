@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EVENTS } from "@bitwarden/common/autofill/constants";
 
 import { setElementStyles } from "../../../../utils";

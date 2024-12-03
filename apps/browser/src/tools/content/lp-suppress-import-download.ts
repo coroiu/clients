@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /**
  * Handles intercepting the injection of the CSV download link, and ensures the
  * download of the script is suppressed until the user opts to download the file.

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /**
  * Represents an HTML form whose elements can be autofilled
  */

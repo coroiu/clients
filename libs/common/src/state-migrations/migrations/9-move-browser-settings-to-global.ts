@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { MigrationHelper } from "../migration-helper";
 import { Migrator } from "../migrator";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CommonModule } from "@angular/common";
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from "@angular/forms";

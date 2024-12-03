@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EncString } from "../../../../platform/models/domain/enc-string";
 import { SendType } from "../../enums/send-type";
 import { SendTextApi } from "../../models/api/send-text.api";

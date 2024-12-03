@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, map, switchMap, firstValueFrom, timeout, throwError, NEVER } from "rxjs";
 
 import { UserId } from "../../../types/guid";

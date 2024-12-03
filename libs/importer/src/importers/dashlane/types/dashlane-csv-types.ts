@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 // tslint:disable
 export class CredentialsRecord {
   username: string;

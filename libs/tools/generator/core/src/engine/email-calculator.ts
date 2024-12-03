@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SUBADDRESS_PARSER } from "./data";
 
 /** Generation algorithms that produce deterministic email addresses */

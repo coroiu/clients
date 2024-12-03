@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnInit } from "@angular/core";
 
 import { ProviderService } from "@bitwarden/common/admin-console/abstractions/provider.service";

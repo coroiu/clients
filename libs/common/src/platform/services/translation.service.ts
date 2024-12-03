@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TranslationService as TranslationServiceAbstraction } from "../abstractions/translation.service";
 
 export abstract class TranslationService implements TranslationServiceAbstraction {

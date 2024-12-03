@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ConfigurableFocusTrap, ConfigurableFocusTrapFactory } from "@angular/cdk/a11y";
 import {
   AfterViewInit,

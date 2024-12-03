@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PolicyType } from "../../enums";
 
 export class PolicyRequest {

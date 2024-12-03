@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CipherView } from "../view/cipher.view";
 
 const CacheTTL = 3000;

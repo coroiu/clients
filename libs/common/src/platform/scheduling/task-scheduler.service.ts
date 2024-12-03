@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Subscription } from "rxjs";
 
 import { ScheduledTaskName } from "./scheduled-task-name.enum";

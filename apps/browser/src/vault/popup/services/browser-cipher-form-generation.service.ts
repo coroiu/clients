@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Overlay } from "@angular/cdk/overlay";
 import { inject, Injectable } from "@angular/core";
 import { firstValueFrom } from "rxjs";

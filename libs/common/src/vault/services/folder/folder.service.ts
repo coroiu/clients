@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, firstValueFrom, map, shareReplay } from "rxjs";
 
 import { EncryptService } from "@bitwarden/common/platform/abstractions/encrypt.service";

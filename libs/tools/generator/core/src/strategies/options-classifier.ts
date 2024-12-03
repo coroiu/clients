@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Jsonify } from "type-fest";
 
 import { IntegrationRequest } from "@bitwarden/common/tools/integration/rpc";

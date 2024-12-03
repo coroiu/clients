@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SecretProjectView } from "./secret-project.view";
 
 export class SecretView {

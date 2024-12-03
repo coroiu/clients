@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { _isNumberValue } from "@angular/cdk/coercion";
 import { DataSource } from "@angular/cdk/collections";
 import { BehaviorSubject, combineLatest, map, Observable, Subscription } from "rxjs";

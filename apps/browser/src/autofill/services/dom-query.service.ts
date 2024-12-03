@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EVENTS, MAX_DEEP_QUERY_RECURSION_DEPTH } from "@bitwarden/common/autofill/constants";
 
 import { nodeIsElement, sendExtensionMessage } from "../utils";

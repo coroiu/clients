@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TestBed } from "@angular/core/testing";
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from "@angular/router";
 import { mock, MockProxy } from "jest-mock-extended";

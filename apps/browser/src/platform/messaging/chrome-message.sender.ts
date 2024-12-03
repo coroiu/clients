@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { CommandDefinition, MessageSender } from "@bitwarden/common/platform/messaging";
 import { getCommand } from "@bitwarden/common/platform/messaging/internal";

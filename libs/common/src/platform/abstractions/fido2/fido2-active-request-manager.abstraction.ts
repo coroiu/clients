@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, Subject } from "rxjs";
 
 import { Fido2CredentialView } from "../../../vault/models/view/fido2-credential.view";

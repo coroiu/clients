@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { inject, Injectable, NgZone } from "@angular/core";
 import {
   BehaviorSubject,

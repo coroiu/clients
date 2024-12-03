@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, concatMap, filter } from "rxjs";
 
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";

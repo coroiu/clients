@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Organization } from "@bitwarden/common/admin-console/models/domain/organization";
 
 import { CollectionAccessSelectionView } from "./collection-access-selection.view";

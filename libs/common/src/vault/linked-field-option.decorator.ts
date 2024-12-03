@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LinkedIdType } from "./enums";
 import { ItemView } from "./models/view/item.view";
 

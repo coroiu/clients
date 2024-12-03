@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, NgZone } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 

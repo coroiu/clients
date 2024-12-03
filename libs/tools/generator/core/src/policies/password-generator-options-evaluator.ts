@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Constraints } from "@bitwarden/common/tools/types";
 
 import { PolicyEvaluator } from "../abstractions";

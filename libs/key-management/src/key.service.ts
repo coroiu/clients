@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import * as bigInt from "big-integer";
 import {
   NEVER,

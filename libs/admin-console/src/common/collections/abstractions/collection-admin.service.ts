@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CollectionDetailsResponse } from "@bitwarden/admin-console/common";
 
 import { CollectionAccessSelectionView, CollectionAdminView } from "../models";

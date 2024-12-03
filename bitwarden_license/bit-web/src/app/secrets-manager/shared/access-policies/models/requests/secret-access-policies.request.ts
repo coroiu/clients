@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AccessPolicyRequest } from "./access-policy.request";
 
 export class SecretAccessPoliciesRequest {

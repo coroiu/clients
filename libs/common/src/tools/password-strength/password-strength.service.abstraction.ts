@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ZXCVBNResult } from "zxcvbn";
 
 export abstract class PasswordStrengthServiceAbstraction {

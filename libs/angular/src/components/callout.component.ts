@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Input, OnInit } from "@angular/core";
 
 import { MasterPasswordPolicyOptions } from "@bitwarden/common/admin-console/models/domain/master-password-policy-options";

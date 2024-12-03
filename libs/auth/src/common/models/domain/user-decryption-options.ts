@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Jsonify } from "type-fest";
 
 import { KeyConnectorUserDecryptionOptionResponse } from "@bitwarden/common/auth/models/response/user-decryption-options/key-connector-user-decryption-option.response";

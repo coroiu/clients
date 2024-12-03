@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DeviceRequest } from "./device.request";
 import { TokenTwoFactorRequest } from "./token-two-factor.request";
 

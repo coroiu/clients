@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { WebauthnLoginAttestationResponseRequest } from "./webauthn-login-attestation-response.request";
 
 /**

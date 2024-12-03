@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CryptoFunctionService } from "../../platform/abstractions/crypto-function.service";
 import { LogService } from "../../platform/abstractions/log.service";
 import { Utils } from "../../platform/misc/utils";

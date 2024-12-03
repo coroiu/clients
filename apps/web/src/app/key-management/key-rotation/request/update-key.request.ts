@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { OrganizationUserResetPasswordWithIdRequest } from "@bitwarden/admin-console/common";
 import { WebauthnRotateCredentialRequest } from "@bitwarden/common/auth/models/request/webauthn-rotate-credential.request";
 import { SendWithIdRequest } from "@bitwarden/common/src/tools/send/models/request/send-with-id.request";

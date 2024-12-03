@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
 
 import MainBackground from "../../background/main.background";

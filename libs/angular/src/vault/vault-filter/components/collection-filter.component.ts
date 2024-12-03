@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, EventEmitter, Input, Output } from "@angular/core";
 
 import { CollectionView } from "@bitwarden/admin-console/common";

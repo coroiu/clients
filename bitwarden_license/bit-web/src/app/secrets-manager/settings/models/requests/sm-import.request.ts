@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SecretsManagerImportedProjectRequest } from "./sm-imported-project.request";
 import { SecretsManagerImportedSecretRequest } from "./sm-imported-secret.request";
 

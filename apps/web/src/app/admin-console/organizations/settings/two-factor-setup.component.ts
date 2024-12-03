@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DialogRef } from "@angular/cdk/dialog";
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";

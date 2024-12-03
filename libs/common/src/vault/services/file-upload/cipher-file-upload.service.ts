@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ApiService } from "../../../abstractions/api.service";
 import { ErrorResponse } from "../../../models/response/error.response";
 import {

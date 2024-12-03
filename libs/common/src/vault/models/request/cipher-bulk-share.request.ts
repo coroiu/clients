@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Cipher } from "../domain/cipher";
 
 import { CipherWithIdRequest } from "./cipher-with-id.request";

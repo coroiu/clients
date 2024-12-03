@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CommonModule, CurrencyPipe, Location } from "@angular/common";
 import { Component } from "@angular/core";
 import { RouterModule } from "@angular/router";

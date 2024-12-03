@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { AdminAuthRequestStorable } from "@bitwarden/common/auth/models/domain/admin-auth-req-storable";

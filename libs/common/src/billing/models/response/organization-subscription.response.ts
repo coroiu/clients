@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { OrganizationResponse } from "../../../admin-console/models/response/organization.response";
 import { BaseResponse } from "../../../models/response/base.response";
 

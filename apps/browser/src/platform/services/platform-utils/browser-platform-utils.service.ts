@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ExtensionCommand } from "@bitwarden/common/autofill/constants";
 import { ClientType, DeviceType } from "@bitwarden/common/enums";
 import {

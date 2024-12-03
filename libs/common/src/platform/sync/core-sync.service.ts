@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map, Observable, of, switchMap } from "rxjs";
 
 import { CollectionService } from "@bitwarden/admin-console/common";

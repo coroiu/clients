@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { inject } from "@angular/core";
 import { ActivatedRouteSnapshot, CanActivateFn, createUrlTreeFromSnapshot } from "@angular/router";
 

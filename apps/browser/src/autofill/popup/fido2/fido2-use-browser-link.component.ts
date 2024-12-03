@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { A11yModule } from "@angular/cdk/a11y";
 import { ConnectedPosition, CdkOverlayOrigin, CdkConnectedOverlay } from "@angular/cdk/overlay";

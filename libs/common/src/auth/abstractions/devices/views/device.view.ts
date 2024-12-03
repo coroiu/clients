@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DeviceType } from "../../../../enums";
 import { View } from "../../../../models/view/view";
 import { DeviceResponse } from "../responses/device.response";

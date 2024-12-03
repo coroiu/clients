@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Pipe, PipeTransform } from "@angular/core";
 
 type PropertyValueFunction<T> = (item: T) => { toString: () => string };

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CipherType } from "@bitwarden/common/vault/enums";
 import { CardView } from "@bitwarden/common/vault/models/view/card.view";
 

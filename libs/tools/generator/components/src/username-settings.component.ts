@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
 import { FormBuilder } from "@angular/forms";
 import { BehaviorSubject, map, skip, Subject, takeUntil, withLatestFrom } from "rxjs";

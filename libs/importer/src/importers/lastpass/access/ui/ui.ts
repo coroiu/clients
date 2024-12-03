@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { OobResult, OtpResult } from "../models";
 export abstract class Ui {
   // To cancel return OtpResult.Cancel, otherwise only valid data is expected.

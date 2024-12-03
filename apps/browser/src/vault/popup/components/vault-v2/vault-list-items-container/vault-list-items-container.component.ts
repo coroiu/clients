@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { CommonModule } from "@angular/common";
 import { booleanAttribute, Component, EventEmitter, inject, Input, Output } from "@angular/core";

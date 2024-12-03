@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { importProvidersFrom } from "@angular/core";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { action } from "@storybook/addon-actions";

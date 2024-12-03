@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ObservableInput, OperatorFunction, map } from "rxjs";
 
 /**

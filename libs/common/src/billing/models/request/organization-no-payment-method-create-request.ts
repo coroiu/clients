@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { OrganizationKeysRequest } from "../../../admin-console/models/request/organization-keys.request";
 import { InitiationPath } from "../../../models/request/reference-event.request";
 import { PlanType } from "../../enums";

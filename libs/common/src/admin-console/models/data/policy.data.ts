@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PolicyId } from "../../../types/guid";
 import { PolicyType } from "../../enums";
 import { Policy } from "../domain/policy";

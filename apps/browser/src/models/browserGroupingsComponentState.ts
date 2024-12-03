@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CollectionView } from "@bitwarden/admin-console/common";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { DeepJsonify } from "@bitwarden/common/types/deep-jsonify";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";

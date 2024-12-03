@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ProviderSetupRequest } from "../../models/request/provider/provider-setup.request";
 import { ProviderUpdateRequest } from "../../models/request/provider/provider-update.request";
 import { ProviderVerifyRecoverDeleteRequest } from "../../models/request/provider/provider-verify-recover-delete.request";

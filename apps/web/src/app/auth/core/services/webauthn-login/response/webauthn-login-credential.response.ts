@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { RotateableKeySet } from "@bitwarden/auth/common";
 import { BaseResponse } from "@bitwarden/common/models/response/base.response";
 import { EncString } from "@bitwarden/common/platform/models/domain/enc-string";

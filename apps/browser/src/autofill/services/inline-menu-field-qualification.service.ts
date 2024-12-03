@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import AutofillField from "../models/autofill-field";
 import AutofillPageDetails from "../models/autofill-page-details";
 import { getSubmitButtonKeywordsSet, sendExtensionMessage } from "../utils";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { AbstractControl, UntypedFormBuilder, ValidatorFn, Validators } from "@angular/forms";
 import { Router } from "@angular/router";

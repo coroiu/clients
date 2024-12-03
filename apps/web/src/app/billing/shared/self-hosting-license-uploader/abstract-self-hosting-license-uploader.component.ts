@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 
 import { TokenService } from "@bitwarden/common/auth/abstractions/token.service";

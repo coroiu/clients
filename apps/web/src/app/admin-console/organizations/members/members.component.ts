@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnInit, ViewChild, ViewContainerRef } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { ActivatedRoute, Router } from "@angular/router";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TaxInfoResponse } from "@bitwarden/common/billing/models/response/tax-info.response";
 
 export class TaxInformation {

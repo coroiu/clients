@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Injectable } from "@angular/core";
 
 import { PolicyService } from "@bitwarden/common/admin-console/abstractions/policy/policy.service.abstraction";

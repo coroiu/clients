@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ErrorHandler, LOCALE_ID, NgModule } from "@angular/core";
 import { Subject } from "rxjs";
 

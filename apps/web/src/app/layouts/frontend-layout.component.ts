@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnDestroy, OnInit } from "@angular/core";
 
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";

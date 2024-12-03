@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Params } from "@angular/router";
 import { Jsonify } from "type-fest";
 

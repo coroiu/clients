@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SshKeyView as SshKeyView } from "@bitwarden/common/vault/models/view/ssh-key.view";
 
 import { EncString } from "../../platform/models/domain/enc-string";

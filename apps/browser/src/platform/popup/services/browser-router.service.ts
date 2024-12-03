@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Injectable } from "@angular/core";
 import { ActivatedRouteSnapshot, NavigationEnd, Router } from "@angular/router";
 import { filter } from "rxjs";

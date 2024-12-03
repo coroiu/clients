@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { ConnectedPosition, Overlay, OverlayRef } from "@angular/cdk/overlay";
 import { TemplatePortal } from "@angular/cdk/portal";

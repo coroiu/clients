@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ServerConfig } from "../../../../../libs/common/src/platform/abstractions/config/server-config";
 import {
   AddLoginMessageData,

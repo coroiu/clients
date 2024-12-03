@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BreachAccountResponse } from "../models/response/breach-account.response";
 
 export abstract class AuditService {

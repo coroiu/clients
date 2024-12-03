@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Location } from "@angular/common";
 import { Component, OnDestroy, ViewChild } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";

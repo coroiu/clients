@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BrowserApi } from "../../../platform/browser/browser-api";
 import BrowserPopupUtils from "../../../platform/popup/browser-popup-utils";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, ElementRef, HostListener, Self } from "@angular/core";
 import { NgControl } from "@angular/forms";
 

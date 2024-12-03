@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnDestroy, OnInit, ViewChild, ViewContainerRef } from "@angular/core";
 import { FormBuilder, Validators } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";

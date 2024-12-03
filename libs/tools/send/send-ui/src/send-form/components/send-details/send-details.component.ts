@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CommonModule, DatePipe } from "@angular/common";
 import { Component, OnInit, Input } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";

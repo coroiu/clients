@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class GrantedPolicyRequest {
   grantedId: string;
   read: boolean;

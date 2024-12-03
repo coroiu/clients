@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CollectionView } from "@bitwarden/admin-console/common";
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
 import { FolderView } from "@bitwarden/common/vault/models/view/folder.view";

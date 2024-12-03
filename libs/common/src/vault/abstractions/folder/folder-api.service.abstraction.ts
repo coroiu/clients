@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Folder } from "../../models/domain/folder";
 import { FolderResponse } from "../../models/response/folder.response";
 

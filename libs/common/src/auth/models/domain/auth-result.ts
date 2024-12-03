@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Utils } from "../../../platform/misc/utils";
 import { UserId } from "../../../types/guid";
 import { TwoFactorProviderType } from "../../enums/two-factor-provider-type";

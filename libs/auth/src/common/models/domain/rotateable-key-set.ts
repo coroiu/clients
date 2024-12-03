@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EncString } from "@bitwarden/common/platform/models/domain/enc-string";
 import { SymmetricCryptoKey } from "@bitwarden/common/platform/models/domain/symmetric-crypto-key";
 import { PrfKey } from "@bitwarden/common/types/key";

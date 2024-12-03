@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnInit, ViewChild, ViewContainerRef } from "@angular/core";
 import { combineLatest, from, lastValueFrom, map, Observable } from "rxjs";
 

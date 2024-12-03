@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ListResponse } from "../../models/response/list.response";
 import { DeviceResponse } from "../abstractions/devices/responses/device.response";
 import { SecretVerificationRequest } from "../models/request/secret-verification.request";

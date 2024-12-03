@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EVENTS } from "@bitwarden/common/autofill/constants";
 import { ThemeTypes } from "@bitwarden/common/platform/enums";
 

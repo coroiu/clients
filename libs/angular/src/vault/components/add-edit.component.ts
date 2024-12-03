@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DatePipe } from "@angular/common";
 import { Directive, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";
 import { concatMap, firstValueFrom, map, Observable, Subject, takeUntil } from "rxjs";

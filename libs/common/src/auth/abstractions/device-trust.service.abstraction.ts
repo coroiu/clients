@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { EncString } from "../../platform/models/domain/enc-string";

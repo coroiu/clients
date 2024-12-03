@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DIALOG_DATA } from "@angular/cdk/dialog";
 import { Component, Inject } from "@angular/core";
 import { FormGroup, FormControl, Validators } from "@angular/forms";

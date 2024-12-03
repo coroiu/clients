@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TranslationService as BaseTranslationService } from "@bitwarden/common/platform/services/translation.service";
 
 import { SupportedTranslationLocales } from "../translation-constants";

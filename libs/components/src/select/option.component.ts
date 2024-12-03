@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Input, booleanAttribute } from "@angular/core";
 
 import { Option } from "./option";

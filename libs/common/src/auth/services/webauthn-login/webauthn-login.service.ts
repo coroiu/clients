@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LoginStrategyServiceAbstraction, WebAuthnLoginCredentials } from "@bitwarden/auth/common";
 
 import { LogService } from "../../../platform/abstractions/log.service";

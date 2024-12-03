@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AuthService } from "@bitwarden/common/auth/abstractions/auth.service";
 import { AuthenticationStatus } from "@bitwarden/common/auth/enums/authentication-status";
 import { UriMatchStrategy } from "@bitwarden/common/models/domain/domain-service";

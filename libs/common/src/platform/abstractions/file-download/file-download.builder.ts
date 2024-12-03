@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FileDownloadRequest } from "./file-download.request";
 
 export class FileDownloadBuilder {

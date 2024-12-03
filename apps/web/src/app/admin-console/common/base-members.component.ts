@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormControl } from "@angular/forms";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class AttachmentRequest {
   fileName: string;
   key: string;

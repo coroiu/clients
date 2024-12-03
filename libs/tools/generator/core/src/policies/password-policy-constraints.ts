@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PolicyConstraints, StateConstraints } from "@bitwarden/common/tools/types";
 
 import { DefaultPasswordGenerationOptions } from "../data";

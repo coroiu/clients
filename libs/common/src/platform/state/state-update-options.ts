@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 export const DEFAULT_OPTIONS = {

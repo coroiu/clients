@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, startWith, Subscription } from "rxjs";
 import { pairwise } from "rxjs/operators";
 

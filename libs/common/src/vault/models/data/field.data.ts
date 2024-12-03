@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FieldType, LinkedIdType } from "../../enums";
 import { FieldApi } from "../api/field.api";
 

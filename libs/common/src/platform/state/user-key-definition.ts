@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UserId } from "../../types/guid";
 import { StorageKey } from "../../types/state";
 import { Utils } from "../misc/utils";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Injectable, Optional } from "@angular/core";
 import { BehaviorSubject, filter, from, map, Observable, shareReplay, switchMap, tap } from "rxjs";
 

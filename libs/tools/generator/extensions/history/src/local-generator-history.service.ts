@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { filter, map } from "rxjs";
 
 import { EncryptService } from "@bitwarden/common/platform/abstractions/encrypt.service";

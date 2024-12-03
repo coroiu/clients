@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map, Observable } from "rxjs";
 
 import { UserDecryptionOptionsServiceAbstraction } from "@bitwarden/auth/common";

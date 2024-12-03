@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, HostBinding, HostListener, Input } from "@angular/core";
 
 import { DisclosureComponent } from "./disclosure.component";

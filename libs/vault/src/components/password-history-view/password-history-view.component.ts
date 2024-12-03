@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CommonModule } from "@angular/common";
 import { OnInit, Component, Input } from "@angular/core";
 import { firstValueFrom, map } from "rxjs";

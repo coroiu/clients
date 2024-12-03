@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ListResponse } from "../../../models/response/list.response";
 import Domain from "../../../platform/models/domain/domain-base";
 import { PolicyId } from "../../../types/guid";

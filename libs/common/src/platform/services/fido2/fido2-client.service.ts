@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, Subscription } from "rxjs";
 import { parse } from "tldts";
 

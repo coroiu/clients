@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SecretAccessPoliciesRequest } from "../../shared/access-policies/models/requests/secret-access-policies.request";
 
 export class SecretRequest {

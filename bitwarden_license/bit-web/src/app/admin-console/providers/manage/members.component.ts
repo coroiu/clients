@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DialogRef } from "@angular/cdk/dialog";
 import { Component } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";

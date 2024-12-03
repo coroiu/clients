@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ServiceAccountAccessPolicyView } from "./access-policy.view";
 
 export class ProjectServiceAccountsAccessPoliciesView {

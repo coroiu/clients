@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, ElementRef, HostBinding, Input } from "@angular/core";
 
 import { FocusableElement } from "../shared/focusable-element";

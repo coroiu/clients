@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LogService } from "../../abstractions/log.service";
 import { StorageServiceProvider } from "../../services/storage-service.provider";
 import { GlobalState } from "../global-state";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Collection as CollectionDomain, CollectionView } from "@bitwarden/admin-console/common";
 
 import { CollectionExport } from "./collection.export";

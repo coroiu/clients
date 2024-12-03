@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AttachmentResponse } from "../response/attachment.response";
 
 export class AttachmentData {

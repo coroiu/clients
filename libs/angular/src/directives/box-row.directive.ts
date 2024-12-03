@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, ElementRef, HostListener, OnInit } from "@angular/core";
 
 @Directive({

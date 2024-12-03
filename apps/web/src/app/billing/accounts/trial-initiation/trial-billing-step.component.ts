@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from "@angular/core";
 import { FormBuilder, Validators } from "@angular/forms";
 

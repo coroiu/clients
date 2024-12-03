@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, Input, OnInit } from "@angular/core";
 import { UntypedFormControl, UntypedFormGroup } from "@angular/forms";
 

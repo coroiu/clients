@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { SendView } from "../tools/send/models/view/send.view";

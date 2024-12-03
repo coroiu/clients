@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LogService } from "../../abstractions/log.service";
 import { Utils } from "../../misc/utils";
 import { EncArrayBuffer } from "../../models/domain/enc-array-buffer";

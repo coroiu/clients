@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { A11yModule } from "@angular/cdk/a11y";
 import { Component, EventEmitter, Input, Output, TemplateRef, ViewChild } from "@angular/core";
 

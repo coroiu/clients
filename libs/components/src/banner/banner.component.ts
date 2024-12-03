@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Input, OnInit, Output, EventEmitter } from "@angular/core";
 
 type BannerTypes = "premium" | "info" | "warning" | "danger";

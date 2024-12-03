@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EncString } from "../../platform/models/domain/enc-string";
 import { Folder as FolderDomain } from "../../vault/models/domain/folder";
 import { FolderView } from "../../vault/models/view/folder.view";

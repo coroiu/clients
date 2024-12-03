@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, NgZone, OnInit } from "@angular/core";
 import { FormBuilder } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";

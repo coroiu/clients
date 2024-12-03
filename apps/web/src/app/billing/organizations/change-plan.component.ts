@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 
 import { ProductTierType } from "@bitwarden/common/billing/enums";

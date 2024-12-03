@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { KdfType } from "@bitwarden/key-management";
 
 import { PasswordRequest } from "../../auth/models/request/password.request";

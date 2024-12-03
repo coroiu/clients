@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Injectable, NgZone } from "@angular/core";
 import { OidcClient } from "oidc-client-ts";
 import { Subject, firstValueFrom } from "rxjs";

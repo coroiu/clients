@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, DestroyRef, inject, OnInit } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormControl, FormsModule } from "@angular/forms";

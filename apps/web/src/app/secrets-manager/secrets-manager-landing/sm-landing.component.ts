@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnInit } from "@angular/core";
 
 import { OrganizationService } from "@bitwarden/common/admin-console/abstractions/organization/organization.service.abstraction";

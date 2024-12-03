@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map, from, zip, Observable } from "rxjs";
 
 import { EventCollectionService as EventCollectionServiceAbstraction } from "../../abstractions/event/event-collection.service";

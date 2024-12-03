@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { inject, Injectable } from "@angular/core";
 import { firstValueFrom, map } from "rxjs";
 

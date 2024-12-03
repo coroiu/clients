@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BillingSourceResponse } from "@bitwarden/common/billing/models/response/billing.response";
 import { PaymentSourceResponse } from "@bitwarden/common/billing/models/response/payment-source.response";
 

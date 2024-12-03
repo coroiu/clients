@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Fido2CredentialView } from "../../../vault/models/view/fido2-credential.view";
 
 /**

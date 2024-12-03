@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Collection } from "./collection";
 import { CollectionRequest } from "./collection.request";
 

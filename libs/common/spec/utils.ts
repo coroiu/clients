@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { mock, MockProxy } from "jest-mock-extended";
 import { Observable } from "rxjs";
 

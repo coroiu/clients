@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Location } from "@angular/common";
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormControl, Validators } from "@angular/forms";

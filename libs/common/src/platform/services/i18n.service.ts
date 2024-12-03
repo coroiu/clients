@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, firstValueFrom, map } from "rxjs";
 
 import { I18nService as I18nServiceAbstraction } from "../abstractions/i18n.service";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnInit } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormControl } from "@angular/forms";

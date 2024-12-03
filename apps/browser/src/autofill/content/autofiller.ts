@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { setupExtensionDisconnectAction } from "../utils";
 
 if (document.readyState === "loading") {

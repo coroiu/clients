@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { ConnectedPosition } from "@angular/cdk/overlay";
 import { Component, EventEmitter, Output, Input, OnInit, OnDestroy } from "@angular/core";

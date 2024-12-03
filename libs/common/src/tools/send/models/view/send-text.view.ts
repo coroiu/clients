@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { View } from "../../../../models/view/view";
 import { DeepJsonify } from "../../../../types/deep-jsonify";
 import { SendText } from "../domain/send-text";

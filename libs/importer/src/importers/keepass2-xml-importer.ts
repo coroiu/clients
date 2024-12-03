@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FieldType } from "@bitwarden/common/vault/enums";
 import { FolderView } from "@bitwarden/common/vault/models/view/folder.view";
 

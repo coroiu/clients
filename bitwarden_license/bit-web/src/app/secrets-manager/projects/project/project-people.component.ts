@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";

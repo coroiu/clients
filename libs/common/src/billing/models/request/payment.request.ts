@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PaymentMethodType } from "../../enums";
 
 import { ExpandedTaxInfoUpdateRequest } from "./expanded-tax-info-update.request";

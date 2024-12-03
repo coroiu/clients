@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ListResponse } from "../../../models/response/list.response";
 import { EncArrayBuffer } from "../../../platform/models/domain/enc-array-buffer";
 import { Send } from "../models/domain/send";

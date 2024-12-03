@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ApiService } from "../../abstractions/api.service";
 import { ListResponse } from "../../models/response/list.response";
 import { Utils } from "../../platform/misc/utils";

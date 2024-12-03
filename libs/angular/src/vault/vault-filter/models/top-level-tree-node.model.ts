@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ITreeNodeObject } from "@bitwarden/common/vault/models/domain/tree-node";
 
 export type TopLevelTreeNodeId = "vaults" | "types" | "collections" | "folders";

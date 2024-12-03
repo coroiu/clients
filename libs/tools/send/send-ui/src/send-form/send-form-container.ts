@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SendView } from "@bitwarden/common/tools/send/models/view/send.view";
 
 import { SendFormConfig } from "./abstractions/send-form-config.service";

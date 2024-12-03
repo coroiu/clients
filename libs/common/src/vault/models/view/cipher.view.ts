@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { View } from "../../../models/view/view";
 import { InitializerMetadata } from "../../../platform/interfaces/initializer-metadata.interface";
 import { InitializerKey } from "../../../platform/services/cryptography/initializer-key";

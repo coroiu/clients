@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class PotentialGranteeView {
   id: string;
   name: string;

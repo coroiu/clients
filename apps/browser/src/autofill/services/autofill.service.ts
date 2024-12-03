@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { filter, firstValueFrom, merge, Observable, ReplaySubject, scan, startWith } from "rxjs";
 import { pairwise } from "rxjs/operators";
 

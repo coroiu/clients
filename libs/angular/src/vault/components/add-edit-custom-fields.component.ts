@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CdkDragDrop, moveItemInArray } from "@angular/cdk/drag-drop";
 import { Directive, Input, OnChanges, SimpleChanges } from "@angular/core";
 

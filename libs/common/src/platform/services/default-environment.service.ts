@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { distinctUntilChanged, firstValueFrom, map, Observable, switchMap } from "rxjs";
 import { Jsonify } from "type-fest";
 

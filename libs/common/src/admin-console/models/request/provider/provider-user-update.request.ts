@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ProviderUserType } from "../../../enums";
 
 export class ProviderUserUpdateRequest {

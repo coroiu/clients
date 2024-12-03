@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class ServiceAccountView {
   id: string;
   organizationId: string;

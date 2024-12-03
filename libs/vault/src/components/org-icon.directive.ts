@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, ElementRef, HostBinding, Input, Renderer2 } from "@angular/core";
 
 import { ProductTierType } from "@bitwarden/common/billing/enums";

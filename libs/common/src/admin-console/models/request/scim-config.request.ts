@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ScimProviderType } from "../../enums";
 
 export class ScimConfigRequest {

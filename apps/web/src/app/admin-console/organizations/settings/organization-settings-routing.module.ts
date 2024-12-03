@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { inject, NgModule } from "@angular/core";
 import { CanMatchFn, RouterModule, Routes } from "@angular/router";
 import { map } from "rxjs";

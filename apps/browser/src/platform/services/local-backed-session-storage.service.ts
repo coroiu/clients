@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Subject } from "rxjs";
 
 import { EncryptService } from "@bitwarden/common/platform/abstractions/encrypt.service";

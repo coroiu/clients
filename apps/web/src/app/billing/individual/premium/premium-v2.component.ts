@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, ViewChild } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormControl, FormGroup, Validators } from "@angular/forms";

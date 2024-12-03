@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, Observable } from "rxjs";
 
 import { UserId } from "@bitwarden/common/src/types/guid";

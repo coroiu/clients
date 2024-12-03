@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SecretsManagerImportErrorLine } from "./sm-import-error-line";
 
 export class SecretsManagerImportError extends Error {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BaseResponse } from "../../../../models/response/base.response";
 import { SendType } from "../../enums/send-type";
 import { SendFileApi } from "../api/send-file.api";

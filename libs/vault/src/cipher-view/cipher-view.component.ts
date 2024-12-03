@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CommonModule } from "@angular/common";
 import { Component, Input, OnChanges, OnDestroy } from "@angular/core";
 import { firstValueFrom, Observable, Subject, takeUntil } from "rxjs";

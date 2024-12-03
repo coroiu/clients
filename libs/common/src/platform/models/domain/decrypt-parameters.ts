@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class DecryptParameters<T> {
   encKey: T;
   data: T;

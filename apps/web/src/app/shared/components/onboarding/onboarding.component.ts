@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, ContentChildren, EventEmitter, Input, Output, QueryList } from "@angular/core";
 
 import { OnboardingTaskComponent } from "./onboarding-task.component";

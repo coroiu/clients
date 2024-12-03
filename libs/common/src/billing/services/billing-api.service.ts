@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ProviderOrganizationOrganizationDetailsResponse } from "@bitwarden/common/admin-console/models/response/provider/provider-organization.response";
 import { UpdatePaymentMethodRequest } from "@bitwarden/common/billing/models/request/update-payment-method.request";
 import { VerifyBankAccountRequest } from "@bitwarden/common/billing/models/request/verify-bank-account.request";

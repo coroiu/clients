@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { defaultIfEmpty, filter, firstValueFrom, fromEvent, map, Subject, takeUntil } from "rxjs";
 import { Jsonify } from "type-fest";
 

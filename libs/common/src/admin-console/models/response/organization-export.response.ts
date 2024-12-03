@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CollectionResponse } from "@bitwarden/admin-console/common";
 
 import { BaseResponse } from "../../../models/response/base.response";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { SdkClientFactory } from "@bitwarden/common/platform/abstractions/sdk/sdk-client-factory";
 import { RecoverableSDKError } from "@bitwarden/common/platform/services/sdk/default-sdk.service";

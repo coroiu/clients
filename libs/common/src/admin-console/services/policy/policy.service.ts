@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { combineLatest, firstValueFrom, map, Observable, of } from "rxjs";
 
 import { UserKeyDefinition, POLICIES_DISK, StateProvider } from "../../../platform/state";

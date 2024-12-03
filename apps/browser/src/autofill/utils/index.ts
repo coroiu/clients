@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AutofillPort } from "../enums/autofill-port.enum";
 import { FillableFormFieldElement, FormElementWithAttribute, FormFieldElement } from "../types";
 

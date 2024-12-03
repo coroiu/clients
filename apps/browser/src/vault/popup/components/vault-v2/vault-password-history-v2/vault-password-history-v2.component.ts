@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { NgIf } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export type InitiationPath =
   | "Registration form"
   | "Password Manager trial from marketing website"

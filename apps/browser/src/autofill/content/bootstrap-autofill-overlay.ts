@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AutofillInlineMenuContentService } from "../overlay/inline-menu/content/autofill-inline-menu-content.service";
 import { OverlayNotificationsContentService } from "../overlay/notifications/content/overlay-notifications-content.service";
 import { AutofillOverlayContentService } from "../services/autofill-overlay-content.service";

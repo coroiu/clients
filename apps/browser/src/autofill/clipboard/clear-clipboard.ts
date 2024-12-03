@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BrowserApi } from "../../platform/browser/browser-api";
 
 export class ClearClipboard {

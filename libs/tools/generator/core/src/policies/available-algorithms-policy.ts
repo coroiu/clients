@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PolicyType } from "@bitwarden/common/admin-console/enums";
 // FIXME: use index.ts imports once policy abstractions and models
 // implement ADR-0002

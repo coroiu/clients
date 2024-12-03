@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { startWith, Subject, Subscription, switchMap, timer } from "rxjs";
 import { pairwise } from "rxjs/operators";
 

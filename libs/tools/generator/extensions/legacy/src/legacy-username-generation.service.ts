@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { zip, firstValueFrom, map, concatMap, combineLatest } from "rxjs";
 
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";

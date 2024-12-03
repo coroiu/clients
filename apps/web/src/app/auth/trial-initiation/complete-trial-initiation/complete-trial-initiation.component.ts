@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { StepperSelectionEvent } from "@angular/cdk/stepper";
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, Validators } from "@angular/forms";

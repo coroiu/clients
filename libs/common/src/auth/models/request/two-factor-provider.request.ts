@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TwoFactorProviderType } from "../../enums/two-factor-provider-type";
 
 import { SecretVerificationRequest } from "./secret-verification.request";

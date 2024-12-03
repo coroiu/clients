@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, ElementRef, OnDestroy, OnInit } from "@angular/core";
 import { NgControl } from "@angular/forms";
 import { Subscription } from "rxjs";

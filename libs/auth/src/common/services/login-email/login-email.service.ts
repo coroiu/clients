@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, firstValueFrom, switchMap } from "rxjs";
 
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";

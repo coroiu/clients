@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { UsernameGeneratorOptions } from "./username-generation-options";

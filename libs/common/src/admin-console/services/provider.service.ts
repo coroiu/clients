@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map, Observable, of, switchMap, take } from "rxjs";
 
 import { PROVIDERS_DISK, StateProvider, UserKeyDefinition } from "../../platform/state";

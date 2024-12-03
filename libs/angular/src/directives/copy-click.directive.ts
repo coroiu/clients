@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, HostListener, Input } from "@angular/core";
 
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";

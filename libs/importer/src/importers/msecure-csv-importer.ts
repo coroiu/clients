@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SecureNoteType, CipherType } from "@bitwarden/common/vault/enums";
 import { SecureNoteView } from "@bitwarden/common/vault/models/view/secure-note.view";
 

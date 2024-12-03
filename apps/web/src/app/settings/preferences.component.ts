@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder } from "@angular/forms";
 import { concatMap, filter, firstValueFrom, map, Observable, Subject, takeUntil, tap } from "rxjs";

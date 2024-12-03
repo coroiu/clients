@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class LoginRecord {
   /** Organization unit / folder / collection */
   Organisationseinheit: string;

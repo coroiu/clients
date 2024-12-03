@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DialogConfig, DialogRef } from "@angular/cdk/dialog";
 import { Component, OnInit } from "@angular/core";
 import { FormBuilder, Validators } from "@angular/forms";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { MessagingService } from "@bitwarden/common/platform/abstractions/messaging.service";
 
 import { LoginDecryptionOptionsService } from "./login-decryption-options.service";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DatePipe, Location } from "@angular/common";
 import { ChangeDetectorRef, Component, NgZone, OnInit, OnDestroy } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";

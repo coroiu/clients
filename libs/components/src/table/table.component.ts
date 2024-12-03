@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { isDataSource } from "@angular/cdk/collections";
 import {
   AfterContentChecked,

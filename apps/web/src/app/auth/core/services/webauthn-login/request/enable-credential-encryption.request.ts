@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { WebAuthnLoginAssertionResponseRequest } from "@bitwarden/common/auth/services/webauthn-login/request/webauthn-login-assertion-response.request";
 
 /**

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CommonModule, DatePipe } from "@angular/common";
 import { Component, inject, Input } from "@angular/core";
 import { Observable, shareReplay } from "rxjs";

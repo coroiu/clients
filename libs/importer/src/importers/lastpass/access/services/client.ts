@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { HttpStatusCode } from "@bitwarden/common/enums";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 

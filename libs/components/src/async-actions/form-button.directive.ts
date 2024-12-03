@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, Input, OnDestroy, Optional } from "@angular/core";
 import { Subject, takeUntil } from "rxjs";
 

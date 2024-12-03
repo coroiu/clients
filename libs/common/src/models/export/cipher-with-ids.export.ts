@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Cipher as CipherDomain } from "../../vault/models/domain/cipher";
 import { CipherView } from "../../vault/models/view/cipher.view";
 

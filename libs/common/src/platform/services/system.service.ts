@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, Subscription } from "rxjs";
 
 import { AutofillSettingsServiceAbstraction } from "../../autofill/services/autofill-settings.service";

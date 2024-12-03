@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { filter, map } from "rxjs";
 import { Jsonify } from "type-fest";
 

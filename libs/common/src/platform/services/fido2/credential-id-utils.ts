@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Fido2Utils } from "./fido2-utils";
 import { guidToRawFormat } from "./guid-utils";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FocusableOption } from "@angular/cdk/a11y";
 import { Directive, ElementRef, HostBinding, Input } from "@angular/core";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormControl } from "@angular/forms";
 import { ActivatedRoute, Router } from "@angular/router";

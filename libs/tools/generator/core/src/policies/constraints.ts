@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Constraint } from "@bitwarden/common/tools/types";
 
 import { sum } from "../util";

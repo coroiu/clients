@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, map } from "rxjs";
 
 import {

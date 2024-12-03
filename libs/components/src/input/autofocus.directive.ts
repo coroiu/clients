@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, ElementRef, Input, NgZone, OnInit, Optional } from "@angular/core";
 import { take } from "rxjs/operators";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Jsonify, Opaque } from "type-fest";
 
 import { EncryptService } from "../../abstractions/encrypt.service";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { IntegrationId } from "@bitwarden/common/tools/integration";
 import { ApiSettings } from "@bitwarden/common/tools/integration/rpc";
 

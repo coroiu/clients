@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Input, OnDestroy } from "@angular/core";
 import { Subject } from "rxjs";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, ReplaySubject, concatMap, filter, firstValueFrom, map, timeout } from "rxjs";
 
 import {

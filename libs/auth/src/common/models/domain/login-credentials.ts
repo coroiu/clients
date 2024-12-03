@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Jsonify } from "type-fest";
 
 import { AuthenticationType } from "@bitwarden/common/auth/enums/authentication-type";

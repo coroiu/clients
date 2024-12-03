@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Input, OnChanges } from "@angular/core";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 

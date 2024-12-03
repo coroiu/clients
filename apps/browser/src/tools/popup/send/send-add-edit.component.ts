@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DatePipe, Location } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
 import { FormBuilder } from "@angular/forms";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { createMigrationBuilder } from "../../state-migrations";
 import { MigrationBuilder } from "../../state-migrations/migration-builder";
 

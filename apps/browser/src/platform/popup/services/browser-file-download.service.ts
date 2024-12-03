@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Injectable } from "@angular/core";
 
 import { FileDownloadBuilder } from "@bitwarden/common/platform/abstractions/file-download/file-download.builder";

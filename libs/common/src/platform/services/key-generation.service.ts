@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { KdfConfig, PBKDF2KdfConfig, Argon2KdfConfig, KdfType } from "@bitwarden/key-management";
 
 import { CsprngArray } from "../../types/csprng";

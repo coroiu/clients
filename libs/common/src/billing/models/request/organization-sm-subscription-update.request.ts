@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class OrganizationSmSubscriptionUpdateRequest {
   /**
    * The number of seats to add or remove from the subscription.

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import "@webcomponents/custom-elements";
 import "lit/polyfill-support.js";
 import { FocusableElement, tabbable } from "tabbable";

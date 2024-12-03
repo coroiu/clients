@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 
 import { VerticalStep } from "./vertical-step.component";

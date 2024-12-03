@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ThemeTypes } from "@bitwarden/common/platform/enums";
 import { ConsoleLogService } from "@bitwarden/common/platform/services/console-log.service";
 import type { FolderView } from "@bitwarden/common/vault/models/view/folder.view";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { NgForOf, NgIf } from "@angular/common";
 import {
   Component,

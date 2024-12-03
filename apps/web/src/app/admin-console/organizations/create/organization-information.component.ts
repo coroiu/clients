@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { UntypedFormGroup } from "@angular/forms";
 import { firstValueFrom } from "rxjs";

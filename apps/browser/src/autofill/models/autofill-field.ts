@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AutofillFieldQualifierType } from "../enums/autofill-field.enums";
 import {
   InlineMenuAccountCreationFieldTypes,

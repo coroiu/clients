@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UserKeyDefinitionOptions, UserKeyDefinition } from "../../platform/state";
 // eslint-disable-next-line -- `StateDefinition` used as an argument
 import { StateDefinition } from "../../platform/state/state-definition";

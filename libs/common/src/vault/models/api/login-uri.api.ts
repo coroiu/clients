@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UriMatchStrategySetting } from "../../../models/domain/domain-service";
 import { BaseResponse } from "../../../models/response/base.response";
 

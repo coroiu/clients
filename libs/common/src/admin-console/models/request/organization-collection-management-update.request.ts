@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class OrganizationCollectionManagementUpdateRequest {
   limitCollectionCreation: boolean;
   limitCollectionDeletion: boolean;

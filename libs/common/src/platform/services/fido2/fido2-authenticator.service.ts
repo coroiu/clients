@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map } from "rxjs";
 
 import { AccountService } from "../../../auth/abstractions/account.service";

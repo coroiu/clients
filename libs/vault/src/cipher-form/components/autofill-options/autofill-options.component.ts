@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LiveAnnouncer } from "@angular/cdk/a11y";
 import { AsyncPipe, NgForOf, NgIf } from "@angular/common";
 import { Component, OnInit, QueryList, ViewChildren } from "@angular/core";

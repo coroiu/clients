@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CdkStepper } from "@angular/cdk/stepper";
 import { Component, Input, QueryList } from "@angular/core";
 

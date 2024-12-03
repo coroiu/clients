@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { OrganizationUserType } from "@bitwarden/common/admin-console/enums";
 import { PermissionsApi } from "@bitwarden/common/admin-console/models/api/permissions.api";
 import { SelectionReadOnlyRequest } from "@bitwarden/common/admin-console/models/request/selection-read-only.request";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CollectionView } from "@bitwarden/admin-console/common";
 
 import { ImportResult } from "../models/import-result";

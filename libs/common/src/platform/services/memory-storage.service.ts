@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Subject } from "rxjs";
 
 import { AbstractStorageService, StorageUpdate } from "../abstractions/storage.service";

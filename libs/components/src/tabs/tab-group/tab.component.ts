@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TemplatePortal } from "@angular/cdk/portal";
 import {
   Component,

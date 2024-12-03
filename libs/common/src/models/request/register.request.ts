@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { KdfType } from "@bitwarden/key-management";
 
 import { CaptchaProtectedRequest } from "../../auth/models/request/captcha-protected.request";

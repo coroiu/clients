@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ErrorHandler, Injectable, Injector, inject } from "@angular/core";
 
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";

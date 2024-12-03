@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { OnInit, Directive } from "@angular/core";
 import { firstValueFrom, Observable } from "rxjs";
 

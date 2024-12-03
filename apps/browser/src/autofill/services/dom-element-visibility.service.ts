@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AutofillInlineMenuContentService } from "../overlay/inline-menu/abstractions/autofill-inline-menu-content.service";
 import { FillableFormFieldElement, FormFieldElement } from "../types";
 

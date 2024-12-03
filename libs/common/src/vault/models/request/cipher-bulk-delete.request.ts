@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class CipherBulkDeleteRequest {
   ids: string[];
   organizationId: string;

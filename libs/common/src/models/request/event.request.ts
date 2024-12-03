@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EventType } from "../../enums";
 
 export class EventRequest {

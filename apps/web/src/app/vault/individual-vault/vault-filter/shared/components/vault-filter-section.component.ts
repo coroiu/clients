@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, InjectionToken, Injector, Input, OnDestroy, OnInit } from "@angular/core";
 import { Observable, Subject, takeUntil } from "rxjs";
 import { map } from "rxjs/operators";

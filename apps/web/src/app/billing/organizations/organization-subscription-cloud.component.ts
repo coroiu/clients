@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { concatMap, firstValueFrom, lastValueFrom, Observable, Subject, takeUntil } from "rxjs";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map } from "rxjs";
 
 import { EventCollectionService } from "@bitwarden/common/abstractions/event/event-collection.service";

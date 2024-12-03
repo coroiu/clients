@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Subject, startWith, takeUntil } from "rxjs";

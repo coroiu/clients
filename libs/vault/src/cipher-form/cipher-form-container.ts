@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
 import { CipherFormConfig } from "@bitwarden/vault";
 

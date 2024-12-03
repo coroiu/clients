@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, ViewChild, ViewContainerRef } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { firstValueFrom, concatMap, map, lastValueFrom, startWith, debounceTime } from "rxjs";

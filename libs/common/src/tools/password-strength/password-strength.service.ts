@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import * as zxcvbn from "zxcvbn";
 
 import { PasswordStrengthServiceAbstraction } from "./password-strength.service.abstraction";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FormBuilder, FormControl, FormGroup } from "@angular/forms";
 import { Meta, StoryObj } from "@storybook/angular";
 

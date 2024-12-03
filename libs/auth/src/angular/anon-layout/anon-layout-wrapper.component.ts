@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, Data, NavigationEnd, Router, RouterModule } from "@angular/router";
 import { Subject, filter, switchMap, takeUntil, tap } from "rxjs";

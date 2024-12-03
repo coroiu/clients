@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PrfKey } from "../../../types/key";
 
 /**

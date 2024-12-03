@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ChangeDetectionStrategy, Component, Input, OnInit } from "@angular/core";
 import {
   BehaviorSubject,

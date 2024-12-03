@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CipherResponse } from "@bitwarden/common/vault/models/response/cipher.response";
 import { KdfType } from "@bitwarden/key-management";
 

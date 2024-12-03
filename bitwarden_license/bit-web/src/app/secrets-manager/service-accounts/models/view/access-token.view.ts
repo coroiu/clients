@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class AccessTokenView {
   id: string;
   name: string;

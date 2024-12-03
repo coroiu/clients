@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CommonModule, NgClass } from "@angular/common";
 import { Component, DestroyRef, Input, OnInit } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";

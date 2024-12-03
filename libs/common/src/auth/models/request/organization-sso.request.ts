@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SsoConfigApi } from "../api/sso-config.api";
 
 export class OrganizationSsoRequest {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EncString } from "../../platform/models/domain/enc-string";
 import { Identity as IdentityDomain } from "../../vault/models/domain/identity";
 import { IdentityView } from "../../vault/models/view/identity.view";

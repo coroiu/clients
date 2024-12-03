@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BehaviorSubject } from "rxjs";
 import { Jsonify } from "type-fest";
 

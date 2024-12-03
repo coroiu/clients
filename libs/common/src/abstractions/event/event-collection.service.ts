@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EventType } from "../../enums";
 import { CipherView } from "../../vault/models/view/cipher.view";
 

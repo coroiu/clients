@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DOCUMENT } from "@angular/common";
 import { Component, Inject, NgZone, OnDestroy, OnInit } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";

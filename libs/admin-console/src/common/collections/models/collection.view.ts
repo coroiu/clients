@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Jsonify } from "type-fest";
 
 import { Organization } from "@bitwarden/common/admin-console/models/domain/organization";

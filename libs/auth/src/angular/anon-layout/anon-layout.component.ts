@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CommonModule } from "@angular/common";
 import { Component, HostBinding, Input, OnChanges, OnInit, SimpleChanges } from "@angular/core";
 import { RouterModule } from "@angular/router";

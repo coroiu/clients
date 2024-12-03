@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Injectable } from "@angular/core";
 
 import { BankAccount } from "@bitwarden/common/billing/models/domain";

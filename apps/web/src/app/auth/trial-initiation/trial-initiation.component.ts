@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { StepperSelectionEvent } from "@angular/cdk/stepper";
 import { TitleCasePipe } from "@angular/common";
 import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";

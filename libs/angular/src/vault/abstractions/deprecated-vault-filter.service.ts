@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { CollectionView } from "@bitwarden/admin-console/common";

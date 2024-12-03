@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Constraints, StateConstraints } from "@bitwarden/common/tools/types";
 
 import { CatchallGenerationOptions } from "../types";

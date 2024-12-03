@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, HostBinding, Input } from "@angular/core";
 
 import { Utils } from "@bitwarden/common/platform/misc/utils";

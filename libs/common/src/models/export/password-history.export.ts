@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EncString } from "../../platform/models/domain/enc-string";
 import { Password } from "../../vault/models/domain/password";
 import { PasswordHistoryView } from "../../vault/models/view/password-history.view";

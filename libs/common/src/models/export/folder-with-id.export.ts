@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Folder as FolderDomain } from "../../vault/models/domain/folder";
 import { FolderView } from "../../vault/models/view/folder.view";
 

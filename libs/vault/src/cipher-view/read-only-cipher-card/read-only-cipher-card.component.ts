@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AfterViewInit, Component, ContentChildren, QueryList } from "@angular/core";
 
 import { CardComponent, BitFormFieldComponent } from "@bitwarden/components";

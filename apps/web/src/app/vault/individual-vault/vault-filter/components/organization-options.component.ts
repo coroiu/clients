@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { combineLatest, map, Observable, of, Subject, switchMap, takeUntil } from "rxjs";
 

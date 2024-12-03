@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, forwardRef, Input, OnDestroy, OnInit } from "@angular/core";
 import {
   ControlValueAccessor,

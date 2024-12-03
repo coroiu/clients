@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { View } from "@bitwarden/common/models/view/view";
 
 import { GroupResponse } from "../services/group/responses/group.response";

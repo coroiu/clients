@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { BitwardenClient } from "@bitwarden/sdk-internal";

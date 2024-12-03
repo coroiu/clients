@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { animate, style, transition, trigger } from "@angular/animations";
 import { CommonModule } from "@angular/common";
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from "@angular/core";

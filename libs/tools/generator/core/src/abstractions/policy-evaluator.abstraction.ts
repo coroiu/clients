@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /** Applies policy to a generation request */
 export abstract class PolicyEvaluator<Policy, PolicyTarget> {
   /** The policy to enforce */

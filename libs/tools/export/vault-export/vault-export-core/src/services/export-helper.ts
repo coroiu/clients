@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class ExportHelper {
   static getFileName(prefix: string = null, extension = "csv"): string {
     const now = new Date();

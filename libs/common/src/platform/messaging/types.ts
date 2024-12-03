@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 declare const tag: unique symbol;
 
 /**

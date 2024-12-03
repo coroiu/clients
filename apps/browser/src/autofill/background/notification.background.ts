@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map } from "rxjs";
 
 import { PolicyService } from "@bitwarden/common/admin-console/abstractions/policy/policy.service.abstraction";

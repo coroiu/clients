@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Utils } from "../../platform/misc/utils";
 
 import { BaseResponse } from "./base.response";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PasswordHistoryResponse } from "../response/password-history.response";
 
 export class PasswordHistoryData {

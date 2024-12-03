@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TaxInformation } from "@bitwarden/common/billing/models/domain/tax-information";
 
 import { TaxInfoUpdateRequest } from "./tax-info-update.request";

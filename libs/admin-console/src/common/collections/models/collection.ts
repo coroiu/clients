@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import Domain from "@bitwarden/common/platform/models/domain/domain-base";
 import { EncString } from "@bitwarden/common/platform/models/domain/enc-string";
 import { OrgKey } from "@bitwarden/common/types/key";

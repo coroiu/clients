@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UriMatchStrategySetting } from "../../../models/domain/domain-service";
 import { LoginUriApi } from "../api/login-uri.api";
 

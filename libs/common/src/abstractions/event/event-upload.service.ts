@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UserId } from "../../types/guid";
 
 export abstract class EventUploadService {

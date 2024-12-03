@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AbstractControl, AsyncValidatorFn, ValidationErrors } from "@angular/forms";
 
 export function notAllowedValueAsync(

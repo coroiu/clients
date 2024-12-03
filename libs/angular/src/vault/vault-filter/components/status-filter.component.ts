@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, EventEmitter, Input, Output } from "@angular/core";
 
 import { CipherStatus } from "../models/cipher-status.model";

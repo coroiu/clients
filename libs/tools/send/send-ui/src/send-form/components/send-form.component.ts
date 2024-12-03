@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { NgIf } from "@angular/common";
 import {
   AfterViewInit,

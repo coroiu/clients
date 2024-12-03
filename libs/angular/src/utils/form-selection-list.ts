@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AbstractControl, FormArray } from "@angular/forms";
 
 export type SelectionItemId = {

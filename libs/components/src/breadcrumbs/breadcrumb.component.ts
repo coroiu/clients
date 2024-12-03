@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, EventEmitter, Input, Output, TemplateRef, ViewChild } from "@angular/core";
 import { QueryParamsHandling } from "@angular/router";
 

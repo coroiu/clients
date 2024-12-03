@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CommonModule } from "@angular/common";
 import { APP_INITIALIZER, NgModule, Optional, SkipSelf } from "@angular/core";
 import { Router } from "@angular/router";

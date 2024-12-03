@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { CipherType } from "@bitwarden/common/vault/enums";
 
 import { BrowserApi } from "../../../platform/browser/browser-api";

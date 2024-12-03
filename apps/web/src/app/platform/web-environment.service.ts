@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Router } from "@angular/router";
 import { firstValueFrom, ReplaySubject } from "rxjs";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SendFileApi } from "../api/send-file.api";
 
 export class SendFileData {

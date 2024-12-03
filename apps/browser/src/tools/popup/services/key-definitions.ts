@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Jsonify } from "type-fest";
 
 import { BROWSER_SEND_MEMORY, UserKeyDefinition } from "@bitwarden/common/platform/state";

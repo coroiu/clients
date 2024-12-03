@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, Input } from "@angular/core";
 
 import { EventCollectionService } from "@bitwarden/common/abstractions/event/event-collection.service";

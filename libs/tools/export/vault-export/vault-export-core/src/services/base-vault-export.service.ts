@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PinServiceAbstraction } from "@bitwarden/auth/common";
 import { CryptoFunctionService } from "@bitwarden/common/platform/abstractions/crypto-function.service";
 import { EncryptService } from "@bitwarden/common/platform/abstractions/encrypt.service";

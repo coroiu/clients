@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map, mergeMap } from "rxjs";
 
 import { LockService } from "@bitwarden/auth/common";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Location } from "@angular/common";
 import { Injectable, inject } from "@angular/core";
 import {

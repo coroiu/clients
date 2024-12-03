@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnInit } from "@angular/core";
 
 import { ModalService } from "@bitwarden/angular/services/modal.service";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { TextFieldModule } from "@angular/cdk/text-field";
 import {
   AbstractControl,

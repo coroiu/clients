@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { LiveAnnouncer } from "@angular/cdk/a11y";
 import { DialogRef } from "@angular/cdk/dialog";
 import { CdkDragDrop, DragDropModule, moveItemInArray } from "@angular/cdk/drag-drop";

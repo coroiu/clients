@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, EventEmitter, Output } from "@angular/core";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 

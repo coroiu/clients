@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, HostBinding, HostListener, Input, OnChanges, Optional } from "@angular/core";
 
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";

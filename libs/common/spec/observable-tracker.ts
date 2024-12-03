@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, Observable, Subject, Subscription, throwError, timeout } from "rxjs";
 
 /** Test class to enable async awaiting of observable emissions */

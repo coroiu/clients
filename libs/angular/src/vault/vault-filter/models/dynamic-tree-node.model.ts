@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ITreeNodeObject, TreeNode } from "@bitwarden/common/vault/models/domain/tree-node";
 
 export class DynamicTreeNode<T extends ITreeNodeObject> {

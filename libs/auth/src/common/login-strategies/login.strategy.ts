@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BehaviorSubject, filter, firstValueFrom, timeout } from "rxjs";
 
 import { ApiService } from "@bitwarden/common/abstractions/api.service";

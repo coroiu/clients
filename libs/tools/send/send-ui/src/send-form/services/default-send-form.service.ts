@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { inject, Injectable } from "@angular/core";
 
 import { Send } from "@bitwarden/common/tools/send/models/domain/send";

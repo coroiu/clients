@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EncArrayBuffer } from "../../../platform/models/domain/enc-array-buffer";
 import { EncString } from "../../../platform/models/domain/enc-string";
 import { SymmetricCryptoKey } from "../../../platform/models/domain/symmetric-crypto-key";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { IdpProvider, LastpassLoginType } from "../enums";
 
 export class UserTypeContext {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map, timeout } from "rxjs";
 
 import { MessagingService } from "@bitwarden/common/platform/abstractions/messaging.service";

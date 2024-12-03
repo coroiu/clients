@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FocusKeyManager } from "@angular/cdk/a11y";
 import {
   Component,

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export abstract class IFrameComponent {
   iframe: HTMLIFrameElement;
   private connectorLink: HTMLAnchorElement;

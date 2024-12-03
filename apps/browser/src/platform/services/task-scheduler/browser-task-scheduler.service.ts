@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map, Observable, Subscription } from "rxjs";
 
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";

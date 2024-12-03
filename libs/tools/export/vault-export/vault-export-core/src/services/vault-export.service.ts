@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 
 import { ExportHelper } from "./export-helper";

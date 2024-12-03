@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, ViewChild } from "@angular/core";
 
 import { MenuComponent } from "@bitwarden/components";

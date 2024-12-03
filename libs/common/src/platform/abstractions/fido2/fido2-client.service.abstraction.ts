@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export const UserRequestedFallbackAbortReason = "UserRequestedFallback";
 
 export type UserVerification = "discouraged" | "preferred" | "required";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { View } from "../../../models/view/view";
 import {
   MemberDecryptionType,

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BehaviorSubject } from "rxjs";
 
 import { I18nService } from "../../../platform/abstractions/i18n.service";

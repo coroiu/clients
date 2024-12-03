@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnInit, SecurityContext } from "@angular/core";
 import { DomSanitizer } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";

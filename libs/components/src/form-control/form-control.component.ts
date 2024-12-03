@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { coerceBooleanProperty } from "@angular/cdk/coercion";
 import { Component, ContentChild, HostBinding, Input } from "@angular/core";
 

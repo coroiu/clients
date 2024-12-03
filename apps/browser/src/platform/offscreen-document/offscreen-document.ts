@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ConsoleLogService } from "@bitwarden/common/platform/services/console-log.service";
 
 import { BrowserApi } from "../browser/browser-api";

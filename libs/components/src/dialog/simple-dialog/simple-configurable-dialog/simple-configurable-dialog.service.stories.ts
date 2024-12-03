@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component } from "@angular/core";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { Meta, StoryObj, applicationConfig, moduleMetadata } from "@storybook/angular";

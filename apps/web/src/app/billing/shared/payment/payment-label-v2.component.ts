@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { booleanAttribute, Component, Input, OnInit } from "@angular/core";
 
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";

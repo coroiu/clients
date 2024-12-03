@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AfterContentInit, Directive, HostListener, Input } from "@angular/core";
 
 import { SsoComponent } from "@bitwarden/angular/auth/components/sso.component";

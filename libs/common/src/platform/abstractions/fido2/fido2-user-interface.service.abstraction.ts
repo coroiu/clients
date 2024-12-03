@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 /**
  * Parameters used to ask the user to confirm the creation of a new credential.
  */

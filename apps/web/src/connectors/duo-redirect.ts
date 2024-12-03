@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { getQsParam } from "./common";
 import { TranslationService } from "./translation.service";
 

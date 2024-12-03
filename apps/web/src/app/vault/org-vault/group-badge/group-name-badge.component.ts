@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Input, OnChanges } from "@angular/core";
 
 import { SelectionReadOnlyRequest } from "@bitwarden/common/admin-console/models/request/selection-read-only.request";

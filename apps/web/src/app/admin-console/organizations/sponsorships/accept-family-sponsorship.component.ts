@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, inject } from "@angular/core";
 import { Params } from "@angular/router";
 import { firstValueFrom } from "rxjs";

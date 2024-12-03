@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BillingHistoryResponse } from "@bitwarden/common/billing/models/response/billing-history.response";
 
 import { OrganizationApiKeyRequest } from "../../../admin-console/models/request/organization-api-key.request";

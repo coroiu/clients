@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subject, Subscription, firstValueFrom } from "rxjs";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Input } from "@angular/core";
 
 import { svgIcon } from "@bitwarden/components";

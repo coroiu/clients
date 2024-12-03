@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class SecretsManagerExport {
   projects: SecretsManagerExportProject[];
   secrets: SecretsManagerExportSecret[];

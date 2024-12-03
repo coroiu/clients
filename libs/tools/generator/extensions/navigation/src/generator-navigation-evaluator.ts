@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PasswordAlgorithms, PolicyEvaluator } from "@bitwarden/generator-core";
 
 import { DefaultGeneratorNavigation } from "./default-generator-navigation";

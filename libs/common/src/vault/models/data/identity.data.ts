@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { IdentityApi } from "../api/identity.api";
 
 export class IdentityData {

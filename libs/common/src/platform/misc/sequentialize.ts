@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 const caches = new Map<any, Map<string, Promise<any>>>();
 
 const getCache = (obj: any) => {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FocusableOption } from "@angular/cdk/a11y";
 import { AfterViewInit, Component, HostListener, Input, OnDestroy, ViewChild } from "@angular/core";
 import { IsActiveMatchOptions, RouterLinkActive } from "@angular/router";

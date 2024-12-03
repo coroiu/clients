@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, firstValueFrom, map, combineLatest } from "rxjs";
 
 import { EncryptedString, EncString } from "../../../common/src/platform/models/domain/enc-string";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, ElementRef, HostBinding, Input } from "@angular/core";
 
 import { ButtonLikeAbstraction, ButtonType } from "../shared/button-like.abstraction";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FieldType, SecureNoteType, CipherType } from "@bitwarden/common/vault/enums";
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
 import { FieldView } from "@bitwarden/common/vault/models/view/field.view";

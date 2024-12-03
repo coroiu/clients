@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, combineLatest, concatMap, filter, map, of, concat, merge } from "rxjs";
 
 import {

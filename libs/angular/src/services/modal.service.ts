@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ComponentRef, Injectable, Injector, Type, ViewContainerRef } from "@angular/core";
 import { first } from "rxjs/operators";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { filter, mergeMap } from "rxjs";
 
 import {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Pipe } from "@angular/core";
 
 import { ColorPasswordPipe } from "./color-password.pipe";

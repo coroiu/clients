@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FormsModule, ReactiveFormsModule, FormBuilder } from "@angular/forms";
 import { StoryObj, Meta, moduleMetadata } from "@storybook/angular";
 

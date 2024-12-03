@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AutofillInit } from "../../content/abstractions/autofill-init";
 import AutofillPageDetails from "../../models/autofill-page-details";
 import { CollectAutofillContentService } from "../../services/collect-autofill-content.service";

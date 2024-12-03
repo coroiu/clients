@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class ProjectListView {
   id: string;
   organizationId: string;

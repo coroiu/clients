@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { firstValueFrom, Observable } from "rxjs";
 

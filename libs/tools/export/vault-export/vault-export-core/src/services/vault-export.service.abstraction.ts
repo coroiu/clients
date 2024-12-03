@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export const EXPORT_FORMATS = ["csv", "json", "encrypted_json"] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 

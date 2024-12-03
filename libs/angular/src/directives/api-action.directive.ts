@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, ElementRef, Input, OnChanges } from "@angular/core";
 
 import { ErrorResponse } from "@bitwarden/common/models/response/error.response";

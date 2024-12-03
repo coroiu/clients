@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { VaultTimeoutAction } from "../../enums/vault-timeout-action.enum";

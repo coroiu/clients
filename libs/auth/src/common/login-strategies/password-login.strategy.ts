@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BehaviorSubject, firstValueFrom, map, Observable } from "rxjs";
 import { Jsonify } from "type-fest";
 

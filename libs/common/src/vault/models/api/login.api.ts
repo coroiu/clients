@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { JsonObject } from "type-fest";
 
 import { BaseResponse } from "../../../models/response/base.response";

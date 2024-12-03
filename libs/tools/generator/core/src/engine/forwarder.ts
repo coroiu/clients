@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import {
   ApiSettings,

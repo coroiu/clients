@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EVENTS, TYPE_CHECK } from "@bitwarden/common/autofill/constants";
 
 import AutofillScript, { AutofillInsertActions, FillScript } from "../models/autofill-script";

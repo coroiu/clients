@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 class BaseAccessPolicyView {
   read: boolean;
   write: boolean;

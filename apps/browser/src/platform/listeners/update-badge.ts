@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom } from "rxjs";
 
 import { AuthService } from "@bitwarden/common/auth/abstractions/auth.service";

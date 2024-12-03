@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SelectionModel } from "@angular/cdk/collections";
 import { Component, EventEmitter, Input, OnDestroy, Output } from "@angular/core";
 import { Subject, takeUntil } from "rxjs";

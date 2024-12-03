@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { combineLatest, firstValueFrom, map, Observable, of, switchMap } from "rxjs";
 import { Jsonify } from "type-fest";
 

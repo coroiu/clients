@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { firstValueFrom, of } from "rxjs";

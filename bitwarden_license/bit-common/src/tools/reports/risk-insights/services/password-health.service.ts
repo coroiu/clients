@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Inject, Injectable } from "@angular/core";
 
 import { AuditService } from "@bitwarden/common/abstractions/audit.service";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { InjectionToken } from "@angular/core";
 import { Observable, Subject } from "rxjs";
 

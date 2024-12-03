@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Folder } from "../domain/folder";
 
 export class FolderRequest {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { View } from "../../../../models/view/view";
 import { Utils } from "../../../../platform/misc/utils";
 import { SymmetricCryptoKey } from "../../../../platform/models/domain/symmetric-crypto-key";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export abstract class BaseResponse {
   private response: any;
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { APP_INITIALIZER, NgModule, NgZone } from "@angular/core";
 import { Router } from "@angular/router";
 import { Subject, merge, of } from "rxjs";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from "@angular/core";
 import { ActivatedRoute } from "@angular/router";
 import { BehaviorSubject, combineLatest, firstValueFrom, Subject } from "rxjs";

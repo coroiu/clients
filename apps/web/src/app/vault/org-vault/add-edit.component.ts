@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DatePipe } from "@angular/common";
 import { Component } from "@angular/core";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { TaskSchedulerService, ScheduledTaskName } from "@bitwarden/common/platform/scheduling";

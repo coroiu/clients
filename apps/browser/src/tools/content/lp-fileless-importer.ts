@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { FilelessImportPort } from "../enums/fileless-import.enums";
 
 import {

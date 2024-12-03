@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EncString } from "../../platform/models/domain/enc-string";
 import { Card as CardDomain } from "../../vault/models/domain/card";
 import { CardView } from "../../vault/models/view/card.view";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, ContentChild, HostBinding, Input, Optional, Self } from "@angular/core";
 import { ControlValueAccessor, NgControl, Validators } from "@angular/forms";
 

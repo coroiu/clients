@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DialogRef } from "@angular/cdk/dialog";
 import { Injectable } from "@angular/core";
 import { firstValueFrom } from "rxjs";

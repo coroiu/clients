@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DialogConfig, DialogRef, DIALOG_DATA } from "@angular/cdk/dialog";
 import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { firstValueFrom, map } from "rxjs";

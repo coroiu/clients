@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ListResponse } from "../../../models/response/list.response";
 import { PolicyType } from "../../enums";
 import { MasterPasswordPolicyOptions } from "../../models/domain/master-password-policy-options";

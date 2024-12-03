@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import { firstValueFrom, map, Observable, of, Subject, switchMap, takeUntil } from "rxjs";

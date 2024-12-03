@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable } from "rxjs";
 
 import { OrganizationDomainResponse } from "./responses/organization-domain.response";

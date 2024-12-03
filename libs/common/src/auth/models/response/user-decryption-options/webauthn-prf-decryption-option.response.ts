@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BaseResponse } from "../../../../models/response/base.response";
 import { EncString } from "../../../../platform/models/domain/enc-string";
 

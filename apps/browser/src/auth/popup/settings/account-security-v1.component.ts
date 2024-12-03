@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder } from "@angular/forms";
 import {

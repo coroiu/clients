@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class Fido2Utils {
   static bufferToString(bufferSource: BufferSource): string {
     return Fido2Utils.fromBufferToB64(Fido2Utils.bufferSourceToUint8Array(bufferSource))

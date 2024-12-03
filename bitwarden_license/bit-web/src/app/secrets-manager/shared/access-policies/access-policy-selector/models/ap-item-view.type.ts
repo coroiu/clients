@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { SelectItemView } from "@bitwarden/components";
 

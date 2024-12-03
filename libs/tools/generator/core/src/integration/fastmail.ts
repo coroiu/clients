@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import {
   GENERATOR_DISK,
   GENERATOR_MEMORY,

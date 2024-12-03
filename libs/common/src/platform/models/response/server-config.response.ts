@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { AllowedFeatureFlagTypes } from "../../../enums/feature-flag.enum";
 import { BaseResponse } from "../../../models/response/base.response";
 import { Region } from "../../abstractions/environment.service";

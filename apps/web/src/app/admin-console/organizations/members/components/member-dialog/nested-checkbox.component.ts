@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { KeyValue } from "@angular/common";
 import { Component, Input, OnInit, OnDestroy } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";

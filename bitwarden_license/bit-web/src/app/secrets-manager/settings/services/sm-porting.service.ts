@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { formatDate } from "@angular/common";
 import { Injectable } from "@angular/core";
 import { firstValueFrom } from "rxjs";

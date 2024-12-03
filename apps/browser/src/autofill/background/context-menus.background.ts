@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { BrowserApi } from "../../platform/browser/browser-api";
 import { ContextMenuClickedHandler } from "../browser/context-menu-clicked-handler";
 

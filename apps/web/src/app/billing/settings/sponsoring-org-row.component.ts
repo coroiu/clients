@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { formatDate } from "@angular/common";
 import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core";
 import { firstValueFrom, map, Observable } from "rxjs";

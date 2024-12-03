@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { SshKeyApi } from "../api/ssh-key.api";
 
 export class SshKeyData {

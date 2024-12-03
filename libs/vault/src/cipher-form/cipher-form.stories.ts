@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { importProvidersFrom } from "@angular/core";
 import { action } from "@storybook/addon-actions";
 import {

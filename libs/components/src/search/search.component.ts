@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, ElementRef, Input, ViewChild } from "@angular/core";
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
 

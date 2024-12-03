@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export abstract class SsoLoginServiceAbstraction {
   /**
    * Gets the code verifier used for SSO.

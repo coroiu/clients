@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, EventEmitter, Input, Output } from "@angular/core";
 
 import { CipherType } from "@bitwarden/common/vault/enums";

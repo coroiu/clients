@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Meta, StoryObj } from "@storybook/angular";
 
 import { AccessSelectorComponent, PermissionMode } from "./access-selector.component";

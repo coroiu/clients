@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { EFFLongWordList } from "@bitwarden/common/platform/misc/wordlist";
 import { GenerationRequest } from "@bitwarden/common/tools/types";
 

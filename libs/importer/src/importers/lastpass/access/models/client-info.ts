@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Platform } from "../enums";
 
 export class ClientInfo {

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { KeyDefinitionLike, MigrationHelper, StateDefinitionLike } from "../migration-helper";
 import { Migrator } from "../migrator";
 

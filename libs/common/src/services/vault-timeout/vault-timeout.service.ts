@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { combineLatest, concatMap, filter, firstValueFrom, map, timeout } from "rxjs";
 
 import { CollectionService } from "@bitwarden/admin-console/common";

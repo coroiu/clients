@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DialogRef } from "@angular/cdk/dialog";
 import { Component, OnDestroy, OnInit, Type, ViewChild, ViewContainerRef } from "@angular/core";
 import {

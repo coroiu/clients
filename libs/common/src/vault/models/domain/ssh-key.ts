@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Jsonify } from "type-fest";
 
 import { EncString } from "@bitwarden/common/platform/models/domain/enc-string";

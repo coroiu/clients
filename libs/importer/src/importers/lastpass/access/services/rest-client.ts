@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class RestClient {
   baseUrl: string;
   isBrowser = true;

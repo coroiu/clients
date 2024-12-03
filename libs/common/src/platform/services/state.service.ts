@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { firstValueFrom, map } from "rxjs";
 import { Jsonify, JsonValue } from "type-fest";
 

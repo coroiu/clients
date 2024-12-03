@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, Input, OnInit, TemplateRef, ViewContainerRef } from "@angular/core";
 
 import { AllowedFeatureFlagTypes, FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";

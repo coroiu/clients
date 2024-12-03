@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { map, Observable } from "rxjs";
 
 import { PolicyService } from "../../admin-console/abstractions/policy/policy.service.abstraction";

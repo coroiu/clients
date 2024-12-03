@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import AutofillField from "./autofill-field";
 import AutofillForm from "./autofill-form";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from "@angular/core";
 import { firstValueFrom, Subject } from "rxjs";
 

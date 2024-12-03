@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, combineLatest, firstValueFrom, map } from "rxjs";
 import { Opaque } from "type-fest";
 

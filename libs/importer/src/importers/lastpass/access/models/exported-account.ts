@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Account } from "./account";
 
 export class ExportedAccount {

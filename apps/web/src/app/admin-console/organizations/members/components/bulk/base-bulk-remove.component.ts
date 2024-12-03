@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive } from "@angular/core";
 
 import { OrganizationUserBulkResponse } from "@bitwarden/admin-console/common";

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { PlanType } from "../../../billing/enums";
 import { PlanResponse } from "../../../billing/models/response/plan.response";
 import { BaseResponse } from "../../../models/response/base.response";

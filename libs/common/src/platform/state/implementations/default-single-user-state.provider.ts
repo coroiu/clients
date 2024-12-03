@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UserId } from "../../../types/guid";
 import { LogService } from "../../abstractions/log.service";
 import { StorageServiceProvider } from "../../services/storage-service.provider";

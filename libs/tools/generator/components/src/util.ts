@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ValidatorFn, Validators } from "@angular/forms";
 import { distinctUntilChanged, map, pairwise, pipe, skipWhile, startWith, takeWhile } from "rxjs";
 

@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { coerceBooleanProperty } from "@angular/cdk/coercion";
 import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from "@angular/core";
 import {

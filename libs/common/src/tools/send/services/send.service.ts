@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Observable, concatMap, distinctUntilChanged, firstValueFrom, map } from "rxjs";
 
 import { PBKDF2KdfConfig, KeyService } from "@bitwarden/key-management";

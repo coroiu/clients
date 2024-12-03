@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { mock } from "jest-mock-extended";
 import { ReplaySubject, Observable } from "rxjs";
 

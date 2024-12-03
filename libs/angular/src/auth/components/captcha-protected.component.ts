@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { Directive, Input } from "@angular/core";
 import { firstValueFrom } from "rxjs";
 

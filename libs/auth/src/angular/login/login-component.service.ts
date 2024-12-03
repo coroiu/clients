@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { MasterPasswordPolicyOptions } from "@bitwarden/common/admin-console/models/domain/master-password-policy-options";
 import { Policy } from "@bitwarden/common/admin-console/models/domain/policy";
 

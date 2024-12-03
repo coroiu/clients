@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { parse } from "tldts";
 
 export function isValidRpId(rpId: string, origin: string) {

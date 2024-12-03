@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { UserId } from "@bitwarden/common/types/guid";
 import { MasterKey } from "@bitwarden/common/types/key";
 import { PBKDF2KdfConfig } from "@bitwarden/key-management";

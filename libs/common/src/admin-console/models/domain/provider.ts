@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { ProviderStatusType, ProviderUserStatusType, ProviderUserType } from "../../enums";
 import { ProviderData } from "../data/provider.data";
 

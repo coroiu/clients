@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export class SharedFolder {
   id: string;
   name: string;

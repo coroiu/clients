@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { DIALOG_DATA, DialogConfig, DialogRef } from "@angular/cdk/dialog";
 import { forwardRef, Component, Inject, ViewChild } from "@angular/core";
 
