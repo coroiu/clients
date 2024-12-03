@@ -27,6 +27,11 @@
       "@bitwarden/vault": ["../../libs/vault/src"],
       "@bitwarden/web-vault/*": ["../../apps/web/src/*"],
       "@bitwarden/bit-common/*": ["../bit-common/src/*"]
-    }
+    },
+    "plugins": [
+      {
+        "name": "typescript-strict-plugin"
+      }
+    ]
   }
 }
