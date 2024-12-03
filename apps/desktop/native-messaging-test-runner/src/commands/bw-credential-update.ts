@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import "module-alias/register";
 
 import yargs from "yargs";

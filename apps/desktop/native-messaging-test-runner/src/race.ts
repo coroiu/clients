@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 export const race = <T>({
   promise,
   timeout,

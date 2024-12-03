@@ -1,3 +1,4 @@
+// @ts-strict-ignore
 import { homedir } from "os";
 
 import * as NodeIPC from "node-ipc";
