@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { MasterPasswordPolicyOptions } from "@bitwarden/common/admin-console/models/domain/master-password-policy-options";
 import { AccountApiService } from "@bitwarden/common/auth/abstractions/account-api.service";

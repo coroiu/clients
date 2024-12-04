@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { IntegrationContext } from "@bitwarden/common/tools/integration";
 import { JsonRpc, IntegrationRequest, ApiSettings } from "@bitwarden/common/tools/integration/rpc";

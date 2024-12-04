@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { View } from "../../../../models/view/view";
 import { SendType } from "../../enums/send-type";

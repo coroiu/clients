@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { FocusableOption } from "@angular/cdk/a11y";
 import { AfterViewInit, Component, HostListener, Input, OnDestroy, ViewChild } from "@angular/core";

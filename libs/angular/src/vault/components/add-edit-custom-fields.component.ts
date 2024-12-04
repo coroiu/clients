@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { CdkDragDrop, moveItemInArray } from "@angular/cdk/drag-drop";
 import { Directive, Input, OnChanges, SimpleChanges } from "@angular/core";

@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import Domain from "../../../../platform/models/domain/domain-base";
 import { EncString } from "../../../../platform/models/domain/enc-string";

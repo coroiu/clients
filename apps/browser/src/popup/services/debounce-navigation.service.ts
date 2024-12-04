@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { inject, Injectable, OnDestroy } from "@angular/core";
 import { CanActivateFn, NavigationEnd, NavigationStart, Router } from "@angular/router";

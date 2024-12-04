@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { StepperSelectionEvent } from "@angular/cdk/stepper";
 import { TitleCasePipe } from "@angular/common";

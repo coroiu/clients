@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { inject } from "@angular/core";
 import { combineLatest, defer, map, Observable } from "rxjs";

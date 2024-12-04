@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { startWith, Subject, Subscription, switchMap, timer } from "rxjs";
 import { pairwise } from "rxjs/operators";

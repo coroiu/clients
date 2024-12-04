@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { Utils } from "../../../platform/misc/utils";
 import { EncryptionType } from "../../enums";

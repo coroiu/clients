@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 /** Applies policy to a generation request */
 export abstract class PolicyEvaluator<Policy, PolicyTarget> {

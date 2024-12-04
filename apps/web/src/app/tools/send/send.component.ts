@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { Component, NgZone, ViewChild, OnInit, OnDestroy, ViewContainerRef } from "@angular/core";
 import { lastValueFrom } from "rxjs";

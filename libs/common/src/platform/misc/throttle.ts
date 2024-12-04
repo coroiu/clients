@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 /**
  * Use as a Decorator on async functions, it will limit how many times the function can be

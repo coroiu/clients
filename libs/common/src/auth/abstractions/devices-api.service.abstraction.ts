@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { ListResponse } from "../../models/response/list.response";
 import { DeviceResponse } from "../abstractions/devices/responses/device.response";

@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { DialogConfig, DialogRef } from "@angular/cdk/dialog";
 import { Component, OnInit } from "@angular/core";

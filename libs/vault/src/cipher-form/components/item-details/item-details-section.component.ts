@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { CommonModule, NgClass } from "@angular/common";
 import { Component, DestroyRef, Input, OnInit } from "@angular/core";

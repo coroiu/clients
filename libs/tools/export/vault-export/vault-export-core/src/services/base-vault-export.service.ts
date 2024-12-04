@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { PinServiceAbstraction } from "@bitwarden/auth/common";
 import { CryptoFunctionService } from "@bitwarden/common/platform/abstractions/crypto-function.service";

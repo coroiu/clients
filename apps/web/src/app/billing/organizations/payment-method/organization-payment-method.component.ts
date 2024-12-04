@@ -1,3 +1,4 @@
+// FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 import { Location } from "@angular/common";
 import { Component, OnDestroy, ViewChild } from "@angular/core";
