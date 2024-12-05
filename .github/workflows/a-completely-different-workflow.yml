@@ -12,7 +12,6 @@ on:
       - '*'
       - '!*.md'
       - '!*.txt'
-      - '.github/workflows/build-desktop.yml'
   push:
     branches:
       - 'main'
@@ -24,7 +23,6 @@ on:
       - '*'
       - '!*.md'
       - '!*.txt'
-      - '.github/workflows/build-desktop.yml'
   workflow_dispatch:
     inputs:
       sdk_branch:
