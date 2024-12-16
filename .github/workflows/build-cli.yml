@@ -1,7 +1,7 @@
 name: Build CLI
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize]
     branches-ignore:
       - 'l10n_master'
@@ -27,6 +27,8 @@ on:
       - '!*.txt'
       - '.github/workflows/build-cli.yml'
       - 'bitwarden_license/bit-cli/**'
+  workflow_call:
+    inputs: {}
   workflow_dispatch:
     inputs:
       sdk_branch:
@@ -39,8 +41,27 @@ defaults:
     working-directory: apps/cli
 
 jobs:
+  check-secrets:
+    name: Check Secrets
+    runs-on: ubuntu-22.04
+    outputs:
+      has_secrets: ${{ steps.check-secrets.outputs.has_secrets }}
+    steps:
+      - name: Check secrets
+        id: check-secrets
+        env:
+          AZURE_KV_CI_SERVICE_PRINCIPAL: ${{ secrets.AZURE_KV_CI_SERVICE_PRINCIPAL }}
+        run: |
+          has_secrets=${{ secrets.AZURE_KV_CI_SERVICE_PRINCIPAL != '' }}
+          echo "has_secrets=$has_secrets" >> $GITHUB_OUTPUT
+
+  # Enforce permissions _if_ the workflow has access to secrets to avoid
+  # bots having unsupervised access to secrets.
   check-run:
     name: Check PR run
+    needs:
+      - check-secrets
+    if: ${{ needs.check-secrets.outputs.has_secrets == 'true' }}
     uses: bitwarden/gh-actions/.github/workflows/check-run.yml@main
 
   setup:
@@ -87,6 +108,7 @@ jobs:
           ]
     runs-on: ${{ matrix.os.distro }}
     needs:
+      - check-secrets
       - setup
     env:
       _PACKAGE_VERSION: ${{ needs.setup.outputs.package_version }}
@@ -117,7 +139,7 @@ jobs:
         working-directory: ./
 
       - name: Download SDK Artifacts
-        if: ${{ inputs.sdk_branch != '' }}
+        if: ${{ inputs.sdk_branch != '' && needs.check-secrets.outputs.has_secrets == 'true' }}
         uses: bitwarden/gh-actions/download-artifacts@main
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -130,7 +152,7 @@ jobs:
           if_no_artifact_found: fail
 
       - name: Override SDK
-        if: ${{ inputs.sdk_branch != '' }}
+        if: ${{ inputs.sdk_branch != '' && needs.check-secrets.outputs.` == 'true' }}
         working-directory: ./
         run: |
           ls -l ../
@@ -187,6 +209,7 @@ jobs:
           ]
     runs-on: windows-2022
     needs:
+      - check-secrets
       - setup
     env:
       _PACKAGE_VERSION: ${{ needs.setup.outputs.package_version }}
@@ -272,7 +295,7 @@ jobs:
         working-directory: ./
 
       - name: Download SDK Artifacts
-        if: ${{ inputs.sdk_branch != '' }}
+        if: ${{ inputs.sdk_branch != '' && needs.check-secrets.outputs.has_secrets == 'true' }}
         uses: bitwarden/gh-actions/download-artifacts@main
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -285,7 +308,7 @@ jobs:
           if_no_artifact_found: fail
 
       - name: Override SDK
-        if: ${{ inputs.sdk_branch != '' }}
+        if: ${{ inputs.sdk_branch != '' && needs.check-secrets.outputs.has_secrets == 'true' }}
         working-directory: ./
         run: |
           ls -l ../

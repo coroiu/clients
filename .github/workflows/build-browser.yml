@@ -1,7 +1,7 @@
 name: Build Browser
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize]
     branches-ignore:
       - 'l10n_master'
@@ -38,8 +38,27 @@ defaults:
     shell: bash
 
 jobs:
+  check-secrets:
+    name: Check Secrets
+    runs-on: ubuntu-22.04
+    outputs:
+      has_secrets: ${{ steps.check-secrets.outputs.has_secrets }}
+    steps:
+      - name: Check secrets
+        id: check-secrets
+        env:
+          AZURE_KV_CI_SERVICE_PRINCIPAL: ${{ secrets.AZURE_KV_CI_SERVICE_PRINCIPAL }}
+        run: |
+          has_secrets=${{ secrets.AZURE_KV_CI_SERVICE_PRINCIPAL != '' }}
+          echo "has_secrets=$has_secrets" >> $GITHUB_OUTPUT
+
+  # Enforce permissions _if_ the workflow has access to secrets to avoid
+  # bots having unsupervised access to secrets.
   check-run:
     name: Check PR run
+    needs:
+      - check-secrets
+    if: ${{ needs.check-secrets.outputs.has_secrets == 'true' }}
     uses: bitwarden/gh-actions/.github/workflows/check-run.yml@main
 
   setup:
@@ -281,6 +300,7 @@ jobs:
     needs:
       - setup
       - locales-test
+    if: ${{ needs.setup.outputs.has_secrets == 'true' }}
     env:
       _BUILD_NUMBER: ${{ needs.setup.outputs.adj_build_number }}
       _NODE_VERSION: ${{ needs.setup.outputs.node_version }}
