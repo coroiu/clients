@@ -84,6 +84,7 @@
       "@bitwarden/web-vault/*": ["./apps/web/src/*"],
       "@bitwarden/pam": ["./libs/pam/src/index.ts"],
       "@bitwarden/storybook": ["./libs/storybook/src/index.ts"],
+      "@bitwarden/storybook/i18n": ["./libs/storybook/src/i18n/preloaded-english-i18n.module.ts"],
       "@bitwarden/managed-settings": ["./libs/managed-settings/src/index.ts"],
       "@bitwarden/tools-share": ["./libs/tools/share/src/index.ts"]
     },
