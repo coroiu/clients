@@ -2,9 +2,8 @@ import { inject } from "@angular/core";
 import { Router } from "@angular/router";
 import { firstValueFrom } from "rxjs";
 
-// eslint-disable-next-line no-restricted-imports
-import { UserDecryptionOptionsServiceAbstraction } from "@bitwarden/auth/common";
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
+import { UserDecryptionOptionsServiceAbstraction } from "@bitwarden/common/auth/auth-lib";
 import { getUserId } from "@bitwarden/common/auth/services/account.service";
 
 /**

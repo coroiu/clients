@@ -6,6 +6,7 @@ import { OrganizationUserStatusType } from "@bitwarden/common/admin-console/enum
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
 import { getUserId } from "@bitwarden/common/auth/services/account.service";
 import { ProductTierType } from "@bitwarden/common/billing/enums";
+// eslint-disable-next-line no-restricted-imports
 import { DialogService } from "@bitwarden/components";
 
 import { DeleteAccountDialogComponent } from "./delete-account-dialog/delete-account-dialog.component";

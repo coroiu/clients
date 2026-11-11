@@ -34,22 +34,28 @@ import {
 } from "@bitwarden/auth/angular";
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 // eslint-disable-next-line no-restricted-imports
+import { AccountDeletionDialogService } from "@bitwarden/auth/angular/account-deletion";
+// eslint-disable-next-line no-restricted-imports
+import {
+  ChangePasswordService,
+  DefaultChangePasswordService,
+} from "@bitwarden/auth/angular/password-management/change-password";
+// eslint-disable-next-line no-restricted-imports
+import { DefaultSetInitialPasswordService } from "@bitwarden/auth/angular/password-management/set-initial-password/default-set-initial-password.service.implementation";
+// eslint-disable-next-line no-restricted-imports
+import { SetInitialPasswordService } from "@bitwarden/auth/angular/password-management/set-initial-password/set-initial-password.service.abstraction";
+// eslint-disable-next-line no-restricted-imports
 import {
   AuthRequestService,
-  AuthRequestServiceAbstraction,
   DefaultLoginSuccessHandlerService,
-  InternalUserDecryptionOptionsServiceAbstraction,
   LoginEmailService,
   LoginEmailServiceAbstraction,
   LoginStrategyCacheService,
   DefaultLoginStrategyCacheService,
   LoginStrategyService,
-  LoginStrategyServiceAbstraction,
   LoginStrategySessionTimeoutService,
   DefaultLoginStrategySessionTimeoutService,
   LoginSuccessHandlerService,
-  UserDecryptionOptionsService,
-  UserDecryptionOptionsServiceAbstraction,
 } from "@bitwarden/auth/common";
 import {
   AutomaticUserConfirmationService,
@@ -116,6 +122,13 @@ import {
   AccountSwitcherService,
   DefaultAccountSwitcherService,
 } from "@bitwarden/common/auth/account-switcher";
+import {
+  AuthRequestServiceAbstraction,
+  InternalUserDecryptionOptionsServiceAbstraction,
+  LoginStrategyServiceAbstraction,
+  UserDecryptionOptionsService,
+  UserDecryptionOptionsServiceAbstraction,
+} from "@bitwarden/common/auth/auth-lib";
 import {
   DeepLinkRedirectService,
   NoopDeepLinkRedirectService,
@@ -461,15 +474,8 @@ import {
   VaultExportServiceAbstraction,
 } from "@bitwarden/vault-export-core";
 
-import { AccountDeletionDialogService } from "../../auth/account-deletion";
 import { DefaultDeviceManagementComponentService } from "../../auth/device-management/default-device-management-component.service";
 import { DeviceManagementComponentServiceAbstraction } from "../../auth/device-management/device-management-component.service.abstraction";
-import {
-  ChangePasswordService,
-  DefaultChangePasswordService,
-} from "../../auth/password-management/change-password";
-import { DefaultSetInitialPasswordService } from "../../auth/password-management/set-initial-password/default-set-initial-password.service.implementation";
-import { SetInitialPasswordService } from "../../auth/password-management/set-initial-password/set-initial-password.service.abstraction";
 import { DeviceTrustToastService as DeviceTrustToastServiceAbstraction } from "../../auth/services/device-trust-toast.service.abstraction";
 import { DeviceTrustToastService } from "../../auth/services/device-trust-toast.service.implementation";
 import { NoopPremiumInterestStateService } from "../../billing/services/premium-interest/noop-premium-interest-state.service";

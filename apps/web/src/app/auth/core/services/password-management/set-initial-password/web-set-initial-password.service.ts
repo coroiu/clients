@@ -1,11 +1,11 @@
 import { OrganizationUserApiService } from "@bitwarden/admin-console/common";
-import { DefaultSetInitialPasswordService } from "@bitwarden/angular/auth/password-management/set-initial-password/default-set-initial-password.service.implementation";
+import { DefaultSetInitialPasswordService } from "@bitwarden/auth/angular/password-management/set-initial-password/default-set-initial-password.service.implementation";
 import {
   InitializeJitPasswordCredentials,
   SetInitialPasswordCredentials,
   SetInitialPasswordService,
   SetInitialPasswordUserType,
-} from "@bitwarden/angular/auth/password-management/set-initial-password/set-initial-password.service.abstraction";
+} from "@bitwarden/auth/angular/password-management/set-initial-password/set-initial-password.service.abstraction";
 import { InternalUserDecryptionOptionsServiceAbstraction } from "@bitwarden/auth/common";
 import { ApiService } from "@bitwarden/common/abstractions/api.service";
 import { OrganizationApiServiceAbstraction } from "@bitwarden/common/admin-console/abstractions/organization/organization-api.service.abstraction";

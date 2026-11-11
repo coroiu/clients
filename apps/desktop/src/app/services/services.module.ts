@@ -6,7 +6,6 @@ import { Subject, merge } from "rxjs";
 
 import { CollectionService, OrganizationUserApiService } from "@bitwarden/admin-console/common";
 import { DeviceManagementComponentServiceAbstraction } from "@bitwarden/angular/auth/device-management/device-management-component.service.abstraction";
-import { SetInitialPasswordService } from "@bitwarden/angular/auth/password-management/set-initial-password/set-initial-password.service.abstraction";
 import { SafeProvider, safeProvider } from "@bitwarden/angular/platform/utils/safe-provider";
 import {
   SECURE_STORAGE,
@@ -30,6 +29,7 @@ import {
   DefaultSsoComponentService,
   TwoFactorAuthDuoComponentService,
 } from "@bitwarden/auth/angular";
+import { SetInitialPasswordService } from "@bitwarden/auth/angular/password-management/set-initial-password/set-initial-password.service.abstraction";
 import {
   InternalUserDecryptionOptionsServiceAbstraction,
   LoginEmailService,

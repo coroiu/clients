@@ -10,6 +10,7 @@ import { Organization } from "@bitwarden/common/admin-console/models/domain/orga
 import { ProductTierType } from "@bitwarden/common/billing/enums";
 import { FakeAccountService, mockAccountServiceWith } from "@bitwarden/common/spec";
 import { UserId } from "@bitwarden/common/types/guid";
+// eslint-disable-next-line no-restricted-imports
 import { DialogRef, DialogService } from "@bitwarden/components";
 
 import { AccountDeletionDialogService } from "./account-deletion-dialog.service";

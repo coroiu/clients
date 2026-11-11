@@ -1,9 +1,6 @@
 import { mock, MockProxy } from "jest-mock-extended";
 import { of } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { PasswordInputResult } from "@bitwarden/auth/angular";
 import { PolicyService } from "@bitwarden/common/admin-console/abstractions/policy/policy.service.abstraction";
 import { MasterPasswordPolicyOptions } from "@bitwarden/common/admin-console/models/domain/master-password-policy-options";
 import { Account } from "@bitwarden/common/auth/abstractions/account.service";
@@ -29,6 +26,8 @@ import { UserKey } from "@bitwarden/common/types/key";
 import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import { DEFAULT_KDF_CONFIG } from "@bitwarden/legacy-crypto";
+
+import { PasswordInputResult } from "../../input-password/password-input-result";
 
 import {
   ChangePasswordService,

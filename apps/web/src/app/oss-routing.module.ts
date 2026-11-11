@@ -14,8 +14,6 @@ import {
   activeAuthGuard,
 } from "@bitwarden/angular/auth/guards";
 import { LoginViaWebAuthnComponent } from "@bitwarden/angular/auth/login-via-webauthn/login-via-webauthn.component";
-import { ChangePasswordComponent } from "@bitwarden/angular/auth/password-management/change-password";
-import { SetInitialPasswordComponent } from "@bitwarden/angular/auth/password-management/set-initial-password/set-initial-password.component";
 import { canAccessFeature } from "@bitwarden/angular/platform/guard/feature-flag.guard";
 import {
   DevicesIcon,
@@ -50,6 +48,8 @@ import {
   TwoFactorAuthGuard,
   NewDeviceVerificationComponent,
 } from "@bitwarden/auth/angular";
+import { ChangePasswordComponent } from "@bitwarden/auth/angular/password-management/change-password";
+import { SetInitialPasswordComponent } from "@bitwarden/auth/angular/password-management/set-initial-password/set-initial-password.component";
 import { canAccessEmergencyAccess } from "@bitwarden/common/admin-console/abstractions/organization/organization.service.abstraction";
 import { PolicyType } from "@bitwarden/common/admin-console/enums";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";

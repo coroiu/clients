@@ -4,13 +4,6 @@ import { Router } from "@angular/router";
 import { firstValueFrom } from "rxjs";
 
 import { LockIcon } from "@bitwarden/assets/svg";
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import {
-  InputPasswordComponent,
-  InputPasswordFlow,
-  PasswordInputResult,
-} from "@bitwarden/auth/angular";
 import { MasterPasswordPolicyOptions } from "@bitwarden/common/admin-console/models/domain/master-password-policy-options";
 import { Account, AccountService } from "@bitwarden/common/auth/abstractions/account.service";
 import { LogoutService } from "@bitwarden/common/auth/logout";
@@ -20,6 +13,7 @@ import { InternalMasterPasswordServiceAbstraction } from "@bitwarden/common/key-
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { UserId } from "@bitwarden/common/types/guid";
+// eslint-disable-next-line no-restricted-imports
 import {
   AnonLayoutWrapperDataService,
   CalloutComponent,
@@ -28,6 +22,12 @@ import {
   ToastService,
 } from "@bitwarden/components";
 import { I18nPipe } from "@bitwarden/ui-common";
+
+import {
+  InputPasswordComponent,
+  InputPasswordFlow,
+} from "../../input-password/input-password.component";
+import { PasswordInputResult } from "../../input-password/password-input-result";
 
 import {
   ChangePasswordService,

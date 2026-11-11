@@ -5,3 +5,4 @@ export * from "./models/domain/login-credentials";
 export * from "./models/domain/user-decryption-options";
 export * from "./models/spec/fake-user-decryption-options";
 export * from "./services/user-decryption-options/user-decryption-options.service";
+export * from "./abstractions/login-success-handler.service";

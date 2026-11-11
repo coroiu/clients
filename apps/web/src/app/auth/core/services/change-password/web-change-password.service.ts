@@ -1,9 +1,9 @@
+import { PasswordInputResult } from "@bitwarden/auth/angular";
 import {
   ChangePasswordService,
   DefaultChangePasswordService,
   InvalidCurrentPasswordError,
-} from "@bitwarden/angular/auth/password-management/change-password";
-import { PasswordInputResult } from "@bitwarden/auth/angular";
+} from "@bitwarden/auth/angular/password-management/change-password";
 import { PolicyService } from "@bitwarden/common/admin-console/abstractions/policy/policy.service.abstraction";
 import { Account } from "@bitwarden/common/auth/abstractions/account.service";
 import { MasterPasswordApiService } from "@bitwarden/common/auth/abstractions/master-password-api.service.abstraction";

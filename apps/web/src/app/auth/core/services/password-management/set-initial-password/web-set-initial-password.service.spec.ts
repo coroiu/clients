@@ -7,7 +7,7 @@ import {
   SetInitialPasswordCredentials,
   SetInitialPasswordService,
   SetInitialPasswordUserType,
-} from "@bitwarden/angular/auth/password-management/set-initial-password/set-initial-password.service.abstraction";
+} from "@bitwarden/auth/angular/password-management/set-initial-password/set-initial-password.service.abstraction";
 import {
   FakeUserDecryptionOptions as UserDecryptionOptions,
   InternalUserDecryptionOptionsServiceAbstraction,

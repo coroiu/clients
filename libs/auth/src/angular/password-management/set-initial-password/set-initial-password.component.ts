@@ -4,13 +4,6 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { firstValueFrom } from "rxjs";
 
 import { DeactivatedOrg } from "@bitwarden/assets/svg";
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import {
-  InputPasswordComponent,
-  InputPasswordFlow,
-  PasswordInputResult,
-} from "@bitwarden/auth/angular";
 import { OrganizationApiServiceAbstraction } from "@bitwarden/common/admin-console/abstractions/organization/organization-api.service.abstraction";
 import { PolicyApiServiceAbstraction } from "@bitwarden/common/admin-console/abstractions/policy/policy-api.service.abstraction";
 import { PolicyService } from "@bitwarden/common/admin-console/abstractions/policy/policy.service.abstraction";
@@ -28,6 +21,7 @@ import { LogService } from "@bitwarden/common/platform/abstractions/log.service"
 import { ValidationService } from "@bitwarden/common/platform/abstractions/validation.service";
 import { SyncService } from "@bitwarden/common/platform/sync";
 import { OrganizationId, UserId } from "@bitwarden/common/types/guid";
+// eslint-disable-next-line no-restricted-imports
 import {
   AnonLayoutWrapperDataService,
   ButtonModule,
@@ -39,6 +33,12 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 import { I18nPipe } from "@bitwarden/ui-common";
+
+import {
+  InputPasswordComponent,
+  InputPasswordFlow,
+} from "../../input-password/input-password.component";
+import { PasswordInputResult } from "../../input-password/password-input-result";
 
 import {
   InitializeJitPasswordCredentials,

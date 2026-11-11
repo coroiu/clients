@@ -2,14 +2,14 @@ import { mock, MockProxy } from "jest-mock-extended";
 import { BehaviorSubject, of } from "rxjs";
 
 import { OrganizationUserApiService } from "@bitwarden/admin-console/common";
-import { DefaultSetInitialPasswordService } from "@bitwarden/angular/auth/password-management/set-initial-password/default-set-initial-password.service.implementation";
+import { DefaultSetInitialPasswordService } from "@bitwarden/auth/angular/password-management/set-initial-password/default-set-initial-password.service.implementation";
 import {
   InitializeJitPasswordCredentials,
   SetInitialPasswordCredentials,
   SetInitialPasswordService,
   SetInitialPasswordTdeUserWithPermissionCredentials,
   SetInitialPasswordUserType,
-} from "@bitwarden/angular/auth/password-management/set-initial-password/set-initial-password.service.abstraction";
+} from "@bitwarden/auth/angular/password-management/set-initial-password/set-initial-password.service.abstraction";
 import {
   FakeUserDecryptionOptions as UserDecryptionOptions,
   InternalUserDecryptionOptionsServiceAbstraction,
