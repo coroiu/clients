@@ -5,7 +5,14 @@
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": ["default", "!{projectRoot}/**/*.spec.ts", "!{projectRoot}/tsconfig.spec.json"],
-    "sharedGlobals": ["{workspaceRoot}/tsconfig.base.json", "{workspaceRoot}/package.json"]
+    "sharedGlobals": [
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/libs/shared/**/*",
+      "{workspaceRoot}/jest.preset.js",
+      "{workspaceRoot}/babel.config.json",
+      "{workspaceRoot}/tailwind.config.js"
+    ]
   },
   "plugins": [
     {
