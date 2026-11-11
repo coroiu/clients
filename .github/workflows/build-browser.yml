@@ -13,17 +13,20 @@ on:
     paths:
       - 'apps/browser/**'
       - 'libs/**'
+      - 'sdk/**'
       - '*'
       - '!*.md'
       - '!*.txt'
   push:
     branches:
       - 'main'
+      - 'monorepo/main'
       - 'rc'
       - 'hotfix-rc-browser'
     paths:
       - 'apps/browser/**'
       - 'libs/**'
+      - 'sdk/**'
       - '*'
       - '!*.md'
       - '!*.txt'

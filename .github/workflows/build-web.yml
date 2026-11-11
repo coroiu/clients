@@ -17,6 +17,7 @@ on:
       - 'bitwarden_license/bit-pam-components/**'
       - 'bitwarden_license/bit-web/**'
       - 'libs/**'
+      - 'sdk/**'
       - '*'
       - '!*.md'
       - '!*.txt'
@@ -24,6 +25,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'monorepo/main'
       - 'rc'
       - 'hotfix-rc-web'
     paths:
@@ -33,6 +35,7 @@ on:
       - 'bitwarden_license/bit-pam-components/**'
       - 'bitwarden_license/bit-web/**'
       - 'libs/**'
+      - 'sdk/**'
       - '*'
       - '!*.md'
       - '!*.txt'

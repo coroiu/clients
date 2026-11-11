@@ -15,6 +15,7 @@ on:
       - 'bitwarden_license/bit-common/**'
       - 'bitwarden_license/bit-desktop/**'
       - 'libs/**'
+      - 'sdk/**'
       - '*'
       - '!*.md'
       - '!*.txt'
@@ -22,6 +23,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'monorepo/main'
       - 'rc'
       - 'hotfix-rc-desktop'
     paths:
@@ -29,6 +31,7 @@ on:
       - 'bitwarden_license/bit-common/**'
       - 'bitwarden_license/bit-desktop/**'
       - 'libs/**'
+      - 'sdk/**'
       - '*'
       - '!*.md'
       - '!*.txt'

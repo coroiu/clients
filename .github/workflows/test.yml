@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - "main"
+      - "monorepo/main"
       - "rc"
       - "hotfix-rc-*"
   pull_request:
