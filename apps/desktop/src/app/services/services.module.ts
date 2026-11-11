@@ -23,7 +23,7 @@ import {
   INTRAPROCESS_MESSAGING_SUBJECT,
   CLIENT_TYPE,
 } from "@bitwarden/angular/services/injection-tokens";
-import { JslibServicesModule } from "@bitwarden/angular/services/jslib-services.module";
+import { JslibServicesModule } from "@bitwarden/angular/services/jslib/jslib-services.module";
 import {
   LoginComponentService,
   SsoComponentService,

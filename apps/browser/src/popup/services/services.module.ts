@@ -23,7 +23,7 @@ import {
   SYSTEM_THEME_OBSERVABLE,
   WINDOW,
 } from "@bitwarden/angular/services/injection-tokens";
-import { JslibServicesModule } from "@bitwarden/angular/services/jslib-services.module";
+import { JslibServicesModule } from "@bitwarden/angular/services/jslib/jslib-services.module";
 import {
   AUTOFILL_NUDGE_SERVICE,
   AUTO_CONFIRM_NUDGE_SERVICE,

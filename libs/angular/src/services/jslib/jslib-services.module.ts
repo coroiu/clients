@@ -461,33 +461,32 @@ import {
   VaultExportServiceAbstraction,
 } from "@bitwarden/vault-export-core";
 
-import { AccountDeletionDialogService } from "../auth/account-deletion";
-import { DefaultDeviceManagementComponentService } from "../auth/device-management/default-device-management-component.service";
-import { DeviceManagementComponentServiceAbstraction } from "../auth/device-management/device-management-component.service.abstraction";
+import { AccountDeletionDialogService } from "../../auth/account-deletion";
+import { DefaultDeviceManagementComponentService } from "../../auth/device-management/default-device-management-component.service";
+import { DeviceManagementComponentServiceAbstraction } from "../../auth/device-management/device-management-component.service.abstraction";
 import {
   ChangePasswordService,
   DefaultChangePasswordService,
-} from "../auth/password-management/change-password";
-import { DefaultSetInitialPasswordService } from "../auth/password-management/set-initial-password/default-set-initial-password.service.implementation";
-import { SetInitialPasswordService } from "../auth/password-management/set-initial-password/set-initial-password.service.abstraction";
-import { DeviceTrustToastService as DeviceTrustToastServiceAbstraction } from "../auth/services/device-trust-toast.service.abstraction";
-import { DeviceTrustToastService } from "../auth/services/device-trust-toast.service.implementation";
-import { NoopPremiumInterestStateService } from "../billing/services/premium-interest/noop-premium-interest-state.service";
-import { PremiumInterestStateService } from "../billing/services/premium-interest/premium-interest-state.service.abstraction";
-import { DefaultEncryptedMigrationsSchedulerService } from "../key-management/encrypted-migration/encrypted-migrations-scheduler.service";
-import { EncryptedMigrationsSchedulerService } from "../key-management/encrypted-migration/encrypted-migrations-scheduler.service.abstraction";
-import { FormValidationErrorsService as FormValidationErrorsServiceAbstraction } from "../platform/abstractions/form-validation-errors.service";
-import { DocumentLangSetter } from "../platform/i18n";
-import { FormValidationErrorsService } from "../platform/services/form-validation-errors.service";
-import { LoggingErrorHandler } from "../platform/services/logging-error-handler";
-import { AngularThemingService } from "../platform/services/theming/angular-theming.service";
-import { AbstractThemingService } from "../platform/services/theming/theming.service.abstraction";
-import { safeProvider, SafeProvider } from "../platform/utils/safe-provider";
-import { ViewCacheService } from "../platform/view-cache";
+} from "../../auth/password-management/change-password";
+import { DefaultSetInitialPasswordService } from "../../auth/password-management/set-initial-password/default-set-initial-password.service.implementation";
+import { SetInitialPasswordService } from "../../auth/password-management/set-initial-password/set-initial-password.service.abstraction";
+import { DeviceTrustToastService as DeviceTrustToastServiceAbstraction } from "../../auth/services/device-trust-toast.service.abstraction";
+import { DeviceTrustToastService } from "../../auth/services/device-trust-toast.service.implementation";
+import { NoopPremiumInterestStateService } from "../../billing/services/premium-interest/noop-premium-interest-state.service";
+import { PremiumInterestStateService } from "../../billing/services/premium-interest/premium-interest-state.service.abstraction";
+import { DefaultEncryptedMigrationsSchedulerService } from "../../key-management/encrypted-migration/encrypted-migrations-scheduler.service";
+import { EncryptedMigrationsSchedulerService } from "../../key-management/encrypted-migration/encrypted-migrations-scheduler.service.abstraction";
+import { FormValidationErrorsService as FormValidationErrorsServiceAbstraction } from "../../platform/abstractions/form-validation-errors.service";
+import { DocumentLangSetter } from "../../platform/i18n";
+import { FormValidationErrorsService } from "../../platform/services/form-validation-errors.service";
+import { LoggingErrorHandler } from "../../platform/services/logging-error-handler";
+import { AngularThemingService } from "../../platform/services/theming/angular-theming.service";
+import { AbstractThemingService } from "../../platform/services/theming/theming.service.abstraction";
+import { safeProvider, SafeProvider } from "../../platform/utils/safe-provider";
+import { ViewCacheService } from "../../platform/view-cache";
 // eslint-disable-next-line no-restricted-imports -- Needed for DI
-import { NoopViewCacheService } from "../platform/view-cache/internal";
-import { PasswordRepromptService } from "../vault/password-reprompt/password-reprompt.service";
-
+import { NoopViewCacheService } from "../../platform/view-cache/internal";
+import { PasswordRepromptService } from "../../vault/password-reprompt/password-reprompt.service";
 import {
   CLIENT_TYPE,
   DEFAULT_VAULT_TIMEOUT,
@@ -506,8 +505,8 @@ import {
   SYSTEM_LANGUAGE,
   SYSTEM_THEME_OBSERVABLE,
   WINDOW,
-} from "./injection-tokens";
-import { ModalService } from "./modal.service";
+} from "../injection-tokens";
+import { ModalService } from "../modal.service";
 
 /**
  * Provider definitions used in the ngModule.

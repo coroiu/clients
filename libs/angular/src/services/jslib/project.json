@@ -1,0 +1,16 @@
+{
+  "name": "angular-jslib-services",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/angular/src/services/jslib",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/angular/src/services/jslib/**/*.ts"]
+      }
+    }
+  }
+}
