@@ -54,6 +54,54 @@ jobs:
       - name: Run typechecking
         run: npm run test:types
 
+  affected-tests:
+    name: Find affected test projects
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    outputs:
+      groups: ${{ steps.groups.outputs.groups }}
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Get Node Version
+        id: retrieve-node-version
+        run: |
+          NODE_NVMRC=$(cat .nvmrc)
+          NODE_VERSION=${NODE_NVMRC/v/''}
+          echo "node_version=$NODE_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+          node-version: ${{ steps.retrieve-node-version.outputs.node_version }}
+
+      - name: Install Node dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Set Nx base and head
+        if: github.event_name == 'pull_request'
+        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+
+      # Pull requests run only affected projects. Pushes and manual runs test everything.
+      - name: Compute test groups
+        id: groups
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            node scripts/nx-affected-test-groups.mjs >> "$GITHUB_OUTPUT"
+          else
+            node scripts/nx-affected-test-groups.mjs --all >> "$GITHUB_OUTPUT"
+          fi
+
   testing:
     name: Run tests - ${{ matrix.test-group.name }}
     runs-on: ubuntu-22.04
@@ -62,30 +110,15 @@ jobs:
       contents: read
       pull-requests: write
 
+    needs: affected-tests
+    if: needs.affected-tests.outputs.groups != '[]'
+
     strategy:
       fail-fast: false
       matrix:
-        test-group:
-          - name: Browser
-            paths: apps/browser bitwarden_license/bit-browser
-            artifact: jest-coverage-browser
-            junit: junit-browser.xml
-          - name: Web
-            paths: apps/web bitwarden_license/bit-web
-            artifact: jest-coverage-web
-            junit: junit-web.xml
-          - name: Desktop
-            paths: apps/desktop bitwarden_license/bit-desktop
-            artifact: jest-coverage-desktop
-            junit: junit-desktop.xml
-          - name: CLI
-            paths: apps/cli bitwarden_license/bit-cli
-            artifact: jest-coverage-cli
-            junit: junit-cli.xml
-          - name: Libs
-            paths: libs bitwarden_license/bit-common bitwarden_license/bit-pam bitwarden_license/bit-pam-components
-            artifact: jest-coverage-libs
-            junit: junit-libs.xml
+        # Same groups as before (Browser, Web, Desktop, CLI, Libs), but each group's paths are
+        # only the roots of affected Nx projects, and groups with nothing affected are left out.
+        test-group: ${{ fromJSON(needs.affected-tests.outputs.groups) }}
 
     steps:
       - name: Check out repo
@@ -270,6 +303,7 @@ jobs:
   upload-codecov:
     name: Upload to Codecov
     runs-on: ubuntu-22.04
+    if: ${{ !cancelled() && needs.rust-coverage.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.testing.result) }}
     needs:
       - testing
       - rust-coverage
@@ -279,35 +313,12 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Download Browser coverage
+      # Only the affected test groups upload coverage, so download whichever exist.
+      - name: Download jest coverage
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: jest-coverage-browser
-          path: ./jest-coverage-browser
-
-      - name: Download Web coverage
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: jest-coverage-web
-          path: ./jest-coverage-web
-
-      - name: Download Desktop coverage
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: jest-coverage-desktop
-          path: ./jest-coverage-desktop
-
-      - name: Download CLI coverage
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: jest-coverage-cli
-          path: ./jest-coverage-cli
-
-      - name: Download Libs coverage
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: jest-coverage-libs
-          path: ./jest-coverage-libs
+          pattern: jest-coverage-*
+          path: ./jest-coverage
 
       - name: Download rust coverage
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -318,13 +329,8 @@ jobs:
       - name: Upload coverage to codecov.io
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
-          files: |
-            ./jest-coverage-browser/lcov.info
-            ./jest-coverage-web/lcov.info
-            ./jest-coverage-desktop/lcov.info
-            ./jest-coverage-cli/lcov.info
-            ./jest-coverage-libs/lcov.info
-            ./apps/desktop/desktop_native/lcov.info
+          directory: ./jest-coverage
+          files: ./apps/desktop/desktop_native/lcov.info
 
   run-tests: # Verifies all required tests complete successfully
     name: Run tests
@@ -332,6 +338,7 @@ jobs:
     if: always()
     needs:
       - typecheck
+      - affected-tests
       - testing
       - rust
       - rust-coverage
@@ -348,7 +355,7 @@ jobs:
           echo "$NEEDS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
 
           # Collect failed jobs
-          failed_jobs=$(echo "$NEEDS" | jq -r 'to_entries[] | select(.value.result != "success") | .key' | tr '\n' ' ')
+          failed_jobs=$(echo "$NEEDS" | jq -r 'to_entries[] | select(.value.result != "success" and .value.result != "skipped") | .key' | tr '\n' ' ')
 
           if [ -n "$failed_jobs" ]; then
             echo "::error::The following jobs failed:$failed_jobs"

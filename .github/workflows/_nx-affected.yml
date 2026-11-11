@@ -1,0 +1,72 @@
+name: _nx-affected
+run-name: Nx affected check
+
+# Reusable: answers "is <project> affected by this change?" with nx affected.
+# Pull requests compare against the merge base with the target branch (nrwl/nx-set-shas).
+# Every other event (push, release, dispatch) reports affected=true, so release and main
+# builds always run.
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        description: "Nx project name to check, e.g. bit-web"
+        required: true
+        type: string
+    outputs:
+      affected:
+        description: "'true' if the project is affected"
+        value: ${{ jobs.check.outputs.affected }}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check ${{ inputs.project }} is affected
+    runs-on: ubuntu-24.04
+    outputs:
+      affected: ${{ steps.check.outputs.affected || 'true' }}
+    steps:
+      - name: Check out repo
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Get Node version
+        if: github.event_name == 'pull_request'
+        id: retrieve-node-version
+        run: |
+          NODE_NVMRC=$(cat .nvmrc)
+          NODE_VERSION=${NODE_NVMRC/v/''}
+          echo "node_version=$NODE_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node
+        if: github.event_name == 'pull_request'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+          node-version: ${{ steps.retrieve-node-version.outputs.node_version }}
+
+      # Nx plugins (@nx/jest, @nx/eslint, @nx/js) are needed to build the project graph.
+      - name: Install Node dependencies
+        if: github.event_name == 'pull_request'
+        run: npm ci --ignore-scripts
+
+      - name: Set Nx base and head
+        if: github.event_name == 'pull_request'
+        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+
+      - name: Check ${{ inputs.project }}
+        if: github.event_name == 'pull_request'
+        id: check
+        env:
+          PROJECT: ${{ inputs.project }}
+          NX_DAEMON: "false"
+          NX_NO_CLOUD: "true"
+        run: |
+          AFFECTED=$(npx nx show projects --affected --json | jq --arg p "$PROJECT" 'index($p) != null')
+          echo "affected=${AFFECTED}" | tee -a "$GITHUB_OUTPUT"

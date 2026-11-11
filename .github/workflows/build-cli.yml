@@ -11,9 +11,8 @@ on:
       - 'l10n_master'
       - 'cf-pages'
     paths:
+      - 'bitwarden_license/**'
       - 'apps/cli/**'
-      - 'bitwarden_license/bit-cli/**'
-      - 'bitwarden_license/bit-common/**'
       - 'libs/**'
       - '*'
       - '!*.md'
@@ -25,9 +24,8 @@ on:
       - 'rc'
       - 'hotfix-rc-cli'
     paths:
+      - 'bitwarden_license/**'
       - 'apps/cli/**'
-      - 'bitwarden_license/bit-cli/**'
-      - 'bitwarden_license/bit-common/**'
       - 'libs/**'
       - '*'
       - '!*.md'
@@ -50,8 +48,17 @@ permissions:
   contents: read
 
 jobs:
+  affected:
+    name: Check affected
+    # bit-X depends on X, so this is true when the OSS or the commercial app is affected.
+    uses: ./.github/workflows/_nx-affected.yml
+    with:
+      project: bit-cli
+
   setup:
     name: Setup
+    needs: affected
+    if: needs.affected.outputs.affected == 'true'
     runs-on: ubuntu-24.04
     outputs:
       package_version: ${{ steps.retrieve-package-version.outputs.package_version }}

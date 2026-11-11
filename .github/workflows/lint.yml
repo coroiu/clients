@@ -33,6 +33,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Lint filenames (no capital characters)
@@ -79,8 +80,37 @@ jobs:
       - name: Lint sdk-internal versions
         run: npm run lint:sdk-internal-versions
 
-      - name: Run linter
-        run: npm run lint
+      - name: Set Nx base and head
+        if: github.event_name == 'pull_request'
+        uses: nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1 # v5.0.1
+
+      # Pull requests lint affected Nx projects. Pushes and manual runs lint everything.
+      - name: Run ESLint on affected projects
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          NX_DAEMON: "false"
+          NX_NO_CLOUD: "true"
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            npx nx affected -t lint --parallel=3
+          else
+            npx nx run-many -t lint --parallel=3
+          fi
+
+      # Files outside every Nx project (scripts, root configs, .storybook) have no lint target.
+      - name: Run ESLint on files outside Nx projects
+        run: npx eslint --cache --cache-strategy content scripts .storybook "*.mjs" "*.js"
+
+      - name: Run Prettier on changed files
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git diff --name-only --diff-filter=ACMR -z "$NX_BASE" "$NX_HEAD" \
+              | xargs -0 --no-run-if-empty npx prettier --check --ignore-unknown
+          else
+            npx prettier --check .
+          fi
 
   rust:
     name: Rust ${{ matrix.check.name }} (${{ matrix.os }})

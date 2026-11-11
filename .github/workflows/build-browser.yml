@@ -11,6 +11,7 @@ on:
       - 'l10n_master'
       - 'cf-pages'
     paths:
+      - 'bitwarden_license/**'
       - 'apps/browser/**'
       - 'libs/**'
       - '*'
@@ -22,6 +23,7 @@ on:
       - 'rc'
       - 'hotfix-rc-browser'
     paths:
+      - 'bitwarden_license/**'
       - 'apps/browser/**'
       - 'libs/**'
       - '*'
@@ -45,8 +47,17 @@ permissions:
   contents: read
 
 jobs:
+  affected:
+    name: Check affected
+    # bit-X depends on X, so this is true when the OSS or the commercial app is affected.
+    uses: ./.github/workflows/_nx-affected.yml
+    with:
+      project: bit-browser
+
   setup:
     name: Setup
+    needs: affected
+    if: needs.affected.outputs.affected == 'true'
     runs-on: ubuntu-22.04
     outputs:
       repo_url: ${{ steps.gen_vars.outputs.repo_url }}

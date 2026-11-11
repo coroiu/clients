@@ -11,9 +11,8 @@ on:
       - 'l10n_master'
       - 'cf-pages'
     paths:
+      - 'bitwarden_license/**'
       - 'apps/desktop/**'
-      - 'bitwarden_license/bit-common/**'
-      - 'bitwarden_license/bit-desktop/**'
       - 'libs/**'
       - '*'
       - '!*.md'
@@ -25,9 +24,8 @@ on:
       - 'rc'
       - 'hotfix-rc-desktop'
     paths:
+      - 'bitwarden_license/**'
       - 'apps/desktop/**'
-      - 'bitwarden_license/bit-common/**'
-      - 'bitwarden_license/bit-desktop/**'
       - 'libs/**'
       - '*'
       - '!*.md'
@@ -77,8 +75,17 @@ jobs:
             exit 1
           fi
 
+  affected:
+    name: Check affected
+    # bit-X depends on X, so this is true when the OSS or the commercial app is affected.
+    uses: ./.github/workflows/_nx-affected.yml
+    with:
+      project: bit-desktop
+
   setup:
     name: Setup
+    needs: affected
+    if: needs.affected.outputs.affected == 'true'
     runs-on: ubuntu-22.04
     outputs:
       package_version: ${{ steps.retrieve-version.outputs.package_version }}

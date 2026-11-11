@@ -11,11 +11,8 @@ on:
       - 'l10n_master'
       - 'cf-pages'
     paths:
+      - 'bitwarden_license/**'
       - 'apps/web/**'
-      - 'bitwarden_license/bit-common/**'
-      - 'bitwarden_license/bit-pam/**'
-      - 'bitwarden_license/bit-pam-components/**'
-      - 'bitwarden_license/bit-web/**'
       - 'libs/**'
       - '*'
       - '!*.md'
@@ -27,11 +24,8 @@ on:
       - 'rc'
       - 'hotfix-rc-web'
     paths:
+      - 'bitwarden_license/**'
       - 'apps/web/**'
-      - 'bitwarden_license/bit-common/**'
-      - 'bitwarden_license/bit-pam/**'
-      - 'bitwarden_license/bit-pam-components/**'
-      - 'bitwarden_license/bit-web/**'
       - 'libs/**'
       - '*'
       - '!*.md'
@@ -60,9 +54,17 @@ permissions:
   contents: read
 
 jobs:
+  affected:
+    name: Check affected
+    # bit-X depends on X, so this is true when the OSS or the commercial app is affected.
+    uses: ./.github/workflows/_nx-affected.yml
+    with:
+      project: bit-web
+
   setup:
     name: Setup
-    if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'web-v')
+    needs: affected
+    if: needs.affected.outputs.affected == 'true' && (github.event_name != 'release' || startsWith(github.event.release.tag_name, 'web-v'))
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.version.outputs.value }}
