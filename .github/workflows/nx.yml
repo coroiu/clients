@@ -7,7 +7,14 @@ permissions:
   contents: read
 
 jobs:
+  sdk-wasm:
+    name: SDK WASM
+    uses: ./.github/workflows/_build-sdk-wasm.yml
+    permissions:
+      contents: read
+
   nx-experiment:
+    needs: sdk-wasm
     name: Run Nx Affected Tasks
     runs-on: ubuntu-22.04
     steps:
@@ -17,6 +24,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
+
       - name: Get Node Version
         id: retrieve-node-version
         working-directory: ./

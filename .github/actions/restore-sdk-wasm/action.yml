@@ -1,0 +1,36 @@
+name: "Restore SDK WASM packages"
+description: |
+  Restore both SDK WASM packages (open source and commercial) into the npm folders that the root
+  package.json depends on. The _build-sdk-wasm.yml job of the same workflow saves them, so they
+  must be present; run this before npm ci.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Compute key (open source)
+      id: oss
+      uses: ./.github/actions/sdk-wasm-key
+      with:
+        artifact: sdk-internal
+
+    - name: Restore sdk-internal
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.oss.outputs.path }}
+        key: ${{ steps.oss.outputs.key }}
+        restore-keys: ${{ steps.oss.outputs.restore_prefix }}
+        fail-on-cache-miss: true
+
+    - name: Compute key (commercial)
+      id: commercial
+      uses: ./.github/actions/sdk-wasm-key
+      with:
+        artifact: commercial-sdk-internal
+
+    - name: Restore commercial-sdk-internal
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.commercial.outputs.path }}
+        key: ${{ steps.commercial.outputs.key }}
+        restore-keys: ${{ steps.commercial.outputs.restore_prefix }}
+        fail-on-cache-miss: true

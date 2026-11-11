@@ -14,7 +14,14 @@ permissions: {}
 
 jobs:
 
+  sdk-wasm:
+    name: SDK WASM
+    uses: ./.github/workflows/_build-sdk-wasm.yml
+    permissions:
+      contents: read
+
   typecheck:
+    needs: sdk-wasm
     name: Run typechecking
     runs-on: ubuntu-22.04
     permissions:
@@ -25,6 +32,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Get Node Version
         id: retrieve-node-version
@@ -55,6 +65,7 @@ jobs:
         run: npm run test:types
 
   testing:
+    needs: sdk-wasm
     name: Run tests - ${{ matrix.test-group.name }}
     runs-on: ubuntu-22.04
     permissions:
@@ -92,6 +103,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Get Node Version
         id: retrieve-node-version

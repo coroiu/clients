@@ -45,6 +45,14 @@ permissions:
   contents: read
 
 jobs:
+  sdk-wasm:
+    name: SDK WASM
+    uses: ./.github/workflows/_build-sdk-wasm.yml
+    permissions:
+      contents: read
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+
   setup:
     name: Setup
     runs-on: ubuntu-22.04
@@ -228,6 +236,7 @@ jobs:
       - setup
       - locales-test
       - build-source
+      - sdk-wasm
     env:
       _BUILD_NUMBER: ${{ needs.setup.outputs.adj_build_number }}
       _NODE_VERSION: ${{ needs.setup.outputs.node_version }}
@@ -290,6 +299,9 @@ jobs:
           ref: ${{  github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -419,6 +431,7 @@ jobs:
     needs:
       - setup
       - locales-test
+      - sdk-wasm
     if: ${{ needs.setup.outputs.has_secrets == 'true' }}
     strategy:
       matrix:
@@ -445,6 +458,9 @@ jobs:
           ref: ${{  github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0

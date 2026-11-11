@@ -26,7 +26,14 @@ permissions:
   contents: read
 
 jobs:
+  sdk-wasm:
+    name: SDK WASM
+    uses: ./.github/workflows/_build-sdk-wasm.yml
+    permissions:
+      contents: read
+
   lint:
+    needs: sdk-wasm
     name: Lint TypeScript
     runs-on: ubuntu-22.04
     steps:
@@ -34,6 +41,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Lint filenames (no capital characters)
         run: |

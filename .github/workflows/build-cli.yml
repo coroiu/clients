@@ -50,6 +50,14 @@ permissions:
   contents: read
 
 jobs:
+  sdk-wasm:
+    name: SDK WASM
+    uses: ./.github/workflows/_build-sdk-wasm.yml
+    permissions:
+      contents: read
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+
   setup:
     name: Setup
     runs-on: ubuntu-24.04
@@ -102,7 +110,7 @@ jobs:
             { type: "commercial", build_prefix: "bit", artifact_prefix: "", readable: "commercial license" }
           ]
     runs-on: ${{ matrix.os.distro }}
-    needs: setup
+    needs: [setup, sdk-wasm]
     env:
       _PACKAGE_VERSION: ${{ needs.setup.outputs.package_version }}
       _NODE_VERSION: ${{ needs.setup.outputs.node_version }}
@@ -119,6 +127,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Setup Unix Vars
         run: |
@@ -331,7 +342,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    needs: setup
+    needs: [setup, sdk-wasm]
     env:
       _PACKAGE_VERSION: ${{ needs.setup.outputs.package_version }}
       _NODE_VERSION: ${{ needs.setup.outputs.node_version }}
@@ -344,6 +355,9 @@ jobs:
           ref: ${{  github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Install AST
         run: dotnet tool install --global AzureSignTool --version 4.0.1

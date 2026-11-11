@@ -60,6 +60,14 @@ permissions:
   contents: read
 
 jobs:
+  sdk-wasm:
+    name: SDK WASM
+    uses: ./.github/workflows/_build-sdk-wasm.yml
+    permissions:
+      contents: read
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+
   setup:
     name: Setup
     if: github.event_name != 'release' || startsWith(github.event.release.tag_name, 'web-v')
@@ -108,7 +116,7 @@ jobs:
     permissions:
       id-token: write
       packages: write
-    needs: setup
+    needs: [setup, sdk-wasm]
     strategy:
       fail-fast: false
       matrix:
@@ -185,6 +193,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Get Latest Server Version
         id: latest-server-version

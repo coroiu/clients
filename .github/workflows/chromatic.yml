@@ -20,6 +20,12 @@ permissions:
   contents: read
 
 jobs:
+  sdk-wasm:
+    name: SDK WASM
+    uses: ./.github/workflows/_build-sdk-wasm.yml
+    permissions:
+      contents: read
+
   check-event-source:
     name: Check event and source
     runs-on: ubuntu-24.04
@@ -35,7 +41,7 @@ jobs:
   chromatic:
     name: Chromatic
     runs-on: ubuntu-22.04
-    needs: check-event-source
+    needs: [check-event-source, sdk-wasm]
     permissions:
       contents: read
       pull-requests: write
@@ -49,6 +55,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Get changed files
         id: get-changed-files

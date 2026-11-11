@@ -1,0 +1,69 @@
+name: "SDK WASM cache key"
+description: "Cache key and path of the SDK WASM package that sdk/crates/bitwarden-wasm-internal/build.sh writes."
+
+inputs:
+  artifact:
+    description: "sdk-internal or commercial-sdk-internal."
+    required: true
+
+outputs:
+  key:
+    description: "Key the package is saved under by this run."
+    value: ${{ steps.key.outputs.key }}
+  restore_prefix:
+    description: |
+      Prefix that matches the package built from the same SDK inputs by any kind of run. Pull
+      requests build without the wasm2js fallback and other runs build with it, so a pull request
+      that does not change the SDK reuses the package built on the base branch.
+    value: ${{ steps.key.outputs.restore_prefix }}
+  path:
+    description: "Paths to cache. Restore and save must use the same value."
+    value: ${{ steps.key.outputs.path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Compute SDK WASM cache key
+      id: key
+      shell: bash
+      env:
+        _ARTIFACT: ${{ inputs.artifact }}
+        _EVENT_NAME: ${{ github.event_name }}
+      run: |
+        case "$_ARTIFACT" in
+          sdk-internal) npm_folder="sdk/crates/bitwarden-wasm-internal/npm" ;;
+          commercial-sdk-internal) npm_folder="sdk/crates/bitwarden-wasm-internal/bitwarden_license/npm" ;;
+          *) echo "::error::Unknown artifact '$_ARTIFACT'"; exit 1 ;;
+        esac
+
+        # The git tree hashes of everything the WASM build reads, so the key changes exactly when
+        # the checked out SDK sources, dependencies, toolchain or build recipe change.
+        inputs=(
+          sdk/Cargo.toml
+          sdk/Cargo.lock
+          sdk/rust-toolchain.toml
+          sdk/.cargo
+          sdk/crates
+          sdk/bitwarden_license
+          sdk/support
+          .github/workflows/_build-sdk-wasm.yml
+          .github/actions/sdk-wasm-key
+        )
+        hash=$(for p in "${inputs[@]}"; do echo "$p $(git rev-parse "HEAD:$p")"; done | git hash-object --stdin)
+
+        if [ "$_EVENT_NAME" = "pull_request" ]; then
+          variant="pr"
+        else
+          variant="full"
+        fi
+
+        delimiter="EOF_$(git hash-object --stdin <<< "$RANDOM$RANDOM$hash")"
+        {
+          echo "key=sdk-wasm-${_ARTIFACT}-${hash}-${variant}"
+          echo "restore_prefix=sdk-wasm-${_ARTIFACT}-${hash}-"
+          echo "path<<${delimiter}"
+          echo "${npm_folder}"
+          echo "!${npm_folder}/node_modules"
+          echo "${delimiter}"
+        } >> "$GITHUB_OUTPUT"
+        echo "SDK inputs hash for ${_ARTIFACT}: ${hash} (${variant})"

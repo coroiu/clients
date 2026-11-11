@@ -1,0 +1,147 @@
+name: Build SDK WASM packages
+
+# Builds @bitwarden/sdk-internal and @bitwarden/commercial-sdk-internal from sdk/ and saves them in
+# the Actions cache, keyed on the SDK inputs (see .github/actions/sdk-wasm-key). Jobs that need the
+# packages run after this workflow's job and restore them with .github/actions/restore-sdk-wasm.
+# When the cache already holds a package built from the same inputs, the build is skipped.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Commit to build. Must be the commit the calling jobs check out. Defaults to the event's commit."
+        type: string
+        default: ""
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: SDK WASM - ${{ matrix.license_type.readable }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        license_type:
+          - artifact_name: "sdk-internal"
+            build_flags: ""
+            readable: "open source license"
+          - artifact_name: "commercial-sdk-internal"
+            build_flags: "-b"
+            readable: "commercial license"
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Compute cache key
+        id: key
+        uses: ./.github/actions/sdk-wasm-key
+        with:
+          artifact: ${{ matrix.license_type.artifact_name }}
+
+      - name: Look up built package
+        id: lookup
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.key.outputs.path }}
+          key: ${{ steps.key.outputs.key }}
+          restore-keys: ${{ steps.key.outputs.restore_prefix }}
+          lookup-only: true
+
+      - name: Report cache result
+        env:
+          _MATCHED: ${{ steps.lookup.outputs.cache-matched-key }}
+        run: |
+          if [ -n "$_MATCHED" ]; then
+            echo "SDK WASM cache hit: $_MATCHED" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "SDK WASM cache miss: building ${{ steps.key.outputs.key }}" | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Set version
+        if: steps.lookup.outputs.cache-matched-key == ''
+        env:
+          _REF_NAME: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          _SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          SDK_VERSION="${_REF_NAME} (${_SHA:0:7})"
+          echo "SDK_VERSION='${SDK_VERSION}'" >> "$GITHUB_ENV"
+          echo "SDK_VERSION='${SDK_VERSION}'"
+
+      - name: Set up Node
+        if: steps.lookup.outputs.cache-matched-key == ''
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          registry-url: "https://npm.pkg.github.com"
+          cache: "npm"
+          cache-dependency-path: "sdk/crates/bitwarden-wasm-internal/**/package-lock.json"
+
+      - name: Install binaryen
+        if: steps.lookup.outputs.cache-matched-key == ''
+        run: npm i -g binaryen
+
+      - name: Set Rust toolchain
+        if: steps.lookup.outputs.cache-matched-key == ''
+        id: toolchain
+        run: |
+          RUST_TOOLCHAIN="$(grep -oP '^channel.*"(\K.*?)(?=")' sdk/rust-toolchain.toml)"
+          echo "RUST_TOOLCHAIN=${RUST_TOOLCHAIN}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Install Rust
+        if: steps.lookup.outputs.cache-matched-key == ''
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: "${{ steps.toolchain.outputs.RUST_TOOLCHAIN }}"
+          targets: wasm32-unknown-unknown
+          components: rust-src
+
+      - name: Cache cargo registry
+        if: steps.lookup.outputs.cache-matched-key == ''
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+        with:
+          key: wasm-cargo-cache
+          workspaces: "sdk -> target"
+          # The build output cache below restores target/, including the dependencies.
+          cache-targets: false
+
+      # The build output cache also holds the workspace crates, so a run only recompiles the crates
+      # that changed and the crates that depend on them. Each license has its own cache, because
+      # the features differ. The standard library is built from the rust-src sources (build-std),
+      # which a fresh toolchain install gives the current time.
+      - name: Cache build output
+        if: steps.lookup.outputs.cache-matched-key == ''
+        uses: bitwarden/gh-actions/cargo-build-cache@main
+        with:
+          key: wasm-${{ matrix.license_type.artifact_name }}
+          working_directory: sdk
+          reset_sysroot_mtimes: true
+
+      # Pull requests skip the slow wasm2js fallback: their packages are only used for checks, tests
+      # and pull request builds, which don't load it. Other runs build the fallback, which the
+      # shipped clients load where WebAssembly can't run.
+      - name: Build
+        if: steps.lookup.outputs.cache-matched-key == ''
+        working-directory: sdk/crates/bitwarden-wasm-internal
+        env:
+          SKIP_WASM2JS_FLAG: ${{ github.event_name == 'pull_request' && '-s' || '' }}
+          BUILD_FLAGS: ${{ matrix.license_type.build_flags }}
+        run: |
+          echo "CPUs: $(nproc)"
+          ./build.sh -r -p ${SKIP_WASM2JS_FLAG} ${BUILD_FLAGS}
+
+      - name: Save built package
+        if: steps.lookup.outputs.cache-matched-key == ''
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.key.outputs.path }}
+          key: ${{ steps.key.outputs.key }}

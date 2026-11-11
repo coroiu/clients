@@ -54,6 +54,14 @@ permissions:
   contents: read
 
 jobs:
+  sdk-wasm:
+    name: SDK WASM
+    uses: ./.github/workflows/_build-sdk-wasm.yml
+    permissions:
+      contents: read
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+
   electron-verify:
     name: Verify Electron Version
     runs-on: ubuntu-22.04
@@ -205,7 +213,7 @@ jobs:
     # We intentionally keep this runner on the oldest supported OS in GitHub Actions
     # for maximum compatibility across GLIBC versions
     runs-on: ubuntu-22.04
-    needs: setup
+    needs: [setup, sdk-wasm]
     env:
       _PACKAGE_VERSION: ${{ needs.setup.outputs.package_version }}
       _NODE_VERSION: ${{ needs.setup.outputs.node_version }}
@@ -221,6 +229,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Free disk space
         uses: bitwarden/gh-actions/free-disk-space@main
@@ -395,7 +406,7 @@ jobs:
     # We intentionally keep this runner on the oldest supported OS in GitHub Actions
     # for maximum compatibility across GLIBC versions
     runs-on: ubuntu-22.04-arm
-    needs: setup
+    needs: [setup, sdk-wasm]
     env:
       _PACKAGE_VERSION: ${{ needs.setup.outputs.package_version }}
       _NODE_VERSION: ${{ needs.setup.outputs.node_version }}
@@ -410,6 +421,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -570,6 +584,7 @@ jobs:
     runs-on: windows-2022
     needs:
       - setup
+      - sdk-wasm
     permissions:
       contents: read
       id-token: write
@@ -588,6 +603,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -995,7 +1013,7 @@ jobs:
             license_type: commercial
             artifact_prefix: "commercial-"
     runs-on: windows-2022
-    needs: setup
+    needs: [setup, sdk-wasm]
     permissions:
       contents: read
       id-token: write
@@ -1014,6 +1032,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -1367,6 +1388,7 @@ jobs:
     runs-on: macos-15
     needs:
       - setup
+      - sdk-wasm
     permissions:
       contents: read
       id-token: write
@@ -1384,6 +1406,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -1625,6 +1650,7 @@ jobs:
       - browser-build
       - macos-build
       - setup
+      - sdk-wasm
     permissions:
       contents: read
       id-token: write
@@ -1642,6 +1668,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -1925,6 +1954,7 @@ jobs:
     if: ${{ needs.setup.outputs.has_secrets == 'true' }}
     needs:
       - setup
+      - sdk-wasm
     permissions:
       contents: read
       id-token: write
@@ -1942,6 +1972,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -2186,6 +2219,7 @@ jobs:
       - browser-build
       - macos-build
       - setup
+      - sdk-wasm
     permissions:
       contents: read
       id-token: write
@@ -2203,6 +2237,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
