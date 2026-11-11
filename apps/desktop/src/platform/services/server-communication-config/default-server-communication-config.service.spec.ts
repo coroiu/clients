@@ -29,7 +29,7 @@ class MockRequest {
 }
 
 // Mock SdkLoadService
-jest.mock("@bitwarden/common/platform/abstractions/sdk/sdk-load.service", () => ({
+jest.mock("@bitwarden/legacy-crypto/sdk/sdk-load.service", () => ({
   SdkLoadService: {
     Ready: Promise.resolve(),
   },
