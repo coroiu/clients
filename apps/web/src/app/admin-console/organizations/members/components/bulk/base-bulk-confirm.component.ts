@@ -4,6 +4,7 @@ import {
   OrganizationUserBulkPublicKeyResponse,
   OrganizationUserBulkResponse,
 } from "@bitwarden/admin-console/common";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { ListResponse } from "@bitwarden/common/models/response/list.response";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
@@ -13,11 +14,7 @@ import {
 } from "@bitwarden/common/provider";
 import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
-import {
-  EncryptService,
-  LegacyCompatKeyService,
-  SymmetricCryptoKey,
-} from "@bitwarden/legacy-crypto";
+import { EncryptService, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 
 import { BulkUserDetails } from "./bulk-status.component";
 

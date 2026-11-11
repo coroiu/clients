@@ -1,14 +1,11 @@
 import { firstValueFrom } from "rxjs";
 
-// Marked for removal when PM-30811 feature flag is unwound.
-
-// eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 import { UserId } from "@bitwarden/user-core";
 
 import { ApiService } from "../../../abstractions/api.service";
 import { FeatureFlag } from "../../../enums/feature-flag.enum";
 import { KdfConfigService, KeyService } from "../../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../../key-management/legacy-compat";
 import { MasterPasswordServiceAbstraction } from "../../../key-management/master-password/abstractions/master-password.service.abstraction";
 import { ConfigService } from "../../../platform/abstractions/config/config.service";
 import { EmailTokenRequest } from "../../models/request/email-token.request";

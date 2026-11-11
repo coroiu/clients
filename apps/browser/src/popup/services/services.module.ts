@@ -84,6 +84,10 @@ import { PhishingDetectionSettingsServiceAbstraction } from "@bitwarden/common/d
 import { PhishingDetectionSettingsService } from "@bitwarden/common/dirt/services/phishing-detection/phishing-detection-settings.service";
 import { ClientType } from "@bitwarden/common/enums";
 import { AccountCryptographicStateService } from "@bitwarden/common/key-management/account-cryptography/account-cryptographic-state.service";
+import {
+  DefaultLegacyCompatKeyService,
+  LegacyCompatKeyService,
+} from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordUnlockService } from "@bitwarden/common/key-management/master-password/abstractions/master-password-unlock.service";
 import {
   InternalMasterPasswordServiceAbstraction,
@@ -176,10 +180,8 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import {
   CryptoFunctionService,
-  DefaultLegacyCompatKeyService,
   EncryptService,
   KeyGenerationService,
-  LegacyCompatKeyService,
   WebCryptoFunctionService,
 } from "@bitwarden/legacy-crypto";
 import { FlightRecorderLogRecorderService } from "@bitwarden/logging-angular";

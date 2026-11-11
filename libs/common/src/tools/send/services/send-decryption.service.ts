@@ -1,10 +1,11 @@
 import { firstValueFrom, switchMap } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
+import { SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 import { SendClient } from "@bitwarden/sdk-internal";
 import { UserId } from "@bitwarden/user-core";
 
+import { LegacyCompatKeyService } from "../../../key-management/legacy-compat";
 import { SdkService } from "../../../platform/abstractions/sdk/sdk.service";
 import { Utils } from "../../../platform/misc/utils";
 import { Send } from "../models/domain/send";

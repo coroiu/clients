@@ -25,6 +25,7 @@ import { BillingAccountProfileStateService } from "@bitwarden/common/billing/abs
 import { PremiumCheckoutPendingService } from "@bitwarden/common/billing/abstractions/account/premium-checkout-pending.service";
 import { EventUploadService } from "@bitwarden/common/dirt/event-logs";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { PinServiceAbstraction } from "@bitwarden/common/key-management/pin/pin.service.abstraction";
 import { ProcessReloadServiceAbstraction } from "@bitwarden/common/key-management/process-reload";
 import { VaultTimeoutSettingsService } from "@bitwarden/common/key-management/vault-timeout";
@@ -46,8 +47,6 @@ import { PremiumUpgradePromptService } from "@bitwarden/common/vault/abstraction
 import { RestrictedItemTypesService } from "@bitwarden/common/vault/services/restricted-item-types.service";
 import { DialogService, ToastService } from "@bitwarden/components";
 import { KeyService, BiometricStateService } from "@bitwarden/key-management";
-// eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 import { LockService } from "@bitwarden/unlock";
 
 import { AppComponent } from "./app.component";

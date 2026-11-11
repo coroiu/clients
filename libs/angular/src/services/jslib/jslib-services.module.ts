@@ -227,6 +227,10 @@ import { DefaultKeyConnectorApiService } from "@bitwarden/common/key-management/
 import { KeyConnectorService } from "@bitwarden/common/key-management/key-connector/services/key-connector.service";
 import { RotateableKeySetService } from "@bitwarden/common/key-management/keys/services/abstractions/rotateable-key-set.service";
 import { DefaultRotateableKeySetService } from "@bitwarden/common/key-management/keys/services/default-rotateable-key-set.service";
+import {
+  DefaultLegacyCompatKeyService,
+  LegacyCompatKeyService,
+} from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordUnlockService } from "@bitwarden/common/key-management/master-password/abstractions/master-password-unlock.service";
 import {
   InternalMasterPasswordServiceAbstraction,
@@ -406,11 +410,9 @@ import {
 import {
   CryptoFunctionService as CryptoFunctionServiceAbstraction,
   DefaultKeyGenerationService,
-  DefaultLegacyCompatKeyService,
   EncryptService,
   EncryptServiceImplementation,
   KeyGenerationService,
-  LegacyCompatKeyService,
   WebCryptoFunctionService,
 } from "@bitwarden/legacy-crypto";
 import {

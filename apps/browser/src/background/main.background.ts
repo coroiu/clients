@@ -112,6 +112,10 @@ import { DeviceTrustServiceAbstraction } from "@bitwarden/common/key-management/
 import { DeviceTrustService } from "@bitwarden/common/key-management/device-trust/services/device-trust.service.implementation";
 import { KeyConnectorService as KeyConnectorServiceAbstraction } from "@bitwarden/common/key-management/key-connector/abstractions/key-connector.service";
 import { KeyConnectorService } from "@bitwarden/common/key-management/key-connector/services/key-connector.service";
+import {
+  DefaultLegacyCompatKeyService,
+  LegacyCompatKeyService as LegacyCompatKeyServiceAbstraction,
+} from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordUnlockService } from "@bitwarden/common/key-management/master-password/abstractions/master-password-unlock.service";
 import { InternalMasterPasswordServiceAbstraction } from "@bitwarden/common/key-management/master-password/abstractions/master-password.service.abstraction";
 import { DefaultMasterPasswordUnlockService } from "@bitwarden/common/key-management/master-password/services/default-master-password-unlock.service";
@@ -289,11 +293,9 @@ import {
 import {
   CryptoFunctionService as CryptoFunctionServiceAbstraction,
   DefaultKeyGenerationService,
-  DefaultLegacyCompatKeyService,
   EncryptService,
   EncryptServiceImplementation,
   KeyGenerationService,
-  LegacyCompatKeyService as LegacyCompatKeyServiceAbstraction,
   WebCryptoFunctionService,
 } from "@bitwarden/legacy-crypto";
 import { FlightRecorderLogRecorder, limitPerformanceMeasurements } from "@bitwarden/logging";

@@ -7,11 +7,11 @@ import {
   EncryptionType,
   EncryptService,
   EncString,
-  LegacyCompatKeyService,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 
 import { KeyService } from "../src/key-management/km-lib";
+import { LegacyCompatKeyService } from "../src/key-management/legacy-compat";
 import { Utils } from "../src/platform/misc/utils";
 
 function newGuid() {

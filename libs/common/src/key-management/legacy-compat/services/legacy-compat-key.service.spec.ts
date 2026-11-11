@@ -1,34 +1,31 @@
 import { mock } from "jest-mock-extended";
 import { BehaviorSubject, of } from "rxjs";
 
-import type { MasterPasswordSalt } from "@bitwarden/common/key-management/master-password/types/master-password.types";
-import { SdkLoadService } from "@bitwarden/common/platform/abstractions/sdk/sdk-load.service";
-import { Utils } from "@bitwarden/common/platform/misc/utils";
+// eslint-disable-next-line no-restricted-imports
+import {
+  CryptoFunctionService,
+  EncryptService,
+  KeyGenerationService,
+  EncString,
+  KdfConfig,
+  SymmetricCryptoKey,
+  CsprngArray,
+} from "@bitwarden/legacy-crypto";
+import { LogService } from "@bitwarden/logging";
+import { PureCrypto } from "@bitwarden/sdk-internal";
+
 import {
   makeEncString,
   makeSymmetricCryptoKey,
   FakeAccountService,
   mockAccountServiceWith,
-} from "@bitwarden/common/spec";
-import { UserId } from "@bitwarden/common/types/guid";
-import {
-  UserKey,
-  MasterKey,
-  UserPublicKey,
-  OrgKey,
-  ProviderKey,
-} from "@bitwarden/common/types/key";
-import type { KdfConfigService, KeyService } from "@bitwarden/key-management";
-import { LogService } from "@bitwarden/logging";
-import { PureCrypto } from "@bitwarden/sdk-internal";
-
-import { CryptoFunctionService } from "../abstractions/crypto-function.service";
-import { EncryptService } from "../abstractions/encrypt.service";
-import { KeyGenerationService } from "../abstractions/key-generation.service";
-import { EncString } from "../models/enc-string";
-import { KdfConfig } from "../models/kdf-config";
-import { SymmetricCryptoKey } from "../models/symmetric-crypto-key";
-import { CsprngArray } from "../types/csprng";
+} from "../../../../spec";
+import { SdkLoadService } from "../../../platform/abstractions/sdk/sdk-load.service";
+import { Utils } from "../../../platform/misc/utils";
+import { UserId } from "../../../types/guid";
+import { UserKey, MasterKey, UserPublicKey, OrgKey, ProviderKey } from "../../../types/key";
+import type { KdfConfigService, KeyService } from "../../km-lib";
+import type { MasterPasswordSalt } from "../../master-password/types/master-password.types";
 
 import { DefaultLegacyCompatKeyService } from "./legacy-compat-key.service";
 

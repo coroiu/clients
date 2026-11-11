@@ -12,7 +12,7 @@ import {
 } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import { EncArrayBuffer, EncryptService, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { EncArrayBuffer, EncryptService } from "@bitwarden/legacy-crypto";
 import { Measurement, PerfTrackGroup } from "@bitwarden/logging";
 import { CipherListView } from "@bitwarden/sdk-internal";
 
@@ -21,6 +21,7 @@ import { AccountService } from "../../auth/abstractions/account.service";
 import { AutofillSettingsServiceAbstraction } from "../../autofill/services/autofill-settings.service";
 import { DomainSettingsService } from "../../autofill/services/domain-settings.service";
 import { KeyService } from "../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../key-management/legacy-compat";
 import { UriMatchStrategySetting } from "../../models/domain/domain-service";
 import { ConfigService } from "../../platform/abstractions/config/config.service";
 import { UploadOptions } from "../../platform/abstractions/file-upload/file-upload.service";

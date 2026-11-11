@@ -1,7 +1,7 @@
 import { combineLatest, concatMap, firstValueFrom, map, Observable } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import { EncryptService, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { EncryptService } from "@bitwarden/legacy-crypto";
 import {
   AcceptInviteLinkError,
   HighEntropySecret,
@@ -30,6 +30,7 @@ import { Policy } from "../../../../admin-console/models/domain/policy";
 import { OrganizationKeysRequest } from "../../../../admin-console/models/request/organization-keys.request";
 import { FeatureFlag } from "../../../../enums/feature-flag.enum";
 import { KeyService } from "../../../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../../../key-management/legacy-compat";
 import { ErrorResponse } from "../../../../models/response/error.response";
 import { ConfigService } from "../../../../platform/abstractions/config/config.service";
 import { I18nService } from "../../../../platform/abstractions/i18n.service";

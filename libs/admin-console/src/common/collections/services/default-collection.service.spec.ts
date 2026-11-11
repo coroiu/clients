@@ -15,6 +15,7 @@ import {
   CollectionTypes,
   CollectionData,
 } from "@bitwarden/common/admin-console/models/collections";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
@@ -25,12 +26,7 @@ import { OrgKey } from "@bitwarden/common/types/key";
 import { newGuid } from "@bitwarden/guid";
 import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
-import {
-  EncryptService,
-  EncString,
-  LegacyCompatKeyService,
-  SymmetricCryptoKey,
-} from "@bitwarden/legacy-crypto";
+import { EncryptService, EncString, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 import { Measurement } from "@bitwarden/logging";
 
 import { CollectionEncryptionService } from "../abstractions/collection-encryption.service";

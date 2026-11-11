@@ -7,12 +7,12 @@ import {
   CsprngArray,
   DEFAULT_KDF_CONFIG,
   KdfConfig,
-  LegacyCompatKeyService,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 
 import { ApiService } from "../../../abstractions/api.service";
 import { KdfConfigService, KeyService } from "../../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../../key-management/legacy-compat";
 import { FakeMasterPasswordService } from "../../../key-management/master-password/services/fake-master-password.service";
 import {
   MasterKeyWrappedUserKey,

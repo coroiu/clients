@@ -10,11 +10,12 @@ import { OrganizationUserStatusType } from "@bitwarden/common/admin-console/enum
 import { PermissionsApi } from "@bitwarden/common/admin-console/models/api/permissions.api";
 import { Organization } from "@bitwarden/common/admin-console/models/domain/organization";
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { OrganizationId, UserId } from "@bitwarden/common/types/guid";
 import { DIALOG_DATA } from "@bitwarden/components";
 import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
-import { EncryptService, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { EncryptService } from "@bitwarden/legacy-crypto";
 
 import { PreloadedEnglishI18nModule } from "../../../../../core/tests";
 

@@ -6,7 +6,6 @@ import {
   EncArrayBuffer,
   EncryptService,
   EncString,
-  LegacyCompatKeyService,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 import { Measurement } from "@bitwarden/logging";
@@ -19,6 +18,7 @@ import { ApiService } from "../../abstractions/api.service";
 import { AutofillSettingsService } from "../../autofill/services/autofill-settings.service";
 import { DomainSettingsService } from "../../autofill/services/domain-settings.service";
 import { CipherDecryptionKeys, KeyService } from "../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../key-management/legacy-compat";
 import { UriMatchStrategy } from "../../models/domain/domain-service";
 import { ConfigService } from "../../platform/abstractions/config/config.service";
 import { I18nService } from "../../platform/abstractions/i18n.service";

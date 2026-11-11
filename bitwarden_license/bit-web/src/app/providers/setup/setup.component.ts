@@ -7,6 +7,7 @@ import { first, takeUntil } from "rxjs/operators";
 
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
 import { getUserId } from "@bitwarden/common/auth/services/account.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { ValidationService } from "@bitwarden/common/platform/abstractions/validation.service";
 import { ProviderApiServiceAbstraction, ProviderSetupRequest } from "@bitwarden/common/provider";
@@ -18,8 +19,6 @@ import {
   FormFieldModule,
   ToastService,
 } from "@bitwarden/components";
-// eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 import { I18nPipe } from "@bitwarden/ui-common";
 import {
   EnterBillingAddressComponent,

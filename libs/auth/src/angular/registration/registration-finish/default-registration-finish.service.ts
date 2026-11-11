@@ -6,13 +6,14 @@ import { AccountApiService } from "@bitwarden/common/auth/abstractions/account-a
 import { RegisterFinishRequest } from "@bitwarden/common/auth/models/request/registration/register-finish.request";
 import { assertNonNullish, assertTruthy } from "@bitwarden/common/auth/utils";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordServiceAbstraction } from "@bitwarden/common/key-management/master-password/abstractions/master-password.service.abstraction";
 import { KeysRequest } from "@bitwarden/common/models/request/keys.request";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
 import { asUuid, SdkService } from "@bitwarden/common/platform/abstractions/sdk/sdk.service";
 import { UserKey } from "@bitwarden/common/types/key";
 // eslint-disable-next-line no-restricted-imports
-import { EncString, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { EncString } from "@bitwarden/legacy-crypto";
 import {
   OrganizationId as SdkOrganizationId,
   UserId as SdkUserId,

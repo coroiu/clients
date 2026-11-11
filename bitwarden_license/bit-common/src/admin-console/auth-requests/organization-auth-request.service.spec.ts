@@ -5,16 +5,12 @@ import {
   OrganizationUserApiService,
   OrganizationUserResetPasswordDetailsResponse,
 } from "@bitwarden/admin-console/common";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { ListResponse } from "@bitwarden/common/models/response/list.response";
 import { newGuid } from "@bitwarden/guid";
 import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
-import {
-  EncryptService,
-  EncString,
-  LegacyCompatKeyService,
-  SymmetricCryptoKey,
-} from "@bitwarden/legacy-crypto";
+import { EncryptService, EncString, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 import { UserId } from "@bitwarden/user-core";
 
 import { OrganizationAuthRequestApiService } from "./organization-auth-request-api.service";

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from "@angular/core";
 
-// eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 
 import { SharedModule } from "../../shared/shared.module";
 

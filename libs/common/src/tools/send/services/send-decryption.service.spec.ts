@@ -3,13 +3,14 @@ import { of } from "rxjs";
 
 import { newGuid } from "@bitwarden/guid";
 // eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
+import { SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 import {
   SendClient,
   SendView as SdkSendView,
   SendAccessView as SdkSendAccessView,
 } from "@bitwarden/sdk-internal";
 
+import { LegacyCompatKeyService } from "../../../key-management/legacy-compat";
 import { SdkService } from "../../../platform/abstractions/sdk/sdk.service";
 import { Utils } from "../../../platform/misc/utils";
 import { UserId } from "../../../types/guid";

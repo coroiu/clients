@@ -2,12 +2,7 @@ import { mock } from "jest-mock-extended";
 import { firstValueFrom, of } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import {
-  EncryptService,
-  KeyGenerationService,
-  LegacyCompatKeyService,
-  SymmetricCryptoKey,
-} from "@bitwarden/legacy-crypto";
+import { EncryptService, KeyGenerationService, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 
 import {
   FakeAccountService,
@@ -18,6 +13,7 @@ import {
   mockAccountInfoWith,
 } from "../../../../spec";
 import { KeyService } from "../../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../../key-management/legacy-compat";
 import { EnvironmentService } from "../../../platform/abstractions/environment.service";
 import { I18nService } from "../../../platform/abstractions/i18n.service";
 import { SdkService } from "../../../platform/abstractions/sdk/sdk.service";

@@ -10,6 +10,7 @@ import {
   OrganizationInviteService,
 } from "@bitwarden/common/auth/organization-invite";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordServiceAbstraction } from "@bitwarden/common/key-management/master-password/abstractions/master-password.service.abstraction";
 import {
   MasterPasswordUnlockData,
@@ -21,12 +22,7 @@ import { ConfigService } from "@bitwarden/common/platform/abstractions/config/co
 import { SdkService } from "@bitwarden/common/platform/abstractions/sdk/sdk.service";
 import { MasterKey, UserKey } from "@bitwarden/common/types/key";
 // eslint-disable-next-line no-restricted-imports
-import {
-  DEFAULT_KDF_CONFIG,
-  EncString,
-  LegacyCompatKeyService,
-  SymmetricCryptoKey,
-} from "@bitwarden/legacy-crypto";
+import { DEFAULT_KDF_CONFIG, EncString, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 
 import { WebRegistrationFinishService } from "./web-registration-finish.service";
 

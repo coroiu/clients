@@ -72,6 +72,7 @@ import { DefaultChangeEmailService } from "@bitwarden/common/auth/services/chang
 import { BillingAccountProfileStateService } from "@bitwarden/common/billing/abstractions/account/billing-account-profile-state.service";
 import { ClientType } from "@bitwarden/common/enums";
 import { AccountCryptographicStateService } from "@bitwarden/common/key-management/account-cryptography/account-cryptographic-state.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordUnlockService } from "@bitwarden/common/key-management/master-password/abstractions/master-password-unlock.service";
 import {
   InternalMasterPasswordServiceAbstraction,
@@ -144,11 +145,7 @@ import {
   KeyManagementUiModule,
 } from "@bitwarden/key-management-ui";
 // eslint-disable-next-line no-restricted-imports
-import {
-  CryptoFunctionService,
-  EncryptService,
-  LegacyCompatKeyService,
-} from "@bitwarden/legacy-crypto";
+import { CryptoFunctionService, EncryptService } from "@bitwarden/legacy-crypto";
 import { OrganizationInviteLinkApiService } from "@bitwarden/organization-invite-link";
 import { SerializedMemoryStorageService } from "@bitwarden/storage-core";
 import {

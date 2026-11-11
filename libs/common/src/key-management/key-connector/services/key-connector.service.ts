@@ -2,14 +2,11 @@
 // @ts-strict-ignore
 import { combineLatest, filter, firstValueFrom, map, Observable, of, switchMap } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
 // eslint-disable-next-line no-restricted-imports
 import {
   Argon2KdfConfig,
   KdfConfig,
   KdfType,
-  LegacyCompatKeyService,
   PBKDF2KdfConfig,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
@@ -34,6 +31,7 @@ import { Utils } from "../../../platform/misc/utils";
 import { KEY_CONNECTOR_DISK, StateProvider, UserKeyDefinition } from "../../../platform/state";
 import { UserId } from "../../../types/guid";
 import { AccountCryptographicStateService } from "../../account-cryptography/account-cryptographic-state.service";
+import { LegacyCompatKeyService } from "../../legacy-compat";
 import { InternalMasterPasswordServiceAbstraction } from "../../master-password/abstractions/master-password.service.abstraction";
 import { UnlockService } from "../../unlock-abstractions";
 import { withPasswordManagerSdk } from "../../utils";

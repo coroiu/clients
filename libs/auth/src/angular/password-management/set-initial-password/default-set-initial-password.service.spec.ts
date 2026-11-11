@@ -22,6 +22,7 @@ import { ForceSetPasswordReason } from "@bitwarden/common/auth/models/domain/for
 import { SetPasswordRequest } from "@bitwarden/common/auth/models/request/set-password.request";
 import { UpdateTdeOffboardingPasswordRequest } from "@bitwarden/common/auth/models/request/update-tde-offboarding-password.request";
 import { AccountCryptographicStateService } from "@bitwarden/common/key-management/account-cryptography/account-cryptographic-state.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { InternalMasterPasswordServiceAbstraction } from "@bitwarden/common/key-management/master-password/abstractions/master-password.service.abstraction";
 import {
   MasterKeyWrappedUserKey,
@@ -46,7 +47,6 @@ import {
   EncryptService,
   EncString,
   fromSdkKdfConfig,
-  LegacyCompatKeyService,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 import {

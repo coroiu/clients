@@ -2,14 +2,11 @@ import { mock } from "jest-mock-extended";
 import { of } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import {
-  EncryptService,
-  LegacyCompatKeyService,
-  SymmetricCryptoKey,
-} from "@bitwarden/legacy-crypto";
+import { EncryptService, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 
 import { makeStaticByteArray, mockContainerService, mockEnc } from "../../../../../spec";
 import { KeyService } from "../../../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../../../key-management/legacy-compat";
 import { ContainerService } from "../../../../platform/services/container.service";
 import { emptyGuid, UserId } from "../../../../types/guid";
 import { UserKey } from "../../../../types/key";

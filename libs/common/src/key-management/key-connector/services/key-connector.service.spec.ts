@@ -1,14 +1,11 @@
 import { mock } from "jest-mock-extended";
 import { firstValueFrom, of, timeout, TimeoutError } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
 // eslint-disable-next-line no-restricted-imports
 import {
   Argon2KdfConfig,
   EncString,
   KdfType,
-  LegacyCompatKeyService,
   PBKDF2KdfConfig,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
@@ -37,6 +34,7 @@ import { Utils } from "../../../platform/misc/utils";
 import { OrganizationId, UserId } from "../../../types/guid";
 import { MasterKey, UserKey } from "../../../types/key";
 import { AccountCryptographicStateService } from "../../account-cryptography/account-cryptographic-state.service";
+import { LegacyCompatKeyService } from "../../legacy-compat";
 import { FakeMasterPasswordService } from "../../master-password/services/fake-master-password.service";
 import { MasterPasswordSalt } from "../../master-password/types/master-password.types";
 import { UnlockService } from "../../unlock-abstractions";

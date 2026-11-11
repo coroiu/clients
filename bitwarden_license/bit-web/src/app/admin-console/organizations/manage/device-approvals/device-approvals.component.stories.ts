@@ -15,6 +15,7 @@ import { OrganizationAuthRequestApiService } from "@bitwarden/bit-common/admin-c
 import { PendingAuthRequestView } from "@bitwarden/bit-common/admin-console/auth-requests/pending-auth-request.view";
 import { ApiService } from "@bitwarden/common/abstractions/api.service";
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
@@ -22,7 +23,7 @@ import { ValidationService } from "@bitwarden/common/platform/abstractions/valid
 import { LayoutComponent, StorybookGlobalStateProvider, ToastService } from "@bitwarden/components";
 import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
-import { EncryptService, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { EncryptService } from "@bitwarden/legacy-crypto";
 import { GlobalStateProvider } from "@bitwarden/state";
 import { PreloadedEnglishI18nModule } from "@bitwarden/web-vault/app/core/tests";
 

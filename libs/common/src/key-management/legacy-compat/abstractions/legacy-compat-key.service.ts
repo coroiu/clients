@@ -1,11 +1,9 @@
-// Type-only: master-password.types imports KdfConfig from this package, so a value import would be circular.
-import type { MasterPasswordSalt } from "@bitwarden/common/key-management/master-password/types/master-password.types";
-import { UserId } from "@bitwarden/common/types/guid";
-import { UserKey, MasterKey, OrgKey, ProviderKey } from "@bitwarden/common/types/key";
+// eslint-disable-next-line no-restricted-imports
+import { EncString, KdfConfig, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 
-import { EncString } from "../models/enc-string";
-import { KdfConfig } from "../models/kdf-config";
-import { SymmetricCryptoKey } from "../models/symmetric-crypto-key";
+import { UserId } from "../../../types/guid";
+import { UserKey, MasterKey, OrgKey, ProviderKey } from "../../../types/key";
+import type { MasterPasswordSalt } from "../../master-password/types/master-password.types";
 
 /**
  * Low-level cryptographic primitives that used to live on the KeyService.

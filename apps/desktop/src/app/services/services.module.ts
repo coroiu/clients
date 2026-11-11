@@ -67,6 +67,7 @@ import { DomainSettingsService } from "@bitwarden/common/autofill/services/domai
 import { BillingAccountProfileStateService } from "@bitwarden/common/billing/abstractions";
 import { ClientType, DeviceType } from "@bitwarden/common/enums";
 import { AccountCryptographicStateService } from "@bitwarden/common/key-management/account-cryptography/account-cryptographic-state.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import {
   InternalMasterPasswordServiceAbstraction,
   MasterPasswordServiceAbstraction,
@@ -147,7 +148,6 @@ import {
 import {
   CryptoFunctionService as CryptoFunctionServiceAbstraction,
   EncryptService,
-  LegacyCompatKeyService,
   WebCryptoFunctionService,
 } from "@bitwarden/legacy-crypto";
 import { FlightRecorderLogRecorderService } from "@bitwarden/logging-angular";

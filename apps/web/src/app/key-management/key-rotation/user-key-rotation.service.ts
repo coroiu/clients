@@ -5,6 +5,7 @@ import { Account } from "@bitwarden/common/auth/abstractions/account.service";
 import { LogoutService } from "@bitwarden/common/auth/logout";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
 import { DeviceTrustServiceAbstraction } from "@bitwarden/common/key-management/device-trust/abstractions/device-trust.service.abstraction";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordServiceAbstraction } from "@bitwarden/common/key-management/master-password/abstractions/master-password.service.abstraction";
 import { MasterPasswordSalt } from "@bitwarden/common/key-management/master-password/types/master-password.types";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
@@ -32,7 +33,6 @@ import {
   EncryptService,
   EncString,
   KdfConfig,
-  LegacyCompatKeyService,
   SymmetricCryptoKey,
   UnsignedPublicKey,
   WrappedPrivateKey,

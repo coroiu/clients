@@ -3,7 +3,7 @@ import { BehaviorSubject, firstValueFrom } from "rxjs";
 
 import { newGuid } from "@bitwarden/guid";
 // eslint-disable-next-line no-restricted-imports
-import { EncryptService, EncString, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { EncryptService, EncString } from "@bitwarden/legacy-crypto";
 import { UserId } from "@bitwarden/user-core";
 
 import { FakeGlobalStateProvider } from "../../../../../spec";
@@ -19,6 +19,7 @@ import { ResetPasswordPolicyOptions } from "../../../../admin-console/models/dom
 import { OrganizationKeysResponse } from "../../../../admin-console/models/response/organization-keys.response";
 import { FeatureFlag } from "../../../../enums/feature-flag.enum";
 import { KeyService } from "../../../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../../../key-management/legacy-compat";
 import { ErrorResponse } from "../../../../models/response/error.response";
 import { ConfigService } from "../../../../platform/abstractions/config/config.service";
 import { I18nService } from "../../../../platform/abstractions/i18n.service";

@@ -1,7 +1,8 @@
 // eslint-disable-next-line no-restricted-imports
-import { EncryptService, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { EncryptService } from "@bitwarden/legacy-crypto";
 
 import { KeyService } from "../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../key-management/legacy-compat";
 
 export class ContainerService {
   constructor(

@@ -10,6 +10,7 @@ import {
   passwordHashB64Required,
 } from "@bitwarden/common/auth/send-access";
 import { DeviceType } from "@bitwarden/common/enums";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { AppIdService } from "@bitwarden/common/platform/abstractions/app-id.service";
 import {
   EnvironmentService,
@@ -30,7 +31,6 @@ import { SendType } from "@bitwarden/common/tools/send/types/send-type";
 import {
   CryptoFunctionService,
   EncryptService,
-  LegacyCompatKeyService,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 import { SendReceiveClient, SendType as SdkSendType } from "@bitwarden/sdk-internal";

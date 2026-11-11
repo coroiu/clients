@@ -11,9 +11,10 @@ import { Merge, NonNegative } from "type-fest";
 import "core-js/proposals/array-buffer-base64";
 
 // eslint-disable-next-line no-restricted-imports
-import { EncryptService, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { EncryptService } from "@bitwarden/legacy-crypto";
 
 import { KeyService } from "../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../key-management/legacy-compat";
 import { I18nService } from "../abstractions/i18n.service";
 
 // FIXME: Remove when updating file. Eslint update

@@ -7,6 +7,7 @@ import { LogoutService } from "@bitwarden/common/auth/logout";
 import { WebauthnRotateCredentialRequest } from "@bitwarden/common/auth/models/request/webauthn-rotate-credential.request";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
 import { DeviceTrustServiceAbstraction } from "@bitwarden/common/key-management/device-trust/abstractions/device-trust.service.abstraction";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordServiceAbstraction } from "@bitwarden/common/key-management/master-password/abstractions/master-password.service.abstraction";
 import { MasterPasswordSalt } from "@bitwarden/common/key-management/master-password/types/master-password.types";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
@@ -41,7 +42,6 @@ import {
   EncString,
   KdfConfig,
   KdfType,
-  LegacyCompatKeyService,
   PBKDF2KdfConfig,
   SymmetricCryptoKey,
   UnsignedPublicKey,

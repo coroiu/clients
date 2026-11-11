@@ -21,6 +21,7 @@ import {
   OrganizationInviteService,
 } from "@bitwarden/common/auth/organization-invite";
 import { AccountCryptographicStateService } from "@bitwarden/common/key-management/account-cryptography/account-cryptographic-state.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { InternalMasterPasswordServiceAbstraction } from "@bitwarden/common/key-management/master-password/abstractions/master-password.service.abstraction";
 import { MasterPasswordSalt } from "@bitwarden/common/key-management/master-password/types/master-password.types";
 import { KeysRequest } from "@bitwarden/common/models/request/keys.request";
@@ -34,7 +35,6 @@ import {
   DEFAULT_KDF_CONFIG,
   EncryptService,
   EncString,
-  LegacyCompatKeyService,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 import { UnlockService } from "@bitwarden/unlock";
