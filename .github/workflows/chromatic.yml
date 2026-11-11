@@ -92,6 +92,8 @@ jobs:
         run: npm ci
 
       - name: Log in to Azure
+        # Monorepo CI experiment: the fork has no Azure secrets.
+        if: false
         uses: bitwarden/gh-actions/azure-login@main
         with:
           subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -99,6 +101,8 @@ jobs:
           client_id: ${{ secrets.AZURE_CLIENT_ID }}
   
       - name: Get Azure Key Vault secrets
+        # Monorepo CI experiment: the fork has no Azure secrets.
+        if: false
         id: get-kv-secrets
         uses: bitwarden/gh-actions/get-keyvault-secrets@main
         with:
@@ -106,6 +110,8 @@ jobs:
           secrets: "CHROMATIC-PROJECT-TOKEN,CHROMATIC-PROJECT-TOKEN-AUTOFILL"
   
       - name: Log out from Azure
+        # Monorepo CI experiment: the fork has no Azure secrets.
+        if: false
         uses: bitwarden/gh-actions/azure-logout@main
 
       # Manually build the Storybook to resolve a bug related to TurboSnap
@@ -114,6 +120,8 @@ jobs:
         run: npm run build-storybook:autofill:ci
 
       - name: Publish to Chromatic for Autofill
+        # Monorepo CI experiment: the fork has no Chromatic project tokens.
+        if: false
         id: publish-chromatic-autofill
         uses: chromaui/action@94713c544284a14195de3b50ef24301579f1877e # v18.0.1
         with:
@@ -134,6 +142,8 @@ jobs:
         run: npm run build-storybook:ci
 
       - name: Publish to Chromatic for CL
+        # Monorepo CI experiment: the fork has no Chromatic project tokens.
+        if: false
         uses: chromaui/action@94713c544284a14195de3b50ef24301579f1877e # v18.0.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
