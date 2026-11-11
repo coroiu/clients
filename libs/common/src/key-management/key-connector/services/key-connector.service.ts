@@ -3,8 +3,7 @@
 import { combineLatest, filter, firstValueFrom, map, Observable, of, switchMap } from "rxjs";
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { InternalUserDecryptionOptionsServiceAbstraction } from "@bitwarden/auth/common";
+
 // eslint-disable-next-line no-restricted-imports
 import {
   Argon2KdfConfig,
@@ -23,6 +22,7 @@ import { OrganizationUserType } from "../../../admin-console/enums";
 import { Organization } from "../../../admin-console/models/domain/organization";
 import { AccountService } from "../../../auth/abstractions/account.service";
 import { TokenService } from "../../../auth/abstractions/token.service";
+import { InternalUserDecryptionOptionsServiceAbstraction } from "../../../auth/auth-lib";
 import { LogoutReason } from "../../../auth/logout";
 import { FeatureFlag } from "../../../enums/feature-flag.enum";
 import { KeysRequest } from "../../../models/request/keys.request";

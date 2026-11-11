@@ -10,8 +10,7 @@ import { KeyService } from "@bitwarden/key-management";
 import { PerfTrackGroup } from "@bitwarden/logging";
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { InternalUserDecryptionOptionsServiceAbstraction } from "../../../../auth/src/common";
+
 import { ApiService } from "../../abstractions/api.service";
 import { InternalOrganizationServiceAbstraction } from "../../admin-console/abstractions/organization/organization.service.abstraction";
 import { InternalPolicyService } from "../../admin-console/abstractions/policy/policy.service.abstraction";
@@ -25,6 +24,7 @@ import { AccountService } from "../../auth/abstractions/account.service";
 import { AuthService } from "../../auth/abstractions/auth.service";
 import { AvatarService } from "../../auth/abstractions/avatar.service";
 import { TokenService } from "../../auth/abstractions/token.service";
+import { InternalUserDecryptionOptionsServiceAbstraction } from "../../auth/auth-lib";
 import { AuthenticationStatus } from "../../auth/enums/authentication-status";
 import { LogoutReason } from "../../auth/logout";
 import { ForceSetPasswordReason } from "../../auth/models/domain/force-set-password-reason";

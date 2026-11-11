@@ -4,11 +4,7 @@ import { BehaviorSubject, Observable, of, Subject } from "rxjs";
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import {
-  UserDecryptionOptions,
-  InternalUserDecryptionOptionsServiceAbstraction,
-} from "@bitwarden/auth/common";
+
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 // eslint-disable-next-line no-restricted-imports
 import { KeyService } from "@bitwarden/key-management";
@@ -26,6 +22,10 @@ import { Account, AccountService } from "../../auth/abstractions/account.service
 import { AuthService } from "../../auth/abstractions/auth.service";
 import { AvatarService } from "../../auth/abstractions/avatar.service";
 import { TokenService } from "../../auth/abstractions/token.service";
+import {
+  UserDecryptionOptions,
+  InternalUserDecryptionOptionsServiceAbstraction,
+} from "../../auth/auth-lib";
 import { AuthenticationStatus } from "../../auth/enums/authentication-status";
 import { LogoutReason } from "../../auth/logout";
 import { DomainSettingsService } from "../../autofill/services/domain-settings.service";

@@ -1,9 +1,9 @@
 import { firstValueFrom } from "rxjs";
 
-import { FakeSingleUserStateProvider } from "@bitwarden/common/spec";
-import { UserId } from "@bitwarden/common/types/guid";
 import { newGuid } from "@bitwarden/guid";
 
+import { FakeSingleUserStateProvider } from "../../../../../spec";
+import { UserId } from "../../../../types/guid";
 import { UserDecryptionOptions } from "../../models/domain/user-decryption-options";
 
 import {

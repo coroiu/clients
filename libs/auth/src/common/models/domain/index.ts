@@ -1,2 +1,1 @@
-export * from "./login-credentials";
-export * from "./user-decryption-options";
+export * from "@bitwarden/common/auth/auth-lib/models/domain/index";

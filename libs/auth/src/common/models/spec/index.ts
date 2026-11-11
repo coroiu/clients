@@ -1,1 +1,1 @@
-export * from "./fake-user-decryption-options";
+export * from "@bitwarden/common/auth/auth-lib/models/spec/index";

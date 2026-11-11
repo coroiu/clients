@@ -3,8 +3,7 @@
 import { firstValueFrom, map } from "rxjs";
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { UserDecryptionOptionsServiceAbstraction } from "@bitwarden/auth/common";
+
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 // eslint-disable-next-line no-restricted-imports
 import {
@@ -22,6 +21,7 @@ import { UserId } from "../../../types/guid";
 import { AccountService } from "../../abstractions/account.service";
 import { UserVerificationApiServiceAbstraction } from "../../abstractions/user-verification/user-verification-api.service.abstraction";
 import { UserVerificationService as UserVerificationServiceAbstraction } from "../../abstractions/user-verification/user-verification.service.abstraction";
+import { UserDecryptionOptionsServiceAbstraction } from "../../auth-lib";
 import { VerificationType } from "../../enums/verification-type";
 import { SecretVerificationRequest } from "../../models/request/secret-verification.request";
 import { VerifyOTPRequest } from "../../models/request/verify-otp.request";

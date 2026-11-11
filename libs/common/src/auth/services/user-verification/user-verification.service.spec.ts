@@ -2,8 +2,7 @@ import { mock } from "jest-mock-extended";
 import { of } from "rxjs";
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { UserDecryptionOptionsServiceAbstraction } from "@bitwarden/auth/common";
+
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 // eslint-disable-next-line no-restricted-imports
 import {
@@ -23,6 +22,7 @@ import { I18nService } from "../../../platform/abstractions/i18n.service";
 import { Utils } from "../../../platform/misc/utils";
 import { UserId } from "../../../types/guid";
 import { UserVerificationApiServiceAbstraction } from "../../abstractions/user-verification/user-verification-api.service.abstraction";
+import { UserDecryptionOptionsServiceAbstraction } from "../../auth-lib";
 import { VerificationType } from "../../enums/verification-type";
 import { MasterPasswordPolicyResponse } from "../../models/response/master-password-policy.response";
 import { MasterPasswordVerification } from "../../types/verification";

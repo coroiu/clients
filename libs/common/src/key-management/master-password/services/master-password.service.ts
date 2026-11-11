@@ -3,8 +3,7 @@
 import { firstValueFrom, from, iif, map, Observable, of, switchMap } from "rxjs";
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { USER_DECRYPTION_OPTIONS } from "@bitwarden/auth/common";
+
 // eslint-disable-next-line no-restricted-imports
 import {
   CryptoFunctionService,
@@ -15,6 +14,7 @@ import {
 import { PureCrypto } from "@bitwarden/sdk-internal";
 
 import { AccountService } from "../../../auth/abstractions/account.service";
+import { USER_DECRYPTION_OPTIONS } from "../../../auth/auth-lib";
 import { ForceSetPasswordReason } from "../../../auth/models/domain/force-set-password-reason";
 import { assertNonNullish } from "../../../auth/utils";
 import { FeatureFlag, getFeatureFlagValue } from "../../../enums/feature-flag.enum";

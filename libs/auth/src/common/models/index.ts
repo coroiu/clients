@@ -1,2 +1,1 @@
-export * from "./domain";
-export * from "./spec";
+export * from "@bitwarden/common/auth/auth-lib/models/index";
