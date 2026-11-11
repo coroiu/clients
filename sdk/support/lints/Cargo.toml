@@ -1,0 +1,31 @@
+[package]
+name = "bitwarden_lints"
+version = "0.1.0"
+authors = ["Bitwarden Inc"]
+description = "Bitwarden lints"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+bitwarden_error_enum = { path = "error_enum", features = ["rlib"] }
+bitwarden_error_suffix = { path = "error_suffix", features = ["rlib"] }
+bitwarden_repr_with_tsify = { path = "repr_with_tsify", features = ["rlib"] }
+bitwarden_tracing_instrument = { path = "tracing_instrument", features = ["rlib"] }
+bitwarden_uniffi_async_export = { path = "uniffi_async_export", features = ["rlib"] }
+bitwarden_uniffi_config = { path = "uniffi_config", features = ["rlib"] }
+dylint_linting = { workspace = true }
+
+[package.metadata.rust-analyzer]
+rustc_private = true
+
+[workspace]
+members = ["*"]
+exclude = [".cargo", "src", "target"]
+
+[workspace.dependencies]
+clippy_utils = { git = "https://github.com/rust-lang/rust-clippy", rev = "9fca3bc9fc2bc83c60bde26d18ed68f11564b228" }
+dylint_linting = "6.0.0"
+dylint_testing = "6.0.0"

@@ -1,0 +1,269 @@
+use std::{num::NonZeroU32, pin::Pin};
+
+use hybrid_array::Array;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+use sha2::Digest;
+use typenum::U32;
+use zeroize::Zeroize;
+
+use crate::{
+    CryptoError,
+    slow_crypto_span::{SlowCryptoOp, measure},
+};
+
+const PBKDF2_MIN_ITERATIONS: u32 = 5000;
+
+const ARGON2ID_MIN_MEMORY: u32 = 16 * 1024;
+const ARGON2ID_MIN_ITERATIONS: u32 = 2;
+const ARGON2ID_MIN_PARALLELISM: u32 = 1;
+
+/// Holding struct for key material derived from a KDF.
+///
+/// The internal key material should not be used directly for cryptographic operations. Instead it
+/// MUST be converted to the appropriate type such as `SymmetricCryptoKey`, `MasterKey` or any other
+/// key type. This can be done by either directly consuming the key material or by stretching it
+/// further using HKDF (HMAC-based Key Derivation Function).
+///
+/// Uses a pinned heap data structure, as noted in [Pinned heap data][crate#pinned-heap-data]
+#[cfg_attr(feature = "dangerous-crypto-debug", derive(Debug))]
+pub struct KdfDerivedKeyMaterial(pub(super) Pin<Box<Array<u8, U32>>>);
+
+impl KdfDerivedKeyMaterial {
+    /// Derive a key from a secret and salt using the provided KDF.
+    pub(super) fn derive_kdf_key(
+        secret: &[u8],
+        salt: &[u8],
+        kdf: &Kdf,
+    ) -> Result<Self, CryptoError> {
+        match kdf {
+            Kdf::PBKDF2 { iterations } => {
+                let iterations = iterations.get();
+                if iterations < PBKDF2_MIN_ITERATIONS {
+                    return Err(CryptoError::InsufficientKdfParameters);
+                }
+
+                let mut hash = measure(SlowCryptoOp::Pbkdf2, || {
+                    crate::util::pbkdf2(secret, salt, iterations)
+                });
+
+                let key_material = Box::pin(hash.into());
+                hash.zeroize();
+                Ok(KdfDerivedKeyMaterial(key_material))
+            }
+            Kdf::Argon2id {
+                iterations,
+                memory,
+                parallelism,
+            } => {
+                let memory = memory.get() * 1024; // Convert MiB to KiB;
+                let iterations = iterations.get();
+                let parallelism = parallelism.get();
+
+                if memory < ARGON2ID_MIN_MEMORY
+                    || iterations < ARGON2ID_MIN_ITERATIONS
+                    || parallelism < ARGON2ID_MIN_PARALLELISM
+                {
+                    return Err(CryptoError::InsufficientKdfParameters);
+                }
+
+                let salt_sha = sha2::Sha256::new().chain_update(salt).finalize();
+
+                let mut hash = Box::pin(Array::<u8, U32>::default());
+
+                use argon2::*;
+                let params = Params::new(memory, iterations, parallelism, Some(32))?;
+                let argon = Argon2::new(Algorithm::Argon2id, Version::V0x13, params);
+                measure(SlowCryptoOp::Argon2id, || {
+                    argon.hash_password_into(secret, &salt_sha, hash.as_mut_slice())
+                })?;
+
+                // Argon2 is using some stack memory that is not zeroed. Eventually some function
+                // will overwrite the stack, but we use this trick to force the used
+                // stack to be zeroed.
+                crate::util::clear_stack();
+
+                Ok(KdfDerivedKeyMaterial(hash))
+            }
+        }
+    }
+
+    /// Derives a users master key from their password, email and KDF.
+    ///
+    /// Note: the email is trimmed and converted to lowercase before being used.
+    pub(super) fn derive(password: &str, email: &str, kdf: &Kdf) -> Result<Self, CryptoError> {
+        Self::derive_kdf_key(
+            password.as_bytes(),
+            email.trim().to_lowercase().as_bytes(),
+            kdf,
+        )
+    }
+}
+
+#[deprecated(
+    note = "This function is only meant as a temporary stop-gap to expose KDF derivation in PureCrypto until the higher-level consumers are moved to the SDK directly. DO NOT USE THIS OUTSIDE OF PureCrypto!"
+)]
+/// Derives KDF material given a password, salt and kdf configuration. This function is
+/// a stop-gap solution and should not be used outside of PureCrypto.
+///
+/// The clean-up ticket is tracked here:
+/// `https://bitwarden.atlassian.net/browse/PM-23168`
+pub fn dangerous_derive_kdf_material(
+    password: &[u8],
+    salt: &[u8],
+    kdf: &Kdf,
+) -> Result<Vec<u8>, CryptoError> {
+    KdfDerivedKeyMaterial::derive_kdf_key(password, salt, kdf).map(|kdf_key| kdf_key.0.to_vec())
+}
+
+/// Key Derivation Function for Bitwarden Account
+///
+/// In Bitwarden accounts can use multiple KDFs to derive their master key from their password. This
+/// Enum represents all the possible KDFs.
+#[allow(missing_docs)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+#[bitwarden_ffi::wasm_record]
+pub enum Kdf {
+    PBKDF2 {
+        iterations: NonZeroU32,
+    },
+    Argon2id {
+        iterations: NonZeroU32,
+        memory: NonZeroU32,
+        parallelism: NonZeroU32,
+    },
+}
+
+#[cfg(feature = "wasm")]
+impl TryFrom<wasm_bindgen::JsValue> for Kdf {
+    type Error = serde_wasm_bindgen::Error;
+
+    fn try_from(value: wasm_bindgen::JsValue) -> Result<Self, Self::Error> {
+        serde_wasm_bindgen::from_value(value)
+    }
+}
+
+impl Kdf {
+    /// Default KDF for new encryption V1 accounts.
+    pub fn default_pbkdf2() -> Kdf {
+        Kdf::PBKDF2 {
+            iterations: default_pbkdf2_iterations(),
+        }
+    }
+
+    /// Default KDF for new encryption V2 accounts.
+    pub fn default_argon2() -> Kdf {
+        Kdf::Argon2id {
+            iterations: default_argon2_iterations(),
+            memory: default_argon2_memory(),
+            parallelism: default_argon2_parallelism(),
+        }
+    }
+}
+
+/// Default PBKDF2 iterations
+fn default_pbkdf2_iterations() -> NonZeroU32 {
+    NonZeroU32::new(600_000).expect("Non-zero number")
+}
+/// Default Argon2 iterations
+fn default_argon2_iterations() -> NonZeroU32 {
+    NonZeroU32::new(6).expect("Non-zero number")
+}
+/// Default Argon2 memory
+fn default_argon2_memory() -> NonZeroU32 {
+    NonZeroU32::new(32).expect("Non-zero number")
+}
+/// Default Argon2 parallelism
+fn default_argon2_parallelism() -> NonZeroU32 {
+    NonZeroU32::new(4).expect("Non-zero number")
+}
+
+#[cfg(test)]
+mod tests {
+    use std::num::{NonZero, NonZeroU32};
+
+    use crate::keys::kdf::{Kdf, KdfDerivedKeyMaterial};
+
+    #[test]
+    fn test_derive_kdf_minimums() {
+        fn nz(n: u32) -> NonZero<u32> {
+            NonZero::new(n).unwrap()
+        }
+
+        let secret = [0u8; 32];
+        let salt = [0u8; 32];
+
+        for kdf in [
+            Kdf::PBKDF2 {
+                iterations: nz(4999),
+            },
+            Kdf::Argon2id {
+                iterations: nz(1),
+                memory: nz(16),
+                parallelism: nz(1),
+            },
+            Kdf::Argon2id {
+                iterations: nz(2),
+                memory: nz(15),
+                parallelism: nz(1),
+            },
+            Kdf::Argon2id {
+                iterations: nz(1),
+                memory: nz(15),
+                parallelism: nz(1),
+            },
+        ] {
+            assert_eq!(
+                KdfDerivedKeyMaterial::derive_kdf_key(&secret, &salt, &kdf)
+                    .err()
+                    .unwrap()
+                    .to_string(),
+                "Insufficient KDF parameters"
+            );
+        }
+    }
+
+    #[test]
+    fn test_master_key_derive_pbkdf2() {
+        let kdf_key = KdfDerivedKeyMaterial::derive(
+            "67t9b5g67$%Dh89n",
+            "test_key",
+            &Kdf::PBKDF2 {
+                iterations: NonZeroU32::new(10000).unwrap(),
+            },
+        )
+        .unwrap();
+
+        assert_eq!(
+            [
+                31, 79, 104, 226, 150, 71, 177, 90, 194, 80, 172, 209, 17, 129, 132, 81, 138, 167,
+                69, 167, 254, 149, 2, 27, 39, 197, 64, 42, 22, 195, 86, 75
+            ],
+            kdf_key.0.as_slice()
+        );
+    }
+
+    #[test]
+    fn test_master_key_derive_argon2() {
+        let kdf_key = KdfDerivedKeyMaterial::derive(
+            "67t9b5g67$%Dh89n",
+            "test_key",
+            &Kdf::Argon2id {
+                iterations: NonZeroU32::new(4).unwrap(),
+                memory: NonZeroU32::new(32).unwrap(),
+                parallelism: NonZeroU32::new(2).unwrap(),
+            },
+        )
+        .unwrap();
+
+        assert_eq!(
+            [
+                207, 240, 225, 177, 162, 19, 163, 76, 98, 106, 179, 175, 224, 9, 17, 240, 20, 147,
+                237, 47, 246, 150, 141, 184, 62, 225, 131, 242, 51, 53, 225, 242
+            ],
+            kdf_key.0.as_slice()
+        );
+    }
+}

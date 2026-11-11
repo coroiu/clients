@@ -1,0 +1,100 @@
+use bitwarden_api_api::models::{FolderResponseModel, FolderWithIdRequestModel};
+use bitwarden_core::{
+    key_management::{KeySlotIds, SymmetricKeySlotId},
+    require,
+};
+use bitwarden_crypto::{
+    CompositeEncryptable, CryptoError, Decryptable, EncString, IdentifyKey, KeyStoreContext,
+    PrimitiveEncryptable,
+};
+use bitwarden_uuid::uuid_newtype;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+use crate::VaultParseError;
+
+uuid_newtype!(pub FolderId);
+
+#[allow(missing_docs)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[bitwarden_ffi::wasm_record]
+pub struct Folder {
+    pub id: Option<FolderId>,
+    pub name: EncString,
+    pub revision_date: DateTime<Utc>,
+}
+
+bitwarden_state::register_repository_item!(FolderId => Folder, "Folder");
+
+#[allow(missing_docs)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[bitwarden_ffi::wasm_record]
+pub struct FolderView {
+    pub id: Option<FolderId>,
+    pub name: String,
+    pub revision_date: DateTime<Utc>,
+}
+
+impl IdentifyKey<SymmetricKeySlotId> for Folder {
+    fn key_identifier(&self) -> SymmetricKeySlotId {
+        SymmetricKeySlotId::User
+    }
+}
+impl IdentifyKey<SymmetricKeySlotId> for FolderView {
+    fn key_identifier(&self) -> SymmetricKeySlotId {
+        SymmetricKeySlotId::User
+    }
+}
+
+impl CompositeEncryptable<KeySlotIds, SymmetricKeySlotId, Folder> for FolderView {
+    fn encrypt_composite(
+        &self,
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        key: SymmetricKeySlotId,
+    ) -> Result<Folder, CryptoError> {
+        Ok(Folder {
+            id: self.id,
+            name: self.name.encrypt(ctx, key)?,
+            revision_date: self.revision_date,
+        })
+    }
+}
+
+impl Decryptable<KeySlotIds, SymmetricKeySlotId, FolderView> for Folder {
+    fn decrypt(
+        &self,
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        key: SymmetricKeySlotId,
+    ) -> Result<FolderView, CryptoError> {
+        Ok(FolderView {
+            id: self.id,
+            name: self.name.decrypt(ctx, key).ok().unwrap_or_default(),
+            revision_date: self.revision_date,
+        })
+    }
+}
+
+impl TryFrom<FolderResponseModel> for Folder {
+    type Error = VaultParseError;
+
+    fn try_from(folder: FolderResponseModel) -> Result<Self, Self::Error> {
+        Ok(Folder {
+            id: folder.id.map(FolderId::new),
+            name: require!(EncString::try_from_optional(folder.name)?),
+            revision_date: require!(folder.revision_date).parse()?,
+        })
+    }
+}
+
+impl From<&Folder> for FolderWithIdRequestModel {
+    fn from(val: &Folder) -> Self {
+        FolderWithIdRequestModel {
+            name: val.name.to_string(),
+            id: val.id.map(|id| id.0),
+        }
+    }
+}

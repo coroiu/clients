@@ -1,0 +1,56 @@
+[package]
+name = "bw"
+version = "0.0.2"
+description = """
+Bitwarden Password Manager CLI
+"""
+keywords = ["bitwarden", "password-manager", "cli"]
+
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+
+[dependencies]
+base64 = ">=0.22.1, <0.24"
+bat = { version = "0.26.0", features = [
+    "regex-fancy",
+], default-features = false }
+bitwarden-api-api = { workspace = true }
+bitwarden-auth = { workspace = true }
+bitwarden-cli = { workspace = true }
+bitwarden-collections = { workspace = true }
+bitwarden-core = { workspace = true, features = ["internal"] }
+bitwarden-generators = { workspace = true }
+bitwarden-pm = { workspace = true, features = ["cli"] }
+bitwarden-send = { workspace = true }
+bitwarden-state = { workspace = true }
+bitwarden-sync = { workspace = true }
+bitwarden-vault = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true, features = ["env"] }
+clap_complete = "4.5.55"
+color-eyre = "0.6.3"
+erased-serde = "0.4.6"
+inquire = "0.9.1"
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = "0.9.33"
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+url = { workspace = true }
+
+[dev-dependencies]
+bitwarden-crypto = { workspace = true }
+bitwarden-test = { workspace = true }
+uuid = { workspace = true }
+wiremock = { workspace = true }
+zeroize = { workspace = true }
+
+[lints]
+workspace = true

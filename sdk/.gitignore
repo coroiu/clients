@@ -1,0 +1,53 @@
+/target
+/support/protobuf/target
+# cargo-run-bin per-tool build cache
+/.bin
+.DS_Store
+.pytest_cache
+.vscode/c_cpp_properties.json
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Oo]bj/
+*.wasm
+
+# Binary files
+*.dylib
+*.a
+*.so
+*.dll
+*.class
+
+# Editor directories and files
+.idea
+xcuserdata/
+
+# Added by cargo
+#
+# already existing elements were commented out
+
+#/target
+node_modules/
+
+# Third party license
+THIRDPARTY.html
+
+# Uniffi
+crates/bitwarden-uniffi/swift/BitwardenFFI.xcframework
+crates/bitwarden-uniffi/swift/tmp
+crates/bitwarden-uniffi/swift/.build
+crates/bitwarden-uniffi/swift/.swiftpm
+crates/bitwarden-uniffi/kotlin/sdk/src/main/java/com/bitwarden/**/*.kt
+
+# API Swagger files
+/artifacts
+
+# Claude
+.claude/settings.local.json

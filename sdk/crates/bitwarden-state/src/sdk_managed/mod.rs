@@ -1,0 +1,305 @@
+use std::sync::Arc;
+
+use bitwarden_error::bitwarden_error;
+use thiserror::Error;
+
+use crate::{
+    persist::Persist,
+    persisted_value::{PersistedValueError, PersistedValueItem, PersistedValueTrait},
+    repository::{Repository, RepositoryError, RepositoryItem, RepositoryMigrations},
+};
+
+mod configuration;
+pub use configuration::DatabaseConfiguration;
+
+#[cfg(target_arch = "wasm32")]
+mod indexed_db;
+
+#[cfg(not(target_arch = "wasm32"))]
+mod sqlite;
+
+mod memory;
+pub(super) use memory::MemoryDatabase;
+
+/// Errors that can occur when interacting with the SDK-managed database.
+#[bitwarden_error(flat)]
+#[derive(Debug, Error)]
+pub enum DatabaseError {
+    /// The requested database configuration is not supported on the current platform.
+    #[error("Database not supported on this platform: {0:?}")]
+    UnsupportedConfiguration(DatabaseConfiguration),
+
+    /// A call dispatched through the thread-bound runner failed.
+    #[error(transparent)]
+    ThreadBoundRunner(#[from] bitwarden_threading::CallError),
+
+    /// Failed to serialize or deserialize a stored value.
+    #[error("Serialization error: {0}")]
+    Serialization(#[from] serde_json::Error),
+
+    /// A JavaScript error was raised by the IndexedDB backend.
+    #[error("JS error: {0}")]
+    JS(String),
+
+    /// An unexpected internal error occurred in the database backend.
+    #[error("Internal error: {0}")]
+    Internal(String),
+
+    /// The database has been closed (e.g. by [`crate::registry::StateRegistry::wipe`]) and
+    /// can no longer service operations.
+    #[error("Database is closed")]
+    Closed,
+}
+
+#[cfg(target_arch = "wasm32")]
+impl From<::indexed_db::Error<indexed_db::IndexedDbInternalError>> for DatabaseError {
+    fn from(e: ::indexed_db::Error<indexed_db::IndexedDbInternalError>) -> Self {
+        DatabaseError::Internal(e.to_string())
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl From<rusqlite::Error> for DatabaseError {
+    fn from(e: rusqlite::Error) -> Self {
+        DatabaseError::Internal(e.to_string())
+    }
+}
+
+pub trait Database {
+    async fn initialize(
+        configuration: DatabaseConfiguration,
+        registrations: RepositoryMigrations,
+    ) -> Result<Self, DatabaseError>
+    where
+        Self: Sized;
+
+    async fn get<T: RepositoryItem>(&self, key: &str) -> Result<Option<T>, DatabaseError>;
+
+    async fn list<T: RepositoryItem>(&self) -> Result<Vec<T>, DatabaseError>;
+
+    async fn set<T: RepositoryItem>(&self, key: &str, value: T) -> Result<(), DatabaseError>;
+
+    async fn set_bulk<T: RepositoryItem>(
+        &self,
+        values: Vec<(String, T)>,
+    ) -> Result<(), DatabaseError>;
+
+    async fn remove<T: RepositoryItem>(&self, key: &str) -> Result<(), DatabaseError>;
+
+    async fn remove_bulk<T: RepositoryItem>(&self, keys: Vec<String>) -> Result<(), DatabaseError>;
+
+    async fn remove_all<T: RepositoryItem>(&self) -> Result<(), DatabaseError>;
+
+    async fn wipe(&self) -> Result<(), DatabaseError>;
+}
+
+#[derive(Clone)]
+pub(super) enum SystemDatabase {
+    #[cfg(not(target_arch = "wasm32"))]
+    Sqlite(sqlite::SqliteDatabase),
+    #[cfg(target_arch = "wasm32")]
+    IndexedDb(indexed_db::IndexedDbDatabase),
+    Memory(MemoryDatabase),
+}
+
+impl Database for SystemDatabase {
+    async fn initialize(
+        configuration: DatabaseConfiguration,
+        migrations: RepositoryMigrations,
+    ) -> Result<Self, DatabaseError> {
+        match configuration {
+            #[cfg(not(target_arch = "wasm32"))]
+            DatabaseConfiguration::Sqlite { .. } => Ok(SystemDatabase::Sqlite(
+                sqlite::SqliteDatabase::initialize(configuration, migrations).await?,
+            )),
+            #[cfg(target_arch = "wasm32")]
+            DatabaseConfiguration::IndexedDb { .. } => Ok(SystemDatabase::IndexedDb(
+                indexed_db::IndexedDbDatabase::initialize(configuration, migrations).await?,
+            )),
+            DatabaseConfiguration::Memory => Ok(SystemDatabase::Memory(MemoryDatabase::new())),
+            #[allow(unreachable_patterns)]
+            other => Err(DatabaseError::UnsupportedConfiguration(other)),
+        }
+    }
+
+    async fn get<T: RepositoryItem>(&self, key: &str) -> Result<Option<T>, DatabaseError> {
+        match self {
+            #[cfg(not(target_arch = "wasm32"))]
+            SystemDatabase::Sqlite(db) => db.get(key).await,
+            #[cfg(target_arch = "wasm32")]
+            SystemDatabase::IndexedDb(db) => db.get(key).await,
+            SystemDatabase::Memory(db) => db.get(key).await,
+        }
+    }
+
+    async fn list<T: RepositoryItem>(&self) -> Result<Vec<T>, DatabaseError> {
+        match self {
+            #[cfg(not(target_arch = "wasm32"))]
+            SystemDatabase::Sqlite(db) => db.list().await,
+            #[cfg(target_arch = "wasm32")]
+            SystemDatabase::IndexedDb(db) => db.list().await,
+            SystemDatabase::Memory(db) => db.list().await,
+        }
+    }
+
+    async fn set<T: RepositoryItem>(&self, key: &str, value: T) -> Result<(), DatabaseError> {
+        match self {
+            #[cfg(not(target_arch = "wasm32"))]
+            SystemDatabase::Sqlite(db) => db.set(key, value).await,
+            #[cfg(target_arch = "wasm32")]
+            SystemDatabase::IndexedDb(db) => db.set(key, value).await,
+            SystemDatabase::Memory(db) => db.set(key, value).await,
+        }
+    }
+
+    async fn set_bulk<T: RepositoryItem>(
+        &self,
+        values: Vec<(String, T)>,
+    ) -> Result<(), DatabaseError> {
+        match self {
+            #[cfg(not(target_arch = "wasm32"))]
+            SystemDatabase::Sqlite(db) => db.set_bulk(values).await,
+            #[cfg(target_arch = "wasm32")]
+            SystemDatabase::IndexedDb(db) => db.set_bulk(values).await,
+            SystemDatabase::Memory(db) => db.set_bulk(values).await,
+        }
+    }
+
+    async fn remove<T: RepositoryItem>(&self, key: &str) -> Result<(), DatabaseError> {
+        match self {
+            #[cfg(not(target_arch = "wasm32"))]
+            SystemDatabase::Sqlite(db) => db.remove::<T>(key).await,
+            #[cfg(target_arch = "wasm32")]
+            SystemDatabase::IndexedDb(db) => db.remove::<T>(key).await,
+            SystemDatabase::Memory(db) => db.remove::<T>(key).await,
+        }
+    }
+
+    async fn remove_bulk<T: RepositoryItem>(&self, keys: Vec<String>) -> Result<(), DatabaseError> {
+        match self {
+            #[cfg(not(target_arch = "wasm32"))]
+            SystemDatabase::Sqlite(db) => db.remove_bulk::<T>(keys).await,
+            #[cfg(target_arch = "wasm32")]
+            SystemDatabase::IndexedDb(db) => db.remove_bulk::<T>(keys).await,
+            SystemDatabase::Memory(db) => db.remove_bulk::<T>(keys).await,
+        }
+    }
+
+    async fn remove_all<T: RepositoryItem>(&self) -> Result<(), DatabaseError> {
+        match self {
+            #[cfg(not(target_arch = "wasm32"))]
+            SystemDatabase::Sqlite(db) => db.remove_all::<T>().await,
+            #[cfg(target_arch = "wasm32")]
+            SystemDatabase::IndexedDb(db) => db.remove_all::<T>().await,
+            SystemDatabase::Memory(db) => db.remove_all::<T>().await,
+        }
+    }
+
+    async fn wipe(&self) -> Result<(), DatabaseError> {
+        match self {
+            #[cfg(not(target_arch = "wasm32"))]
+            SystemDatabase::Sqlite(db) => db.wipe().await,
+            #[cfg(target_arch = "wasm32")]
+            SystemDatabase::IndexedDb(db) => db.wipe().await,
+            SystemDatabase::Memory(db) => db.wipe().await,
+        }
+    }
+}
+
+struct DBRepository<T: RepositoryItem> {
+    database: SystemDatabase,
+    _marker: std::marker::PhantomData<T>,
+}
+
+#[async_trait::async_trait]
+impl<V: RepositoryItem> Repository<V> for DBRepository<V> {
+    async fn get(&self, key: V::Key) -> Result<Option<V>, RepositoryError> {
+        let key = key.to_string();
+        let value = self.database.get::<V>(&key).await?;
+        Ok(value)
+    }
+    async fn list(&self) -> Result<Vec<V>, RepositoryError> {
+        let values = self.database.list::<V>().await?;
+        Ok(values)
+    }
+    async fn set(&self, key: V::Key, value: V) -> Result<(), RepositoryError> {
+        let key = key.to_string();
+        Ok(self.database.set::<V>(&key, value).await?)
+    }
+    async fn set_bulk(&self, values: Vec<(V::Key, V)>) -> Result<(), RepositoryError> {
+        let values = values
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v))
+            .collect();
+        Ok(self.database.set_bulk::<V>(values).await?)
+    }
+    async fn remove(&self, key: V::Key) -> Result<(), RepositoryError> {
+        let key = key.to_string();
+        Ok(self.database.remove::<V>(&key).await?)
+    }
+    async fn remove_bulk(&self, keys: Vec<V::Key>) -> Result<(), RepositoryError> {
+        let keys = keys.into_iter().map(|k| k.to_string()).collect();
+        Ok(self.database.remove_bulk::<V>(keys).await?)
+    }
+    async fn remove_all(&self) -> Result<(), RepositoryError> {
+        Ok(self.database.remove_all::<V>().await?)
+    }
+}
+
+/// Stores a single persisted value in the `PersistedValue` table, keyed by `name`, as the bare
+/// serialized value.
+struct DBPersistedValue<T> {
+    database: SystemDatabase,
+    name: &'static str,
+    _marker: std::marker::PhantomData<T>,
+}
+
+#[async_trait::async_trait]
+impl<T: Persist> PersistedValueTrait<T> for DBPersistedValue<T> {
+    // The serde messages can quote the stored value, so they are not propagated.
+    async fn get(&self) -> Result<Option<T>, PersistedValueError> {
+        match self.database.get::<PersistedValueItem>(self.name).await? {
+            Some(item) => Ok(Some(serde_json::from_value::<T>(item.0).map_err(|_| {
+                PersistedValueError::Internal(format!("Failed to deserialize '{}'", self.name))
+            })?)),
+            None => Ok(None),
+        }
+    }
+
+    async fn set(&self, value: T) -> Result<(), PersistedValueError> {
+        let item = PersistedValueItem(serde_json::to_value(&value).map_err(|_| {
+            PersistedValueError::Internal(format!("Failed to serialize '{}'", self.name))
+        })?);
+        Ok(self
+            .database
+            .set::<PersistedValueItem>(self.name, item)
+            .await?)
+    }
+
+    async fn remove(&self) -> Result<(), PersistedValueError> {
+        Ok(self
+            .database
+            .remove::<PersistedValueItem>(self.name)
+            .await?)
+    }
+}
+
+impl SystemDatabase {
+    pub(super) fn get_repository<V: RepositoryItem>(&self) -> Arc<dyn Repository<V>> {
+        Arc::new(DBRepository {
+            database: self.clone(),
+            _marker: std::marker::PhantomData,
+        })
+    }
+
+    pub(super) fn get_persisted_value<T: Persist>(
+        &self,
+        name: &'static str,
+    ) -> Arc<dyn PersistedValueTrait<T>> {
+        Arc::new(DBPersistedValue {
+            database: self.clone(),
+            name,
+            _marker: std::marker::PhantomData,
+        })
+    }
+}

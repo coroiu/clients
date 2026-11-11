@@ -1,0 +1,517 @@
+use bitwarden_api_api::models::CipherMiniDetailsResponseModelListResponseModel;
+use bitwarden_core::{ApiError, OrganizationId, key_management::KeySlotIds};
+use bitwarden_crypto::KeyStore;
+use bitwarden_error::bitwarden_error;
+use thiserror::Error;
+
+use crate::{
+    Cipher, VaultParseError,
+    cipher::cipher::{
+        DecryptCipherResult, ListOrganizationCiphersResult, PartialCipher, StrictDecrypt,
+    },
+    cipher_client::admin::CipherAdminClient,
+};
+
+#[allow(missing_docs)]
+#[bitwarden_error(flat)]
+#[derive(Debug, Error)]
+pub enum GetAssignedOrgCiphersAdminError {
+    #[error(transparent)]
+    Api(#[from] ApiError),
+    #[error(transparent)]
+    VaultParse(#[from] VaultParseError),
+}
+
+#[allow(missing_docs)]
+#[bitwarden_error(flat)]
+#[derive(Debug, Error)]
+pub enum GetOrganizationCiphersAdminError {
+    #[error(transparent)]
+    VaultParse(#[from] VaultParseError),
+    #[error(transparent)]
+    Api(#[from] ApiError),
+}
+
+/// Get all ciphers for an organization.
+pub async fn list_org_ciphers(
+    org_id: OrganizationId,
+    include_member_items: bool,
+    api_client: &bitwarden_api_api::apis::ApiClient,
+    key_store: &KeyStore<KeySlotIds>,
+    use_strict_decryption: bool,
+) -> Result<ListOrganizationCiphersResult, GetOrganizationCiphersAdminError> {
+    let api = api_client.ciphers_api();
+    let response: CipherMiniDetailsResponseModelListResponseModel = api
+        .get_organization_ciphers(Some(org_id.into()), Some(include_member_items))
+        .await?;
+    let ciphers = response
+        .data
+        .into_iter()
+        .flatten()
+        .map(|model| model.merge_with_cipher(None))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let list_views = if use_strict_decryption {
+        let wrapped: Vec<StrictDecrypt<Cipher>> =
+            ciphers.iter().cloned().map(StrictDecrypt).collect();
+        let (list_views, _failures) = key_store.decrypt_list_with_failures(&wrapped);
+        list_views
+    } else {
+        let (list_views, _failures) = key_store.decrypt_list_with_failures(&ciphers);
+        list_views
+    };
+    Ok(ListOrganizationCiphersResult {
+        ciphers,
+        list_views,
+    })
+}
+
+/// Get all Login ciphers for an organization, decrypted to full [crate::CipherView].
+pub async fn list_org_login_ciphers(
+    org_id: OrganizationId,
+    api_client: &bitwarden_api_api::apis::ApiClient,
+    key_store: &KeyStore<KeySlotIds>,
+    use_strict_decryption: bool,
+) -> Result<DecryptCipherResult, GetOrganizationCiphersAdminError> {
+    let response: CipherMiniDetailsResponseModelListResponseModel = api_client
+        .ciphers_api()
+        .get_organization_login_ciphers(Some(org_id.into()))
+        .await?;
+    let ciphers = response
+        .data
+        .into_iter()
+        .flatten()
+        .map(|model| model.merge_with_cipher(None))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(if use_strict_decryption {
+        let wrapped: Vec<StrictDecrypt<Cipher>> = ciphers.into_iter().map(StrictDecrypt).collect();
+        let (successes, failures) = key_store.decrypt_list_with_failures(&wrapped);
+        DecryptCipherResult {
+            successes,
+            failures: failures.into_iter().map(|f| f.0.clone()).collect(),
+        }
+    } else {
+        let (successes, failures) = key_store.decrypt_list_with_failures(&ciphers);
+        DecryptCipherResult {
+            successes,
+            failures: failures.into_iter().cloned().collect(),
+        }
+    })
+}
+
+#[bitwarden_ffi::wasm_export]
+impl CipherAdminClient {
+    /// Fetches and decrypts all ciphers assigned to the current user for an organization.
+    pub async fn list_assigned_org_ciphers(
+        &self,
+        org_id: OrganizationId,
+    ) -> Result<ListOrganizationCiphersResult, GetAssignedOrgCiphersAdminError> {
+        use bitwarden_api_api::models::CipherDetailsResponseModelListResponseModel;
+
+        let response: CipherDetailsResponseModelListResponseModel = self
+            .api_configurations
+            .api_client
+            .ciphers_api()
+            .get_assigned_organization_ciphers(Some(org_id.into()))
+            .await?;
+
+        let ciphers = response
+            .data
+            .into_iter()
+            .flatten()
+            .map(|model| model.merge_with_cipher(None))
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let list_views = if self.is_strict_decrypt().await {
+            let wrapped: Vec<StrictDecrypt<Cipher>> =
+                ciphers.iter().cloned().map(StrictDecrypt).collect();
+            let (list_views, _failures) = self.key_store.decrypt_list_with_failures(&wrapped);
+            list_views
+        } else {
+            let (list_views, _failures) = self.key_store.decrypt_list_with_failures(&ciphers);
+            list_views
+        };
+        Ok(ListOrganizationCiphersResult {
+            ciphers,
+            list_views,
+        })
+    }
+
+    /// Get all ciphers for an organization.
+    pub async fn list_org_ciphers(
+        &self,
+        org_id: OrganizationId,
+        include_member_items: bool,
+    ) -> Result<ListOrganizationCiphersResult, GetOrganizationCiphersAdminError> {
+        list_org_ciphers(
+            org_id,
+            include_member_items,
+            &self.api_configurations.api_client,
+            &self.key_store,
+            self.is_strict_decrypt().await,
+        )
+        .await
+    }
+
+    /// Fetches all Login ciphers for an organization and decrypts them to full [crate::CipherView].
+    pub async fn list_org_login_ciphers(
+        &self,
+        org_id: OrganizationId,
+    ) -> Result<DecryptCipherResult, GetOrganizationCiphersAdminError> {
+        list_org_login_ciphers(
+            org_id,
+            &self.api_configurations.api_client,
+            &self.key_store,
+            self.is_strict_decrypt().await,
+        )
+        .await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use bitwarden_api_api::{
+        apis::ApiClient,
+        models::{
+            CipherDetailsResponseModel, CipherDetailsResponseModelListResponseModel,
+            CipherMiniDetailsResponseModel, CipherMiniDetailsResponseModelListResponseModel,
+        },
+    };
+    use bitwarden_core::{
+        client::ApiConfigurations, key_management::create_test_crypto_with_user_key,
+    };
+    use bitwarden_crypto::{SymmetricCryptoKey, SymmetricKeyAlgorithm};
+    use chrono::Utc;
+
+    use super::*;
+    use crate::{Cipher, CipherType, Login};
+
+    const TEST_ORG_ID: &str = "1bc9ac1e-f5aa-45f2-94bf-b181009709b8";
+    const TEST_CIPHER_ID_1: &str = "5faa9684-c793-4a2d-8a12-b33900187097";
+    const TEST_CIPHER_ID_2: &str = "6faa9684-c793-4a2d-8a12-b33900187098";
+
+    fn create_test_client(api_client: ApiClient) -> CipherAdminClient {
+        #[allow(deprecated)]
+        CipherAdminClient {
+            key_store: create_test_crypto_with_user_key(SymmetricCryptoKey::make(
+                SymmetricKeyAlgorithm::Aes256CbcHmac,
+            )),
+            api_configurations: Arc::new(ApiConfigurations::from_api_client(api_client)),
+            client: bitwarden_core::Client::new_test(None),
+        }
+    }
+
+    fn mock_mini_cipher(cipher_id: &str) -> CipherMiniDetailsResponseModel {
+        let cipher = generate_test_cipher();
+        CipherMiniDetailsResponseModel {
+            id: cipher_id.parse().ok(),
+            name: cipher.name.as_ref().map(ToString::to_string),
+            r#type: Some(cipher.r#type.into()),
+            login: cipher.login.clone().map(|l| Box::new(l.into())),
+            creation_date: Some(Utc::now().to_rfc3339()),
+            revision_date: Some(Utc::now().to_rfc3339()),
+            ..Default::default()
+        }
+    }
+
+    fn mock_details_cipher(cipher_id: &str) -> CipherDetailsResponseModel {
+        CipherDetailsResponseModel {
+            id: Some(cipher_id.parse().unwrap()),
+            name: Some("2.pMS6/icTQABtulw52pq2lg==|XXbxKxDTh+mWiN1HjH2N1w==|Q6PkuT+KX/axrgN9ubD5Ajk2YNwxQkgs3WJM0S0wtG8=".to_string()),
+            r#type: Some(bitwarden_api_api::models::CipherType::Login),
+            login: Some(Box::new(bitwarden_api_api::models::CipherLoginModel::default())),
+            creation_date: Some(Utc::now().to_rfc3339()),
+            revision_date: Some(Utc::now().to_rfc3339()),
+            ..Default::default()
+        }
+    }
+
+    fn generate_test_cipher() -> Cipher {
+        Cipher {
+            partial_data: None,
+            id: TEST_CIPHER_ID_1.parse().ok(),
+            name: Some("2.pMS6/icTQABtulw52pq2lg==|XXbxKxDTh+mWiN1HjH2N1w==|Q6PkuT+KX/axrgN9ubD5Ajk2YNwxQkgs3WJM0S0wtG8=".parse().unwrap()),
+            r#type: CipherType::Login,
+            notes: Default::default(),
+            organization_id: Default::default(),
+            folder_id: Default::default(),
+            favorite: Default::default(),
+            reprompt: Default::default(),
+            fields: Default::default(),
+            collection_ids: Default::default(),
+            key: Default::default(),
+            login: Some(Login {
+                username: None,
+                password: None,
+                password_revision_date: None,
+                uris: None,
+                totp: None,
+                autofill_on_page_load: None,
+                http_authentication_enabled: None,
+                fido2_credentials: None,
+            }),
+            identity: Default::default(),
+            card: Default::default(),
+            secure_note: Default::default(),
+            ssh_key: Default::default(),
+            bank_account: Default::default(),
+            drivers_license: Default::default(),
+            passport: Default::default(),
+            organization_use_totp: Default::default(),
+            edit: Default::default(),
+            permissions: Default::default(),
+            view_password: Default::default(),
+            local_data: Default::default(),
+            attachments: Default::default(),
+            password_history: Default::default(),
+            creation_date: Default::default(),
+            deleted_date: Default::default(),
+            revision_date: Default::default(),
+            archived_date: Default::default(),
+            data: Default::default(),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_list_org_ciphers_all_success() {
+        let api_client = ApiClient::new_mocked(move |mock| {
+            mock.ciphers_api
+                .expect_get_organization_ciphers()
+                .returning(move |_org_id, _include_member_items| {
+                    Ok(CipherMiniDetailsResponseModelListResponseModel {
+                        object: None,
+                        data: Some(vec![
+                            mock_mini_cipher(TEST_CIPHER_ID_1),
+                            mock_mini_cipher(TEST_CIPHER_ID_2),
+                        ]),
+                        continuation_token: None,
+                    })
+                });
+        });
+
+        let client = create_test_client(api_client);
+        let result = client
+            .list_org_ciphers(TEST_ORG_ID.parse().unwrap(), true)
+            .await
+            .unwrap();
+
+        assert_eq!(result.ciphers.len(), 2);
+        assert_eq!(result.list_views.len(), 2);
+        assert_eq!(result.ciphers[0].id, TEST_CIPHER_ID_1.parse().ok());
+        assert_eq!(result.ciphers[1].id, TEST_CIPHER_ID_2.parse().ok());
+    }
+
+    #[tokio::test]
+    async fn test_list_org_ciphers_with_failures() {
+        let api_client = ApiClient::new_mocked(move |mock| {
+            mock.ciphers_api
+                .expect_get_organization_ciphers()
+                .returning(move |_org_id, _include_member_items| {
+                    let mut bad = mock_mini_cipher(TEST_CIPHER_ID_2);
+                    bad.key = Some("2.Gg8yCM4IIgykCZyq0O4+cA==|GJLBtfvSJTDJh/F7X4cJPkzI6ccnzJm5DYl3yxOW2iUn7DgkkmzoOe61sUhC5dgVdV0kFqsZPcQ0yehlN1DDsFIFtrb4x7LwzJNIkMgxNyg=|1rGkGJ8zcM5o5D0aIIwAyLsjMLrPsP3EWm3CctBO3Fw=".to_string());
+                    Ok(CipherMiniDetailsResponseModelListResponseModel {
+                        object: None,
+                        data: Some(vec![mock_mini_cipher(TEST_CIPHER_ID_1), bad]),
+                        continuation_token: None,
+                    })
+                });
+        });
+
+        let client = create_test_client(api_client);
+        let result = client
+            .list_org_ciphers(TEST_ORG_ID.parse().unwrap(), true)
+            .await
+            .unwrap();
+
+        assert_eq!(result.ciphers.len(), 2);
+        assert_eq!(result.list_views.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn test_list_org_ciphers_empty() {
+        let api_client = ApiClient::new_mocked(move |mock| {
+            mock.ciphers_api
+                .expect_get_organization_ciphers()
+                .returning(move |_org_id, _include_member_items| {
+                    Ok(CipherMiniDetailsResponseModelListResponseModel {
+                        object: None,
+                        data: Some(vec![]),
+                        continuation_token: None,
+                    })
+                });
+        });
+
+        let client = create_test_client(api_client);
+        let result = client
+            .list_org_ciphers(TEST_ORG_ID.parse().unwrap(), false)
+            .await
+            .unwrap();
+
+        assert!(result.ciphers.is_empty());
+        assert!(result.list_views.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_list_org_login_ciphers_all_success() {
+        let api_client = ApiClient::new_mocked(move |mock| {
+            mock.ciphers_api
+                .expect_get_organization_login_ciphers()
+                .withf(|org_id| *org_id == TEST_ORG_ID.parse().ok())
+                .returning(move |_org_id| {
+                    Ok(CipherMiniDetailsResponseModelListResponseModel {
+                        object: None,
+                        data: Some(vec![
+                            mock_mini_cipher(TEST_CIPHER_ID_1),
+                            mock_mini_cipher(TEST_CIPHER_ID_2),
+                        ]),
+                        continuation_token: None,
+                    })
+                });
+        });
+
+        let client = create_test_client(api_client);
+        let result = client
+            .list_org_login_ciphers(TEST_ORG_ID.parse().unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(result.successes.len(), 2);
+        assert!(result.failures.is_empty());
+        assert_eq!(result.successes[0].id, TEST_CIPHER_ID_1.parse().ok());
+        assert_eq!(result.successes[1].id, TEST_CIPHER_ID_2.parse().ok());
+        assert!(result.successes[0].login.is_some());
+    }
+
+    #[tokio::test]
+    async fn test_list_org_login_ciphers_with_failures() {
+        let api_client = ApiClient::new_mocked(move |mock| {
+            mock.ciphers_api
+                .expect_get_organization_login_ciphers()
+                .returning(move |_org_id| {
+                    let mut bad = mock_mini_cipher(TEST_CIPHER_ID_2);
+                    bad.key = Some("2.Gg8yCM4IIgykCZyq0O4+cA==|GJLBtfvSJTDJh/F7X4cJPkzI6ccnzJm5DYl3yxOW2iUn7DgkkmzoOe61sUhC5dgVdV0kFqsZPcQ0yehlN1DDsFIFtrb4x7LwzJNIkMgxNyg=|1rGkGJ8zcM5o5D0aIIwAyLsjMLrPsP3EWm3CctBO3Fw=".to_string());
+                    Ok(CipherMiniDetailsResponseModelListResponseModel {
+                        object: None,
+                        data: Some(vec![mock_mini_cipher(TEST_CIPHER_ID_1), bad]),
+                        continuation_token: None,
+                    })
+                });
+        });
+
+        let client = create_test_client(api_client);
+        let result = client
+            .list_org_login_ciphers(TEST_ORG_ID.parse().unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(result.successes.len(), 1);
+        assert_eq!(result.successes[0].id, TEST_CIPHER_ID_1.parse().ok());
+        assert_eq!(result.failures.len(), 1);
+        assert_eq!(result.failures[0].id, TEST_CIPHER_ID_2.parse().ok());
+    }
+
+    #[tokio::test]
+    async fn test_list_org_login_ciphers_empty() {
+        let api_client = ApiClient::new_mocked(move |mock| {
+            mock.ciphers_api
+                .expect_get_organization_login_ciphers()
+                .returning(move |_org_id| {
+                    Ok(CipherMiniDetailsResponseModelListResponseModel {
+                        object: None,
+                        data: None,
+                        continuation_token: None,
+                    })
+                });
+        });
+
+        let client = create_test_client(api_client);
+        let result = client
+            .list_org_login_ciphers(TEST_ORG_ID.parse().unwrap())
+            .await
+            .unwrap();
+
+        assert!(result.successes.is_empty());
+        assert!(result.failures.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_list_assigned_org_ciphers_success() {
+        let api_client = ApiClient::new_mocked(|mock| {
+            mock.ciphers_api
+                .expect_get_assigned_organization_ciphers()
+                .returning(|_| {
+                    Ok(CipherDetailsResponseModelListResponseModel {
+                        object: None,
+                        data: Some(vec![
+                            mock_details_cipher(TEST_CIPHER_ID_1),
+                            mock_details_cipher(TEST_CIPHER_ID_2),
+                        ]),
+                        continuation_token: None,
+                    })
+                });
+        });
+
+        let client = create_test_client(api_client);
+        let result = client
+            .list_assigned_org_ciphers(TEST_ORG_ID.parse().unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(result.ciphers.len(), 2);
+        assert_eq!(result.list_views.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_list_assigned_org_ciphers_with_failures() {
+        let api_client = ApiClient::new_mocked(|mock| {
+            mock.ciphers_api
+                .expect_get_assigned_organization_ciphers()
+                .returning(|_| {
+                    let mut bad = mock_details_cipher(TEST_CIPHER_ID_2);
+                    bad.key = Some("2.Gg8yCM4IIgykCZyq0O4+cA==|GJLBtfvSJTDJh/F7X4cJPkzI6ccnzJm5DYl3yxOW2iUn7DgkkmzoOe61sUhC5dgVdV0kFqsZPcQ0yehlN1DDsFIFtrb4x7LwzJNIkMgxNyg=|1rGkGJ8zcM5o5D0aIIwAyLsjMLrPsP3EWm3CctBO3Fw=".to_string());
+                    Ok(CipherDetailsResponseModelListResponseModel {
+                        object: None,
+                        data: Some(vec![mock_details_cipher(TEST_CIPHER_ID_1), bad]),
+                        continuation_token: None,
+                    })
+                });
+        });
+
+        let client = create_test_client(api_client);
+        let result = client
+            .list_assigned_org_ciphers(TEST_ORG_ID.parse().unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(result.ciphers.len(), 2);
+        assert_eq!(result.list_views.len(), 1);
+        assert_eq!(result.list_views[0].id, TEST_CIPHER_ID_1.parse().ok());
+    }
+
+    #[tokio::test]
+    async fn test_list_assigned_org_ciphers_empty() {
+        let api_client = ApiClient::new_mocked(|mock| {
+            mock.ciphers_api
+                .expect_get_assigned_organization_ciphers()
+                .returning(|_| {
+                    Ok(CipherDetailsResponseModelListResponseModel {
+                        object: None,
+                        data: Some(vec![]),
+                        continuation_token: None,
+                    })
+                });
+        });
+
+        let client = create_test_client(api_client);
+        let result = client
+            .list_assigned_org_ciphers(TEST_ORG_ID.parse().unwrap())
+            .await
+            .unwrap();
+
+        assert!(result.ciphers.is_empty());
+        assert!(result.list_views.is_empty());
+    }
+}

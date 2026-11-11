@@ -1,0 +1,60 @@
+name: Rustdoc
+
+on:
+  push:
+    branches: ["main"]
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  rustdoc:
+    name: Rustdoc
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set Rust Nightly Toolchain
+        id: nightly-toolchain
+        shell: bash
+        run: |
+          RUST_NIGHTLY_TOOLCHAIN="$(grep -oP '^nightly-channel.*"(\K.*?)(?=")' rust-toolchain.toml)"
+          echo "RUST_NIGHTLY_TOOLCHAIN=${RUST_NIGHTLY_TOOLCHAIN}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: "${{ steps.nightly-toolchain.outputs.RUST_NIGHTLY_TOOLCHAIN }}"
+
+      - name: Build documentation
+        env:
+          RUSTDOCFLAGS: "--enable-index-page -Zunstable-options"
+          _RUST_NIGHTLY_TOOLCHAIN: "${{ steps.nightly-toolchain.outputs.RUST_NIGHTLY_TOOLCHAIN }}"
+        run: cargo +"${_RUST_NIGHTLY_TOOLCHAIN}" doc --no-deps --all-features --document-private-items
+
+      - name: Deploy to GitHub Pages
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ./target/doc
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    needs: rustdoc
+    name: Deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

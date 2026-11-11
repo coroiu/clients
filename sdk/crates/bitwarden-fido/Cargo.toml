@@ -1,0 +1,47 @@
+[package]
+name = "bitwarden-fido"
+description = """
+Internal crate for the bitwarden crate. Do not use.
+"""
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+[features]
+uniffi = ["dep:uniffi", "bitwarden-core/uniffi", "bitwarden-vault/uniffi"]
+
+[dependencies]
+async-trait = { workspace = true }
+bitwarden-api-api = { workspace = true }
+bitwarden-core = { workspace = true }
+bitwarden-crypto = { workspace = true }
+bitwarden-encoding = { workspace = true }
+bitwarden-vault = { workspace = true }
+chrono = { workspace = true }
+coset = ">=0.3.7, <0.5"
+itertools = ">=0.13.0, <0.16"
+p256 = ">=0.13.2, <0.14"
+passkey = { git = "https://github.com/bitwarden/passkey-rs", rev = "043279e92e2eb5f509bf87eb7fa50987fd377e32" }
+passkey-client = { git = "https://github.com/bitwarden/passkey-rs", rev = "043279e92e2eb5f509bf87eb7fa50987fd377e32", features = [
+    "android-asset-validation",
+] }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+uniffi = { workspace = true, optional = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+
+[lints]
+workspace = true

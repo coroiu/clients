@@ -1,0 +1,1120 @@
+use std::{borrow::Cow, str::FromStr};
+
+use bitwarden_encoding::{B64, FromStrVisitor};
+use coset::{CborSerializable, iana::KeyOperation};
+use rand::RngExt;
+use serde::Deserialize;
+
+use super::{check_length, from_b64, from_b64_vec, split_enc_string};
+use crate::{
+    Aes256CbcHmacKey, ContentFormat, CoseEncrypt0Bytes, KeyDecryptable, KeyEncryptable,
+    KeyEncryptableWithContentType, SymmetricCryptoKey, SymmetricKeyAlgorithm, Utf8Bytes,
+    XAes256GcmKey, XChaCha20Poly1305Key,
+    cose::{XAES_256_GCM, XCHACHA20_POLY1305, symmetric::CoseContentEncryptionAlgorithm},
+    error::{CryptoError, EncStringParseError, Result, UnsupportedOperationError},
+    hazmat::symmetric_encryption::Aes256CbcHmacSha256,
+    keys::KeyId,
+};
+
+#[cfg(feature = "wasm")]
+#[wasm_bindgen::prelude::wasm_bindgen(typescript_custom_section)]
+const TS_CUSTOM_TYPES: &'static str = r#"
+export type EncString = Tagged<string, "EncString">;
+"#;
+
+/// Numerical representation of each [EncString] variant, as used in both the string and the binary
+/// format.
+const AES256_CBC_TYPE: u8 = 0;
+const AES256_CBC_HMAC_TYPE: u8 = 2;
+const COSE_ENCRYPT0_TYPE: u8 = 7;
+
+/// # Encrypted string primitive
+///
+/// [EncString] is a Bitwarden specific primitive that represents a symmetrically encrypted piece of
+/// data, encoded as a string. They are are used together with the [KeyDecryptable] and
+/// [KeyEncryptable] traits to encrypt and decrypt data using [SymmetricCryptoKey]s.
+///
+/// The flexibility of the [EncString] type allows for different encryption algorithms to be used
+/// which is represented by the different variants of the enum.
+///
+/// ## Note
+///
+/// For backwards compatibility we will rarely if ever be able to remove support for decrypting old
+/// variants, but we should be opinionated in which variants are used for encrypting.
+///
+/// ## Variants
+/// - [Aes256Cbc_B64](EncString::Aes256Cbc_B64) - Deprecated and MUST NOT be used for encrypting as
+///   it is not authenticated
+/// - [Aes256Cbc_HmacSha256_B64](EncString::Aes256Cbc_HmacSha256_B64)
+/// - [Cose_Encrypt0_B64](EncString::Cose_Encrypt0_B64) - The preferred variant for encrypting data.
+///
+/// ## Serialization
+///
+/// [EncString] implements [ToString] and [FromStr] to allow for easy serialization and uses a
+/// custom scheme to represent the different variants.
+///
+/// The scheme is one of the following schemes:
+/// - `[type].[iv]|[data]`
+/// - `[type].[iv]|[data]|[mac]`
+/// - `[type].[cose_encrypt0_bytes]`
+///
+/// Where:
+/// - `[type]`: is a digit number representing the variant.
+/// - `[iv]`: (optional) is the initialization vector used for encryption.
+/// - `[data]`: is the encrypted data.
+/// - `[mac]`: (optional) is the MAC used to validate the integrity of the data.
+/// - `[cose_encrypt0_bytes]`: is the COSE Encrypt0 message, serialized to bytes
+#[allow(missing_docs)]
+#[derive(Clone, zeroize::ZeroizeOnDrop, PartialEq)]
+#[allow(unused, non_camel_case_types)]
+pub enum EncString {
+    /// 0
+    Aes256Cbc_B64 {
+        iv: [u8; 16],
+        data: Vec<u8>,
+    },
+    /// 1 was the now removed `AesCbc128_HmacSha256_B64`.
+    /// 2
+    Aes256Cbc_HmacSha256_B64 {
+        iv: [u8; 16],
+        mac: [u8; 32],
+        data: Vec<u8>,
+    },
+    // 7 The actual enc type is contained in the cose struct
+    Cose_Encrypt0_B64 {
+        data: Vec<u8>,
+    },
+    /// A string that matches no known [EncString] forma. This could be an unimplemented
+    /// variant, or a malformed variant such as an encstring with invalid length of iv/mac.
+    Unparseable {
+        raw: String,
+    },
+}
+
+bitwarden_ffi::impl_wire_string!(EncString);
+
+#[cfg(feature = "wasm")]
+impl TryFrom<wasm_bindgen::JsValue> for EncString {
+    type Error = CryptoError;
+
+    fn try_from(value: wasm_bindgen::JsValue) -> Result<Self, Self::Error> {
+        let string = value
+            .as_string()
+            .ok_or(EncStringParseError::NoType)
+            .map_err(CryptoError::from)?;
+        Self::from_str(&string)
+    }
+}
+
+/// Deserializes an [EncString] from a string.
+impl FromStr for EncString {
+    type Err = CryptoError;
+
+    /// Never returns an error: anything that does not match a known format becomes
+    /// [EncString::Unparseable]. Use [EncString::parse_strict] to reject those instead.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::parse_known_format(s)
+            .unwrap_or_else(|| EncString::Unparseable { raw: s.to_owned() }))
+    }
+}
+
+/// Infallible conversion, since parsing never fails: unknown formats become
+/// [EncString::Unparseable].
+impl From<&str> for EncString {
+    fn from(s: &str) -> Self {
+        Self::parse_known_format(s).unwrap_or_else(|| EncString::Unparseable { raw: s.to_owned() })
+    }
+}
+
+/// Infallible conversion, since parsing never fails: unknown formats become
+/// [EncString::Unparseable].
+impl From<String> for EncString {
+    fn from(s: String) -> Self {
+        Self::parse_known_format(&s).unwrap_or(EncString::Unparseable { raw: s })
+    }
+}
+
+impl EncString {
+    /// Parses one of the known [EncString] formats, or [None] if the string matches none of them.
+    fn parse_known_format(s: &str) -> Option<Self> {
+        let (enc_type, parts) = split_enc_string(s);
+        match (enc_type, parts.len()) {
+            ("0", 2) => Some(EncString::Aes256Cbc_B64 {
+                iv: from_b64(parts[0]).ok()?,
+                data: from_b64_vec(parts[1]).ok()?,
+            }),
+            ("2", 3) => Some(EncString::Aes256Cbc_HmacSha256_B64 {
+                iv: from_b64(parts[0]).ok()?,
+                data: from_b64_vec(parts[1]).ok()?,
+                mac: from_b64(parts[2]).ok()?,
+            }),
+            ("7", 1) => Some(EncString::Cose_Encrypt0_B64 {
+                data: from_b64_vec(parts[0]).ok()?,
+            }),
+            _ => None,
+        }
+    }
+
+    /// Parses an [EncString], rejecting invalid values
+    pub fn parse_strict(s: &str) -> Result<Self, CryptoError> {
+        Self::parse_known_format(s).ok_or(CryptoError::UnparseableEncString)
+    }
+
+    /// The id of the key this [EncString] was encrypted with, read from the COSE protected header.
+    /// [None] for the legacy types, which carry no key id, or if the header holds none.
+    pub fn key_id(&self) -> Option<KeyId> {
+        let EncString::Cose_Encrypt0_B64 { data } = self else {
+            return None;
+        };
+
+        let msg = coset::CoseEncrypt0::from_slice(data.as_slice()).ok()?;
+        KeyId::try_from(msg.protected.header.key_id.as_slice()).ok()
+    }
+
+    /// The algorithm of the key this [EncString] was encrypted with. [None] for the unauthenticated
+    /// legacy type, an [EncString::Unparseable], or a COSE message with an unknown algorithm.
+    pub fn algorithm(&self) -> Option<SymmetricKeyAlgorithm> {
+        let data = match self {
+            EncString::Aes256Cbc_HmacSha256_B64 { .. } => {
+                return Some(SymmetricKeyAlgorithm::Aes256CbcHmac);
+            }
+            EncString::Cose_Encrypt0_B64 { data } => data,
+            EncString::Aes256Cbc_B64 { .. } | EncString::Unparseable { .. } => return None,
+        };
+
+        let msg = coset::CoseEncrypt0::from_slice(data.as_slice()).ok()?;
+        let algorithm = msg.protected.header.alg.as_ref()?;
+        let algorithm = match CoseContentEncryptionAlgorithm::try_from(algorithm).ok()? {
+            CoseContentEncryptionAlgorithm::Aes256Gcm => SymmetricKeyAlgorithm::Aes256Gcm,
+            CoseContentEncryptionAlgorithm::XAes256Gcm => SymmetricKeyAlgorithm::XAes256Gcm,
+            CoseContentEncryptionAlgorithm::XChaCha20Poly1305 => {
+                SymmetricKeyAlgorithm::XChaCha20Poly1305
+            }
+            CoseContentEncryptionAlgorithm::Aes256CbcHmacSha256Aead => {
+                SymmetricKeyAlgorithm::Aes256CbcHmac
+            }
+        };
+        Some(algorithm)
+    }
+
+    /// Synthetic sugar for mapping `Option<String>` to `Result<Option<EncString>>`
+    pub fn try_from_optional(s: Option<String>) -> Result<Option<EncString>, CryptoError> {
+        s.map(|s| s.parse()).transpose()
+    }
+
+    /// Parses the binary [EncString] representation. Unlike [FromStr], this stays strict and
+    /// errors on malformed input
+    pub fn from_buffer(buf: &[u8]) -> Result<Self> {
+        if buf.is_empty() {
+            return Err(EncStringParseError::NoType.into());
+        }
+        let enc_type = buf[0];
+
+        match enc_type {
+            AES256_CBC_TYPE => {
+                check_length(buf, 18)?;
+                let iv = buf[1..17].try_into().expect("Valid length");
+                let data = buf[17..].to_vec();
+
+                Ok(EncString::Aes256Cbc_B64 { iv, data })
+            }
+            AES256_CBC_HMAC_TYPE => {
+                check_length(buf, 50)?;
+                let iv = buf[1..17].try_into().expect("Valid length");
+                let mac = buf[17..49].try_into().expect("Valid length");
+                let data = buf[49..].to_vec();
+
+                Ok(EncString::Aes256Cbc_HmacSha256_B64 { iv, mac, data })
+            }
+            COSE_ENCRYPT0_TYPE => Ok(EncString::Cose_Encrypt0_B64 {
+                data: buf[1..].to_vec(),
+            }),
+            _ => Err(EncStringParseError::InvalidTypeSymm {
+                enc_type: enc_type.to_string(),
+                parts: 1,
+            }
+            .into()),
+        }
+    }
+
+    #[allow(missing_docs)]
+    pub fn to_buffer(&self) -> Result<Vec<u8>> {
+        let mut buf;
+        let enc_type = self.enc_type().ok_or(CryptoError::UnparseableEncString)?;
+
+        match self {
+            EncString::Aes256Cbc_B64 { iv, data } => {
+                buf = Vec::with_capacity(1 + 16 + data.len());
+                buf.push(enc_type);
+                buf.extend_from_slice(iv);
+                buf.extend_from_slice(data);
+            }
+            EncString::Aes256Cbc_HmacSha256_B64 { iv, mac, data } => {
+                buf = Vec::with_capacity(1 + 16 + 32 + data.len());
+                buf.push(enc_type);
+                buf.extend_from_slice(iv);
+                buf.extend_from_slice(mac);
+                buf.extend_from_slice(data);
+            }
+            EncString::Cose_Encrypt0_B64 { data } => {
+                buf = Vec::with_capacity(1 + data.len());
+                buf.push(enc_type);
+                buf.extend_from_slice(data);
+            }
+            EncString::Unparseable { .. } => return Err(CryptoError::UnparseableEncString),
+        }
+
+        Ok(buf)
+    }
+}
+
+// `Display` is not implemented here because printing for debug purposes should be different
+// from serializing to a string. For Aes256_Cbc, or Aes256_Cbc_Hmac, `ToString` and `Debug`
+// are the same. For `Cose_Encrypt0`, `Debug` will print the decoded COSE message, while
+// `ToString` will print the Cose_Encrypt0 bytes, encoded in base64.
+#[allow(clippy::to_string_trait_impl)]
+impl ToString for EncString {
+    fn to_string(&self) -> String {
+        fn fmt_parts(enc_type: u8, parts: &[&[u8]]) -> String {
+            let encoded_parts: Vec<String> = parts
+                .iter()
+                .map(|part| B64::from(*part).to_string())
+                .collect();
+            format!("{}.{}", enc_type, encoded_parts.join("|"))
+        }
+
+        match &self {
+            EncString::Aes256Cbc_B64 { iv, data } => fmt_parts(AES256_CBC_TYPE, &[iv, data]),
+            EncString::Aes256Cbc_HmacSha256_B64 { iv, mac, data } => {
+                fmt_parts(AES256_CBC_HMAC_TYPE, &[iv, data, mac])
+            }
+            EncString::Cose_Encrypt0_B64 { data } => fmt_parts(COSE_ENCRYPT0_TYPE, &[data]),
+            EncString::Unparseable { raw } => raw.clone(),
+        }
+    }
+}
+
+impl std::fmt::Debug for EncString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EncString::Aes256Cbc_B64 { iv, data } => {
+                let mut debug_struct = f.debug_struct("EncString::Aes256Cbc");
+                #[cfg(feature = "dangerous-crypto-debug")]
+                {
+                    debug_struct.field("iv", &hex::encode(iv));
+                    debug_struct.field("data", &hex::encode(data));
+                }
+                #[cfg(not(feature = "dangerous-crypto-debug"))]
+                {
+                    _ = iv;
+                    _ = data;
+                }
+                debug_struct.finish()
+            }
+            EncString::Aes256Cbc_HmacSha256_B64 { iv, mac, data } => {
+                let mut debug_struct = f.debug_struct("EncString::Aes256CbcHmacSha256");
+                #[cfg(feature = "dangerous-crypto-debug")]
+                {
+                    debug_struct.field("iv", &hex::encode(iv));
+                    debug_struct.field("data", &hex::encode(data));
+                    debug_struct.field("mac", &hex::encode(mac));
+                }
+                #[cfg(not(feature = "dangerous-crypto-debug"))]
+                {
+                    _ = iv;
+                    _ = data;
+                    _ = mac;
+                }
+                debug_struct.finish()
+            }
+            EncString::Unparseable { raw } => {
+                let mut debug_struct = f.debug_struct("EncString::Unparseable");
+                #[cfg(feature = "dangerous-crypto-debug")]
+                debug_struct.field("raw", raw);
+                #[cfg(not(feature = "dangerous-crypto-debug"))]
+                {
+                    _ = raw;
+                }
+                debug_struct.finish()
+            }
+            EncString::Cose_Encrypt0_B64 { data } => {
+                let mut debug_struct = f.debug_struct("EncString::CoseEncrypt0");
+
+                match coset::CoseEncrypt0::from_slice(data.as_slice()) {
+                    Ok(msg) => {
+                        if let Some(ref alg) = msg.protected.header.alg {
+                            let alg_name = match alg {
+                                coset::Algorithm::PrivateUse(XCHACHA20_POLY1305) => {
+                                    "XChaCha20-Poly1305"
+                                }
+                                coset::Algorithm::PrivateUse(XAES_256_GCM) => "XAES-256-GCM",
+                                other => return debug_struct.field("algorithm", other).finish(),
+                            };
+                            debug_struct.field("algorithm", &alg_name);
+                        }
+
+                        let key_id = &msg.protected.header.key_id;
+                        if let Ok(key_id) = KeyId::try_from(key_id.as_slice()) {
+                            debug_struct.field("key_id", &key_id);
+                        }
+                        debug_struct.field("nonce", &hex::encode(msg.unprotected.iv.as_slice()));
+                        if let Some(ref content_type) = msg.protected.header.content_type {
+                            debug_struct.field("content_type", content_type);
+                        }
+
+                        #[cfg(feature = "dangerous-crypto-debug")]
+                        if let Some(ref ciphertext) = msg.ciphertext {
+                            debug_struct.field("ciphertext", &hex::encode(ciphertext));
+                        }
+                    }
+                    Err(_) => {
+                        debug_struct.field("error", &"INVALID_COSE");
+                    }
+                }
+
+                debug_struct.finish()
+            }
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for EncString {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_str(FromStrVisitor::new())
+    }
+}
+
+impl serde::Serialize for EncString {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl EncString {
+    pub(crate) fn encrypt_aes256_hmac(
+        data_dec: &[u8],
+        key: &Aes256CbcHmacKey,
+    ) -> Result<EncString> {
+        let mut iv = [0u8; 16];
+        bitwarden_random::rng().fill(&mut iv);
+        let (mac, data) = Aes256CbcHmacSha256::encrypt(&iv, data_dec, key.as_composite_key());
+        Ok(EncString::Aes256Cbc_HmacSha256_B64 { iv, mac, data })
+    }
+
+    pub(crate) fn encrypt_xchacha20_poly1305(
+        data_dec: &[u8],
+        key: &XChaCha20Poly1305Key,
+        content_format: ContentFormat,
+    ) -> Result<EncString> {
+        let data =
+            crate::cose::symmetric::encrypt_xchacha20_poly1305(data_dec, key, content_format)?;
+        Ok(EncString::Cose_Encrypt0_B64 {
+            data: data.to_vec(),
+        })
+    }
+
+    pub(crate) fn encrypt_xaes256_gcm(
+        data_dec: &[u8],
+        key: &XAes256GcmKey,
+        content_format: ContentFormat,
+    ) -> Result<EncString> {
+        let data = crate::cose::symmetric::encrypt_xaes256_gcm(data_dec, key, content_format)?;
+        Ok(EncString::Cose_Encrypt0_B64 {
+            data: data.to_vec(),
+        })
+    }
+
+    /// The numerical representation of the encryption type of the [EncString], or [None] for an
+    /// [EncString::Unparseable], which has no known type.
+    const fn enc_type(&self) -> Option<u8> {
+        match self {
+            EncString::Aes256Cbc_B64 { .. } => Some(AES256_CBC_TYPE),
+            EncString::Aes256Cbc_HmacSha256_B64 { .. } => Some(AES256_CBC_HMAC_TYPE),
+            EncString::Cose_Encrypt0_B64 { .. } => Some(COSE_ENCRYPT0_TYPE),
+            EncString::Unparseable { .. } => None,
+        }
+    }
+}
+
+impl KeyEncryptableWithContentType<SymmetricCryptoKey, EncString> for &[u8] {
+    fn encrypt_with_key(
+        self,
+        key: &SymmetricCryptoKey,
+        content_format: ContentFormat,
+    ) -> Result<EncString> {
+        match key {
+            SymmetricCryptoKey::Aes256CbcHmacKey(key) => EncString::encrypt_aes256_hmac(self, key),
+            SymmetricCryptoKey::XChaCha20Poly1305Key(inner_key) => {
+                if !inner_key
+                    .supported_operations
+                    .contains(&KeyOperation::Encrypt)
+                {
+                    return Err(CryptoError::KeyOperationNotSupported(KeyOperation::Encrypt));
+                }
+                EncString::encrypt_xchacha20_poly1305(self, inner_key, content_format)
+            }
+            SymmetricCryptoKey::XAes256GcmKey(key) => {
+                if !key.supported_operations.contains(&KeyOperation::Encrypt) {
+                    return Err(CryptoError::KeyOperationNotSupported(KeyOperation::Encrypt));
+                }
+                EncString::encrypt_xaes256_gcm(self, key, content_format)
+            }
+            SymmetricCryptoKey::Aes256CbcKey(_) => Err(CryptoError::OperationNotSupported(
+                UnsupportedOperationError::EncryptionNotImplementedForKey,
+            )),
+            SymmetricCryptoKey::Aes256GcmKey(_) => Err(CryptoError::OperationNotSupported(
+                UnsupportedOperationError::EncryptionNotImplementedForKey,
+            )),
+        }
+    }
+}
+
+impl KeyDecryptable<SymmetricCryptoKey, Vec<u8>> for EncString {
+    fn decrypt_with_key(&self, key: &SymmetricCryptoKey) -> Result<Vec<u8>> {
+        match (self, key) {
+            (EncString::Aes256Cbc_B64 { .. }, SymmetricCryptoKey::Aes256CbcKey(_)) => {
+                Err(CryptoError::OperationNotSupported(
+                    UnsupportedOperationError::DecryptionNotImplementedForKey,
+                ))
+            }
+            (
+                EncString::Aes256Cbc_HmacSha256_B64 { iv, mac, data },
+                SymmetricCryptoKey::Aes256CbcHmacKey(key),
+            ) => Aes256CbcHmacSha256::decrypt(iv, data, mac, key.as_composite_key())
+                .map_err(|_| CryptoError::Decrypt),
+            (
+                EncString::Cose_Encrypt0_B64 { data },
+                SymmetricCryptoKey::XChaCha20Poly1305Key(key),
+            ) => {
+                let (decrypted_message, _) = crate::cose::symmetric::decrypt_xchacha20_poly1305(
+                    &CoseEncrypt0Bytes::from(data.as_slice()),
+                    key,
+                )?;
+                Ok(decrypted_message)
+            }
+            (EncString::Cose_Encrypt0_B64 { data }, SymmetricCryptoKey::XAes256GcmKey(key)) => {
+                let (decrypted, _) = crate::cose::symmetric::decrypt_xaes256_gcm(
+                    &CoseEncrypt0Bytes::from(data.as_slice()),
+                    key,
+                )?;
+                Ok(decrypted)
+            }
+            (EncString::Cose_Encrypt0_B64 { data }, SymmetricCryptoKey::Aes256CbcHmacKey(key)) => {
+                let (decrypted, _) = crate::cose::symmetric::decrypt_aes256_cbc_hmac_aead(
+                    &CoseEncrypt0Bytes::from(data.as_slice()),
+                    key,
+                )?;
+                Ok(decrypted)
+            }
+            (EncString::Unparseable { .. }, _) => Err(CryptoError::UnparseableEncString),
+            (_, SymmetricCryptoKey::XAes256GcmKey(_)) => Err(CryptoError::WrongKeyType),
+            _ => Err(CryptoError::WrongKeyType),
+        }
+    }
+}
+
+impl KeyEncryptable<SymmetricCryptoKey, EncString> for String {
+    fn encrypt_with_key(self, key: &SymmetricCryptoKey) -> Result<EncString> {
+        Utf8Bytes::from(self).encrypt_with_key(key)
+    }
+}
+
+impl KeyEncryptable<SymmetricCryptoKey, EncString> for &str {
+    fn encrypt_with_key(self, key: &SymmetricCryptoKey) -> Result<EncString> {
+        Utf8Bytes::from(self).encrypt_with_key(key)
+    }
+}
+
+impl KeyDecryptable<SymmetricCryptoKey, String> for EncString {
+    #[bitwarden_logging::instrument(err)]
+    fn decrypt_with_key(&self, key: &SymmetricCryptoKey) -> Result<String> {
+        let dec: Vec<u8> = self.decrypt_with_key(key)?;
+        String::from_utf8(dec).map_err(|_| CryptoError::InvalidUtf8String)
+    }
+}
+
+/// Usually we wouldn't want to expose EncStrings in the API or the schemas.
+/// But during the transition phase we will expose endpoints using the EncString type.
+impl schemars::JsonSchema for EncString {
+    fn schema_name() -> Cow<'static, str> {
+        "EncString".into()
+    }
+
+    fn json_schema(generator: &mut schemars::generate::SchemaGenerator) -> schemars::Schema {
+        generator.subschema_for::<String>()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use coset::iana::KeyOperation;
+    use schemars::schema_for;
+
+    use super::EncString;
+    use crate::{
+        Aes256CbcHmacKey, ContentFormat, CryptoError, KEY_ID_SIZE, KeyDecryptable, KeyEncryptable,
+        SymmetricCryptoKey, SymmetricKeyAlgorithm,
+        cose::symmetric::{CoseContentEncryptionAlgorithm, encrypt_cose0},
+        derive_symmetric_key,
+    };
+
+    const AES256_CBC_HMAC_COSE_PLAINTEXT: &str = "Type 7 AES-256-CBC-HMAC test vector";
+    const AES256_CBC_HMAC_COSE_ENC_STRING: &str = "7.g1g/owE6AAERegN4I2FwcGxpY2F0aW9uL3guYml0d2FyZGVuLnV0ZjgtcGFkZGVkBFCsTs/7Lgh6WRgNHdGZULjpoQVQXYJbsJat2eG+9CcclU7mqVhwKiZITE/+y7LqmpX+A+QS7iZ3Ng/0/+zZnW/TFQ//5t5qnJl6p0GV3t804h4rSfwEGtXvI27//Uaup0KEq+XU8kwx5m4VSq8JarD48spPgxlrmpLncTpFgIh+Z6YDPc300PsAbOj+bHT+dSLFH7cRHA==";
+
+    /// Type 2 key with `enc_key = 0..32`, `mac_key = 32..64`.
+    fn aes_cbc_hmac_key() -> Aes256CbcHmacKey {
+        Aes256CbcHmacKey::new(
+            &std::array::from_fn(|i| i as u8),
+            &std::array::from_fn(|i| (i + 32) as u8),
+        )
+    }
+
+    fn xaes_key(operations: Vec<KeyOperation>) -> SymmetricCryptoKey {
+        SymmetricCryptoKey::XAes256GcmKey(crate::XAes256GcmKey {
+            key_id: [0u8; KEY_ID_SIZE].into(),
+            enc_key: Box::pin([0u8; 32].into()),
+            supported_operations: operations,
+        })
+    }
+
+    fn encrypt_with_xaes(plaintext: &str) -> EncString {
+        plaintext
+            .to_owned()
+            .encrypt_with_key(&xaes_key(vec![
+                coset::iana::KeyOperation::Decrypt,
+                coset::iana::KeyOperation::Encrypt,
+                coset::iana::KeyOperation::WrapKey,
+                coset::iana::KeyOperation::UnwrapKey,
+            ]))
+            .expect("encryption works")
+    }
+
+    fn encrypt_with_xchacha20(plaintext: &str) -> EncString {
+        let key_id = [0u8; KEY_ID_SIZE];
+        let enc_key = [0u8; 32];
+        let key = SymmetricCryptoKey::XChaCha20Poly1305Key(crate::XChaCha20Poly1305Key {
+            key_id: key_id.into(),
+            enc_key: Box::pin(enc_key.into()),
+            supported_operations: vec![
+                coset::iana::KeyOperation::Decrypt,
+                coset::iana::KeyOperation::Encrypt,
+                coset::iana::KeyOperation::WrapKey,
+                coset::iana::KeyOperation::UnwrapKey,
+            ],
+        });
+
+        plaintext.encrypt_with_key(&key).expect("encryption works")
+    }
+
+    #[test]
+    fn test_key_id_of_cose_enc_string() {
+        let enc_string = encrypt_with_xaes("Test key id");
+        assert_eq!(enc_string.key_id(), Some([0u8; KEY_ID_SIZE].into()));
+    }
+
+    #[test]
+    fn test_algorithm_of_enc_string() {
+        let v1 = EncString::encrypt_aes256_hmac(b"Test", &derive_symmetric_key("test")).unwrap();
+        assert_eq!(v1.algorithm(), Some(SymmetricKeyAlgorithm::Aes256CbcHmac));
+        assert_eq!(
+            encrypt_with_xaes("Test").algorithm(),
+            Some(SymmetricKeyAlgorithm::XAes256Gcm)
+        );
+        assert_eq!(
+            encrypt_with_xchacha20("Test").algorithm(),
+            Some(SymmetricKeyAlgorithm::XChaCha20Poly1305)
+        );
+    }
+
+    #[test]
+    fn test_key_id_of_legacy_enc_string_is_none() {
+        let enc_string =
+            EncString::encrypt_aes256_hmac(b"Test key id", &derive_symmetric_key("test")).unwrap();
+        assert_eq!(enc_string.key_id(), None);
+    }
+
+    #[test]
+    #[ignore = "Manual test to verify debug format"]
+    fn test_debug() {
+        let enc_string = encrypt_with_xchacha20("Test debug string");
+        println!("{:?}", enc_string);
+        let enc_string_aes =
+            EncString::encrypt_aes256_hmac(b"Test debug string", &derive_symmetric_key("test"))
+                .unwrap();
+        println!("{:?}", enc_string_aes);
+    }
+
+    /// XChaCha20Poly1305 encstrings should be padded in blocks of 32 bytes. This ensures that the
+    /// encstring length does not reveal more than the 32-byte range of lengths that the contained
+    /// string falls into.
+    #[test]
+    fn test_xchacha20_encstring_string_padding_block_sizes() {
+        let cases = [
+            ("", 32),              // empty string, padded to 32
+            (&"a".repeat(31), 32), // largest in first block
+            (&"a".repeat(32), 64), // smallest in second block
+            (&"a".repeat(63), 64), // largest in second block
+            (&"a".repeat(64), 96), // smallest in third block
+        ];
+
+        let ciphertext_lengths: Vec<_> = cases
+            .iter()
+            .map(|(plaintext, _)| encrypt_with_xchacha20(plaintext).to_string().len())
+            .collect();
+
+        // Block 1: 0-31 (same length)
+        assert_eq!(ciphertext_lengths[0], ciphertext_lengths[1]);
+        // Block 2: 32-63 (same length, different from block 1)
+        assert_ne!(ciphertext_lengths[1], ciphertext_lengths[2]);
+        assert_eq!(ciphertext_lengths[2], ciphertext_lengths[3]);
+        // Block 3: 64+ (different from block 2)
+        assert_ne!(ciphertext_lengths[3], ciphertext_lengths[4]);
+    }
+
+    #[test]
+    fn test_enc_roundtrip_xchacha20() {
+        let key_id = [0u8; KEY_ID_SIZE];
+        let enc_key = [0u8; 32];
+        let key = SymmetricCryptoKey::XChaCha20Poly1305Key(crate::XChaCha20Poly1305Key {
+            key_id: key_id.into(),
+            enc_key: Box::pin(enc_key.into()),
+            supported_operations: vec![
+                coset::iana::KeyOperation::Decrypt,
+                coset::iana::KeyOperation::Encrypt,
+                coset::iana::KeyOperation::WrapKey,
+                coset::iana::KeyOperation::UnwrapKey,
+            ],
+        });
+
+        let test_string = "encrypted_test_string";
+        let cipher = test_string.to_owned().encrypt_with_key(&key).unwrap();
+        let decrypted_str: String = cipher.decrypt_with_key(&key).unwrap();
+        assert_eq!(decrypted_str, test_string);
+    }
+
+    #[test]
+    fn test_xaes_encstring_string_roundtrips() {
+        let key = xaes_key(vec![
+            coset::iana::KeyOperation::Decrypt,
+            coset::iana::KeyOperation::Encrypt,
+            coset::iana::KeyOperation::WrapKey,
+            coset::iana::KeyOperation::UnwrapKey,
+        ]);
+        for plaintext in ["", "encrypted_test_string"] {
+            let encrypted = plaintext.to_owned().encrypt_with_key(&key).unwrap();
+            let decrypted: String = encrypted.decrypt_with_key(&key).unwrap();
+            assert_eq!(decrypted, plaintext);
+        }
+    }
+
+    #[test]
+    fn test_xaes_encstring_string_padding_block_sizes() {
+        // xaes-256-gcm encstrings should be padded into blocks of size 32 bytes.
+        // This test checks that the expected padding happens
+        // Input plaintext size => Expected plaintext size
+        // 0 => 32
+        // 31 => 32
+        // 32 => 64
+        // 63 => 64
+        // 64 => 96
+        let lengths = [0, 31, 32, 63, 64]
+            .map(|length| encrypt_with_xaes(&"a".repeat(length)).to_string().len());
+
+        assert_eq!(lengths[0], lengths[1]); // 32 == 32
+        assert_ne!(lengths[1], lengths[2]); // 32 != 64
+        assert_eq!(lengths[2], lengths[3]); // 64 == 64
+        assert_ne!(lengths[3], lengths[4]); // 64 != 96
+    }
+
+    #[test]
+    fn test_xaes_encryption_requires_encrypt_operation() {
+        assert!(matches!(
+            "plaintext"
+                .to_owned()
+                .encrypt_with_key(&xaes_key(vec![KeyOperation::Decrypt])),
+            Err(CryptoError::KeyOperationNotSupported(KeyOperation::Encrypt))
+        ));
+    }
+
+    #[test]
+    fn test_xaes_rejects_unsupported_encstring_variant() {
+        let encrypted =
+            EncString::encrypt_aes256_hmac(b"plaintext", &derive_symmetric_key("wrapping key"))
+                .unwrap();
+        let result: Result<Vec<u8>, CryptoError> =
+            encrypted.decrypt_with_key(&xaes_key(vec![KeyOperation::Encrypt]));
+        assert!(matches!(result, Err(CryptoError::WrongKeyType)));
+    }
+
+    #[test]
+    fn test_xaes_encstring_debug_is_readable() {
+        let debug = format!("{:?}", encrypt_with_xaes("plaintext"));
+        assert!(debug.contains("EncString::CoseEncrypt0"));
+        assert!(debug.contains("XAES-256-GCM"));
+        assert!(debug.contains("KeyId(00000000000000000000000000000000)"));
+        assert!(debug.contains("nonce"));
+        assert!(debug.contains("content_type"));
+    }
+
+    #[test]
+    fn test_enc_string_roundtrip() {
+        let key = SymmetricCryptoKey::Aes256CbcHmacKey(derive_symmetric_key("test"));
+
+        let test_string = "encrypted_test_string";
+        let cipher = test_string.to_string().encrypt_with_key(&key).unwrap();
+
+        let decrypted_str: String = cipher.decrypt_with_key(&key).unwrap();
+        assert_eq!(decrypted_str, test_string);
+    }
+
+    #[test]
+    fn test_enc_roundtrip_xchacha20_empty() {
+        let key_id = [0u8; KEY_ID_SIZE];
+        let enc_key = [0u8; 32];
+        let key = SymmetricCryptoKey::XChaCha20Poly1305Key(crate::XChaCha20Poly1305Key {
+            key_id: key_id.into(),
+            enc_key: Box::pin(enc_key.into()),
+            supported_operations: vec![
+                coset::iana::KeyOperation::Decrypt,
+                coset::iana::KeyOperation::Encrypt,
+                coset::iana::KeyOperation::WrapKey,
+                coset::iana::KeyOperation::UnwrapKey,
+            ],
+        });
+
+        let test_string = "";
+        let cipher = test_string.to_owned().encrypt_with_key(&key).unwrap();
+        let decrypted_str: String = cipher.decrypt_with_key(&key).unwrap();
+        assert_eq!(decrypted_str, test_string);
+    }
+
+    #[test]
+    fn test_enc_string_roundtrip_empty() {
+        let key = SymmetricCryptoKey::Aes256CbcHmacKey(derive_symmetric_key("test"));
+
+        let test_string = "";
+        let cipher = test_string.to_string().encrypt_with_key(&key).unwrap();
+
+        let decrypted_str: String = cipher.decrypt_with_key(&key).unwrap();
+        assert_eq!(decrypted_str, test_string);
+    }
+
+    #[test]
+    fn test_enc_string_ref_roundtrip() {
+        let key = SymmetricCryptoKey::Aes256CbcHmacKey(derive_symmetric_key("test"));
+
+        let test_string: &'static str = "encrypted_test_string";
+        let cipher = test_string.to_string().encrypt_with_key(&key).unwrap();
+
+        let decrypted_str: String = cipher.decrypt_with_key(&key).unwrap();
+        assert_eq!(decrypted_str, test_string);
+    }
+
+    #[test]
+    fn test_enc_string_serialization() {
+        #[derive(serde::Serialize, serde::Deserialize)]
+        struct Test {
+            key: EncString,
+        }
+
+        let cipher = "2.pMS6/icTQABtulw52pq2lg==|XXbxKxDTh+mWiN1HjH2N1w==|Q6PkuT+KX/axrgN9ubD5Ajk2YNwxQkgs3WJM0S0wtG8=";
+        let serialized = format!("{{\"key\":\"{cipher}\"}}");
+
+        let t = serde_json::from_str::<Test>(&serialized).unwrap();
+        assert_eq!(t.key.enc_type(), Some(2));
+        assert_eq!(t.key.to_string(), cipher);
+        assert_eq!(serde_json::to_string(&t).unwrap(), serialized);
+    }
+
+    #[test]
+    fn test_enc_from_to_buffer() {
+        let enc_str: &str = "2.pMS6/icTQABtulw52pq2lg==|XXbxKxDTh+mWiN1HjH2N1w==|Q6PkuT+KX/axrgN9ubD5Ajk2YNwxQkgs3WJM0S0wtG8=";
+        let enc_string: EncString = enc_str.parse().unwrap();
+
+        let enc_buf = enc_string.to_buffer().unwrap();
+
+        assert_eq!(
+            enc_buf,
+            vec![
+                2, 164, 196, 186, 254, 39, 19, 64, 0, 109, 186, 92, 57, 218, 154, 182, 150, 67,
+                163, 228, 185, 63, 138, 95, 246, 177, 174, 3, 125, 185, 176, 249, 2, 57, 54, 96,
+                220, 49, 66, 72, 44, 221, 98, 76, 209, 45, 48, 180, 111, 93, 118, 241, 43, 16, 211,
+                135, 233, 150, 136, 221, 71, 140, 125, 141, 215
+            ]
+        );
+
+        let enc_string_new = EncString::from_buffer(&enc_buf).unwrap();
+
+        assert_eq!(enc_string_new.to_string(), enc_str)
+    }
+
+    #[test]
+    fn test_from_str_cbc256() {
+        let enc_str = "0.pMS6/icTQABtulw52pq2lg==|XXbxKxDTh+mWiN1HjH2N1w==";
+        let enc_string: EncString = enc_str.parse().unwrap();
+
+        assert_eq!(enc_string.enc_type(), Some(0));
+        if let EncString::Aes256Cbc_B64 { iv, data } = &enc_string {
+            assert_eq!(
+                iv,
+                &[
+                    164, 196, 186, 254, 39, 19, 64, 0, 109, 186, 92, 57, 218, 154, 182, 150
+                ]
+            );
+            assert_eq!(
+                data,
+                &[
+                    93, 118, 241, 43, 16, 211, 135, 233, 150, 136, 221, 71, 140, 125, 141, 215
+                ]
+            );
+        } else {
+            panic!("Invalid variant")
+        };
+    }
+
+    #[test]
+    fn test_decrypt_fails_for_cbc256_keys() {
+        let key = "hvBMMb1t79YssFZkpetYsM3deyVuQv4r88Uj9gvYe08=".to_string();
+        let key = SymmetricCryptoKey::try_from(key).unwrap();
+
+        let enc_str = "0.NQfjHLr6za7VQVAbrpL81w==|wfrjmyJ0bfwkQlySrhw8dA==";
+        let enc_string: EncString = enc_str.parse().unwrap();
+        assert_eq!(enc_string.enc_type(), Some(0));
+
+        let result: Result<String, CryptoError> = enc_string.decrypt_with_key(&key);
+        assert!(
+            matches!(
+                result,
+                Err(CryptoError::OperationNotSupported(
+                    crate::error::UnsupportedOperationError::DecryptionNotImplementedForKey
+                )),
+            ),
+            "Expected decrypt to fail when using deprecated type 0 key",
+        );
+    }
+
+    #[test]
+    fn test_decrypt_downgrade_encstring_prevention() {
+        // Simulate a potential downgrade attack by removing the mac portion of the `EncString` and
+        // attempt to decrypt it using a `SymmetricCryptoKey` with a mac key.
+        let key = "hvBMMb1t79YssFZkpetYsM3deyVuQv4r88Uj9gvYe0+G8EwxvW3v1iywVmSl61iwzd17JW5C/ivzxSP2C9h7Tw==".to_string();
+        let key = SymmetricCryptoKey::try_from(key).unwrap();
+
+        // A "downgraded" `EncString` from `EncString::Aes256Cbc_HmacSha256_B64` (2) to
+        // `EncString::Aes256Cbc_B64` (0), with the mac portion removed.
+        // <enc_string>
+        let enc_str = "0.NQfjHLr6za7VQVAbrpL81w==|wfrjmyJ0bfwkQlySrhw8dA==";
+        let enc_string: EncString = enc_str.parse().unwrap();
+        assert_eq!(enc_string.enc_type(), Some(0));
+
+        let result: Result<String, CryptoError> = enc_string.decrypt_with_key(&key);
+        assert!(matches!(result, Err(CryptoError::WrongKeyType)));
+    }
+
+    #[test]
+    fn test_encrypt_fails_when_operation_not_allowed() {
+        // Key with only Decrypt allowed
+        let key_id = [0u8; KEY_ID_SIZE];
+        let enc_key = [0u8; 32];
+        let key = SymmetricCryptoKey::XChaCha20Poly1305Key(crate::XChaCha20Poly1305Key {
+            key_id: key_id.into(),
+            enc_key: Box::pin(enc_key.into()),
+            supported_operations: vec![KeyOperation::Decrypt],
+        });
+
+        let plaintext = "should fail";
+        let result = plaintext.encrypt_with_key(&key);
+        assert!(
+            matches!(
+                result,
+                Err(CryptoError::KeyOperationNotSupported(KeyOperation::Encrypt))
+            ),
+            "Expected encrypt to fail with KeyOperationNotSupported, got: {result:?}"
+        );
+    }
+
+    /// Malformed strings must not fail while parsing, so that the failure surfaces at decryption
+    /// time instead of at the FFI boundary. The raw value must round-trip unchanged.
+    #[test]
+    fn test_from_str_unparseable_roundtrips() {
+        let cases = [
+            "2.AAECAw==|Y3Q=|AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", // 4 byte iv
+            "2.AAECAwQFBgcICQoLDA0ODw==|Y3Q=|AAECAw==",                     // 4 byte mac
+            "0.AAECAw==|Y3Q=",                                              // 4 byte iv
+            "2.!!!!|Y3Q=|AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",     // invalid base64
+            "8.ABC",                                                        // unknown type
+            "7.ABC|DEF",                                                    // wrong part count
+        ];
+
+        for enc_str in cases {
+            let enc_string: EncString = enc_str.parse().expect("parsing never fails");
+            assert!(
+                matches!(enc_string, EncString::Unparseable { .. }),
+                "Expected {enc_str} to parse as unparseable",
+            );
+            assert_eq!(enc_string.to_string(), enc_str);
+            assert_eq!(enc_string.enc_type(), None);
+        }
+    }
+
+    #[test]
+    fn test_from_string_and_str() {
+        let known = "2.pMS6/icTQABtulw52pq2lg==|XXbxKxDTh+mWiN1HjH2N1w==|Q6PkuT+KX/axrgN9ubD5Ajk2YNwxQkgs3WJM0S0wtG8=";
+        let unknown = "8.ABC";
+
+        assert_eq!(EncString::from(known).enc_type(), Some(2));
+        assert_eq!(EncString::from(known.to_owned()).enc_type(), Some(2));
+
+        assert!(matches!(
+            EncString::from(unknown),
+            EncString::Unparseable { .. }
+        ));
+        assert_eq!(EncString::from(unknown.to_owned()).to_string(), unknown);
+    }
+
+    #[test]
+    fn test_parse_strict_rejects_unparseable() {
+        let cases = [
+            "2.AAECAw==|Y3Q=|AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=", // 4 byte iv
+            "2.AAECAwQFBgcICQoLDA0ODw==|Y3Q=|AAECAw==",                     // 4 byte mac
+            "8.ABC",                                                        // unknown type
+        ];
+
+        for enc_str in cases {
+            assert!(
+                matches!(
+                    EncString::parse_strict(enc_str),
+                    Err(CryptoError::UnparseableEncString)
+                ),
+                "Expected {enc_str} to be rejected",
+            );
+        }
+    }
+
+    #[test]
+    fn test_parse_strict_accepts_known_formats() {
+        let enc_str = "2.pMS6/icTQABtulw52pq2lg==|XXbxKxDTh+mWiN1HjH2N1w==|Q6PkuT+KX/axrgN9ubD5Ajk2YNwxQkgs3WJM0S0wtG8=";
+        let enc_string = EncString::parse_strict(enc_str).unwrap();
+
+        assert_eq!(enc_string.enc_type(), Some(2));
+        assert_eq!(enc_string.to_string(), enc_str);
+    }
+
+    #[test]
+    fn test_unparseable_serde_roundtrip() {
+        #[derive(serde::Serialize, serde::Deserialize)]
+        struct Test {
+            key: EncString,
+        }
+
+        let cipher = "2.AAECAw==|Y3Q=|AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=";
+        let serialized = format!("{{\"key\":\"{cipher}\"}}");
+
+        let t = serde_json::from_str::<Test>(&serialized).unwrap();
+        assert!(matches!(t.key, EncString::Unparseable { .. }));
+        assert_eq!(serde_json::to_string(&t).unwrap(), serialized);
+    }
+
+    #[test]
+    fn test_unparseable_decrypt_fails() {
+        let key = SymmetricCryptoKey::Aes256CbcHmacKey(derive_symmetric_key("test"));
+        let enc_string: EncString = "2.AAECAw==|Y3Q=|AAECAw==".parse().unwrap();
+
+        let result: Result<Vec<u8>, CryptoError> = enc_string.decrypt_with_key(&key);
+        assert!(matches!(result, Err(CryptoError::UnparseableEncString)));
+    }
+
+    #[test]
+    fn test_unparseable_to_buffer_fails() {
+        let enc_string: EncString = "2.AAECAw==|Y3Q=|AAECAw==".parse().unwrap();
+
+        assert!(matches!(
+            enc_string.to_buffer(),
+            Err(CryptoError::UnparseableEncString)
+        ));
+    }
+
+    #[test]
+    fn test_from_buffer_stays_strict() {
+        assert!(EncString::from_buffer(&[]).is_err());
+        assert!(EncString::from_buffer(&[2, 0, 0]).is_err());
+        assert!(EncString::from_buffer(&[8, 0, 0]).is_err());
+    }
+
+    #[test]
+    #[cfg(not(feature = "dangerous-crypto-debug"))]
+    fn test_debug_format() {
+        let enc_str = "2.pMS6/icTQABtulw52pq2lg==|XXbxKxDTh+mWiN1HjH2N1w==|Q6PkuT+KX/axrgN9ubD5Ajk2YNwxQkgs3WJM0S0wtG8=";
+        let enc_string: EncString = enc_str.parse().unwrap();
+        assert_eq!(
+            "EncString::Aes256CbcHmacSha256".to_string(),
+            format!("{:?}", enc_string)
+        );
+    }
+
+    #[test]
+    #[ignore = "Generates test vectors; run manually"]
+    fn generate_aes256_cbc_hmac_cose_test_vector() {
+        let key = aes_cbc_hmac_key();
+        let protected_header = coset::HeaderBuilder::from(ContentFormat::Utf8)
+            .key_id(key.key_id().as_slice().to_vec())
+            .build();
+        let message = encrypt_cose0(
+            CoseContentEncryptionAlgorithm::Aes256CbcHmacSha256Aead,
+            coset::CoseEncrypt0Builder::new(),
+            protected_header,
+            AES256_CBC_HMAC_COSE_PLAINTEXT.as_bytes(),
+            key.as_composite_key(),
+        )
+        .unwrap();
+        let enc_string = EncString::Cose_Encrypt0_B64 {
+            data: coset::CborSerializable::to_vec(message).unwrap(),
+        };
+        println!(
+            "const AES256_CBC_HMAC_COSE_ENC_STRING: &str = \"{}\";",
+            enc_string.to_string()
+        );
+    }
+
+    /// Locks in type 7 EncStrings sealed with a type 2 key; must never break, or existing data
+    /// will no longer decrypt.
+    #[test]
+    fn test_decrypt_aes256_cbc_hmac_cose_test_vector() {
+        let key = SymmetricCryptoKey::Aes256CbcHmacKey(aes_cbc_hmac_key());
+        let enc_string: EncString = AES256_CBC_HMAC_COSE_ENC_STRING.parse().unwrap();
+
+        assert_eq!(
+            enc_string.algorithm(),
+            Some(SymmetricKeyAlgorithm::Aes256CbcHmac)
+        );
+        assert_eq!(enc_string.key_id(), key.key_id());
+
+        let decrypted: String = enc_string.decrypt_with_key(&key).unwrap();
+        assert_eq!(decrypted, AES256_CBC_HMAC_COSE_PLAINTEXT);
+    }
+
+    #[test]
+    fn test_decrypt_aes256_cbc_hmac_cose_wrong_key() {
+        let key = SymmetricCryptoKey::Aes256CbcHmacKey(derive_symmetric_key("other"));
+        let enc_string: EncString = AES256_CBC_HMAC_COSE_ENC_STRING.parse().unwrap();
+
+        let result: Result<String, _> = enc_string.decrypt_with_key(&key);
+        assert!(matches!(result, Err(CryptoError::WrongCoseKeyId)));
+    }
+
+    #[test]
+    fn test_json_schema() {
+        let schema = schema_for!(EncString);
+
+        assert_eq!(
+            serde_json::to_string(&schema).unwrap(),
+            r#"{"$schema":"https://json-schema.org/draft/2020-12/schema","title":"EncString","type":"string"}"#
+        );
+    }
+}

@@ -1,0 +1,70 @@
+[package]
+name = "bitwarden-auth"
+description = """
+Internal crate for the bitwarden crate. Do not use.
+"""
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+[features]
+wasm = [
+    "bitwarden-core/wasm",
+    "bitwarden-crypto/wasm",
+    "bitwarden-ffi/wasm",
+    "bitwarden-policies/wasm",
+    "dep:tsify",
+    "dep:wasm-bindgen",
+    "dep:wasm-bindgen-futures",
+]
+uniffi = ["bitwarden-core/uniffi", "bitwarden-policies/uniffi", "dep:uniffi"]
+secrets = ["bitwarden-core/secrets"]
+
+# Note: dependencies must be alphabetized to pass the cargo sort check in the CI pipeline.
+[dependencies]
+async-trait = { workspace = true }
+bitwarden-api-api = { workspace = true }
+bitwarden-api-identity = { workspace = true }
+bitwarden-api-key-connector = { workspace = true }
+bitwarden-core = { workspace = true, features = ["internal"] }
+bitwarden-crypto = { workspace = true }
+bitwarden-encoding = { workspace = true }
+bitwarden-error = { workspace = true }
+bitwarden-ffi = { workspace = true }
+bitwarden-policies = { workspace = true }
+bitwarden-state = { workspace = true }
+chrono = { workspace = true }
+ciborium = { workspace = true }
+http = { workspace = true }
+reqwest = { workspace = true }
+reqwest-middleware = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+serde_repr = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true, features = ["sync"] }
+tracing = { workspace = true }
+tsify = { workspace = true, optional = true }
+uniffi = { workspace = true, optional = true }
+uuid = { workspace = true }
+wasm-bindgen = { workspace = true, optional = true }
+wasm-bindgen-futures = { workspace = true, optional = true }
+
+[dev-dependencies]
+bitwarden-api-api = { workspace = true, features = ["mockall"] }
+bitwarden-api-identity = { workspace = true, features = ["mockall"] }
+bitwarden-test = { workspace = true }
+serde_json = { workspace = true }
+serde_urlencoded = ">=0.7.1, <0.8"
+tokio = { workspace = true, features = ["rt"] }
+wiremock = "0.6.0"
+
+[lints]
+workspace = true

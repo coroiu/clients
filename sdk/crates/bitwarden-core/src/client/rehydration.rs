@@ -1,0 +1,264 @@
+use std::sync::Arc;
+
+use bitwarden_state::registry::StateRegistry;
+
+use super::Client;
+use crate::{
+    UserId,
+    auth::auth_tokens::TokenHandler,
+    client::{
+        ClientBuilder, get_host_platform_info,
+        persisted_state::{ACCOUNT_CRYPTO_STATE, BASE_URLS, BaseUrls, USER_EMAIL, USER_ID},
+    },
+    key_management::account_cryptographic_state::WrappedAccountCryptographicState,
+};
+
+/// Errors that can occur during client rehydration.
+#[derive(Debug, thiserror::Error)]
+pub enum RehydrationError {
+    /// A persisted value was missing, or reading or writing it failed.
+    #[error("State access error: {0}")]
+    State(#[from] bitwarden_state::PersistedValueError),
+}
+
+/// Data required to populate a [`StateRegistry`] via [`Client::save_to_state`].
+///
+/// Contains the values the auth flow does not yet persist automatically. Once the auth crate
+/// handles persistence directly, this type will be removed.
+pub struct SaveStateData {
+    /// The authenticated user's ID.
+    pub user_id: UserId,
+    /// The authenticated user's email.
+    pub email: String,
+    /// The base API URLs for the user's server.
+    pub urls: BaseUrls,
+    /// The user's wrapped account cryptographic state.
+    pub crypto_state: WrappedAccountCryptographicState,
+}
+
+impl Client {
+    /// Populates a [`StateRegistry`] with the state required for [`Client::load_from_state`].
+    ///
+    /// Call this after a successful login to persist the values that the auth flow does not yet
+    /// write automatically. Once the auth crate handles persistence directly, this will be removed.
+    pub async fn save_to_state(
+        data: SaveStateData,
+        reg: &StateRegistry,
+    ) -> Result<(), RehydrationError> {
+        reg.value::<BASE_URLS>().set(data.urls).await?;
+        reg.value::<USER_ID>().set(data.user_id).await?;
+        reg.value::<USER_EMAIL>().set(data.email).await?;
+        reg.value::<ACCOUNT_CRYPTO_STATE>()
+            .set(data.crypto_state)
+            .await?;
+        Ok(())
+    }
+
+    /// Reconstruct a locked Client from a populated StateRegistry.
+    ///
+    /// Does NOT unlock the vault.
+    pub async fn load_from_state(
+        token_handler: Arc<dyn TokenHandler>,
+        registry: StateRegistry,
+    ) -> Result<Self, RehydrationError> {
+        let base_urls: BaseUrls = registry.value::<BASE_URLS>().get().await?;
+
+        let user_id: UserId = registry.value::<USER_ID>().get().await?;
+
+        let settings =
+            get_host_platform_info().to_client_settings(base_urls.api_url, base_urls.identity_url);
+
+        let client = ClientBuilder::new()
+            .with_settings(settings)
+            .with_token_handler(token_handler)
+            .with_state(registry)
+            .build();
+
+        client
+            .internal
+            .init_user_id(user_id)
+            .await
+            .expect("user ID cannot already be set on a freshly built client");
+
+        // Refresh feature flags from /config if the cached set is missing or stale (TTL 1h).
+        // Failure is non-fatal — an offline client continues with the previously persisted flags.
+        if let Err(e) = client.flags().fetch(false).await {
+            tracing::warn!(
+                "Failed to refresh feature flags on startup; using previously stored flags: {e}"
+            );
+        }
+
+        Ok(client)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::{Arc, Once};
+
+    use bitwarden_crypto::{
+        KeyStore, PublicKeyEncryptionAlgorithm, SignatureAlgorithm, SymmetricKeyAlgorithm,
+    };
+    use bitwarden_state::{PersistedValueError, registry::StateRegistry};
+
+    use super::*;
+    use crate::{
+        DeviceType, HostPlatformInfo, UserId,
+        auth::auth_tokens::NoopTokenHandler,
+        client::persisted_state::{ACCOUNT_CRYPTO_STATE, BASE_URLS, BaseUrls, USER_EMAIL, USER_ID},
+        key_management::{
+            KeySlotIds, SecurityState,
+            account_cryptographic_state::WrappedAccountCryptographicState,
+        },
+    };
+
+    static INIT: Once = Once::new();
+
+    fn ensure_platform_info() {
+        INIT.call_once(|| {
+            crate::init_host_platform_info(HostPlatformInfo {
+                user_agent: "rehydration-tests".to_string(),
+                device_type: DeviceType::SDK,
+                device_identifier: None,
+                bitwarden_client_version: None,
+                bitwarden_package_type: None,
+            });
+        });
+    }
+
+    fn test_user_id() -> UserId {
+        "d5b1fde2-a1e3-4c5b-9e0f-1a2b3c4d5e6f".parse().unwrap()
+    }
+
+    fn test_base_urls() -> BaseUrls {
+        // Use an invalid port so flag loading fails fast
+        BaseUrls {
+            identity_url: "http://127.0.0.1:1".to_string(),
+            api_url: "http://127.0.0.1:1".to_string(),
+        }
+    }
+
+    fn test_crypto_state() -> WrappedAccountCryptographicState {
+        let store: KeyStore<KeySlotIds> = KeyStore::default();
+        let mut ctx = store.context_mut();
+        let user_key = ctx.make_symmetric_key(SymmetricKeyAlgorithm::XAes256Gcm);
+        let private_key_id = ctx.make_private_key(PublicKeyEncryptionAlgorithm::RsaOaepSha1);
+        let signing_key_id = ctx.make_signing_key(SignatureAlgorithm::Ed25519);
+        let signed_public_key = ctx
+            .make_signed_public_key(private_key_id, signing_key_id)
+            .unwrap();
+        let security_state = SecurityState::new();
+        let signed_security_state = security_state.sign(signing_key_id, &mut ctx).unwrap();
+        let wrapped_private = ctx.wrap_private_key(user_key, private_key_id).unwrap();
+        let wrapped_signing = ctx.wrap_signing_key(user_key, signing_key_id).unwrap();
+        WrappedAccountCryptographicState::V2 {
+            private_key: wrapped_private,
+            signed_public_key,
+            signing_key: wrapped_signing,
+            security_state: signed_security_state,
+        }
+    }
+
+    fn test_email() -> String {
+        "user@example.com".to_string()
+    }
+
+    fn test_save_data() -> SaveStateData {
+        SaveStateData {
+            user_id: test_user_id(),
+            email: test_email(),
+            urls: test_base_urls(),
+            crypto_state: test_crypto_state(),
+        }
+    }
+
+    #[tokio::test]
+    async fn save_to_state_writes_all_values() {
+        let reg = StateRegistry::new_with_memory_db();
+        let data = test_save_data();
+        let expected_user_id = data.user_id;
+        let expected_email = data.email.clone();
+        let expected_urls_identity = data.urls.identity_url.clone();
+        let expected_urls_api = data.urls.api_url.clone();
+
+        Client::save_to_state(data, &reg).await.unwrap();
+
+        // Read back each value directly from the registry.
+        let base_urls: BaseUrls = reg.value::<BASE_URLS>().get().await.unwrap();
+        assert_eq!(base_urls.identity_url, expected_urls_identity);
+        assert_eq!(base_urls.api_url, expected_urls_api);
+
+        let user_id: UserId = reg.value::<USER_ID>().get().await.unwrap();
+        assert_eq!(user_id, expected_user_id);
+
+        let email: String = reg.value::<USER_EMAIL>().get().await.unwrap();
+        assert_eq!(email, expected_email);
+
+        let crypto_state: WrappedAccountCryptographicState =
+            reg.value::<ACCOUNT_CRYPTO_STATE>().get().await.unwrap();
+        assert!(
+            matches!(crypto_state, WrappedAccountCryptographicState::V2 { .. }),
+            "Expected V2 crypto state"
+        );
+    }
+
+    #[tokio::test]
+    async fn load_from_state_restores_user_id() {
+        ensure_platform_info();
+
+        let reg = StateRegistry::new_with_memory_db();
+        let data = test_save_data();
+        let expected_user_id = data.user_id;
+
+        Client::save_to_state(data, &reg).await.unwrap();
+
+        let token_handler: Arc<dyn TokenHandler> = Arc::new(NoopTokenHandler);
+        let client = Client::load_from_state(token_handler, reg).await.unwrap();
+
+        assert_eq!(
+            client.internal.get_user_id(),
+            Some(expected_user_id),
+            "Restored client should have the saved user ID"
+        );
+    }
+
+    #[tokio::test]
+    async fn load_from_state_missing_base_urls_returns_error() {
+        ensure_platform_info();
+
+        let reg = StateRegistry::new_with_memory_db();
+        // Registry is empty no values written.
+
+        let token_handler: Arc<dyn TokenHandler> = Arc::new(NoopTokenHandler);
+        let result = Client::load_from_state(token_handler, reg).await;
+
+        assert!(matches!(
+            result,
+            Err(RehydrationError::State(PersistedValueError::ValueNotFound(
+                "base_urls"
+            )))
+        ));
+    }
+
+    #[tokio::test]
+    async fn load_from_state_missing_user_id_returns_error() {
+        ensure_platform_info();
+
+        let reg = StateRegistry::new_with_memory_db();
+        // Write only BASE_URLS, omit USER_ID.
+        reg.value::<BASE_URLS>()
+            .set(test_base_urls())
+            .await
+            .unwrap();
+
+        let token_handler: Arc<dyn TokenHandler> = Arc::new(NoopTokenHandler);
+        let result = Client::load_from_state(token_handler, reg).await;
+
+        assert!(matches!(
+            result,
+            Err(RehydrationError::State(PersistedValueError::ValueNotFound(
+                "user_id"
+            )))
+        ));
+    }
+}

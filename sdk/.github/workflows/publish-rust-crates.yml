@@ -1,0 +1,37 @@
+name: Publish Rust crates
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (default: latest rust crates release)"
+        required: true
+        type: string
+        default: latest
+
+      # List of packages to publish
+      # Default includes all Bitwarden crates required to publish the SM `bitwarden` crate. To obtain this list, you can use the following command:
+      # cargo tree -p bitwarden-cli -p bitwarden-sm --prefix none | cut -d' ' -f1 | sort -u | grep bitwarden | tr '\n' ' '
+      packages:
+        description: "Space-separated list of packages to publish"
+        required: false
+        type: string
+        default: "bitwarden-api-api bitwarden-api-base bitwarden-api-identity bitwarden-api-key-connector bitwarden-cli bitwarden-core bitwarden-crypto bitwarden-encoding bitwarden-error bitwarden-error-macro bitwarden-generators bitwarden-sm bitwarden-state bitwarden-threading bitwarden-uuid bitwarden-uuid-macro"
+
+permissions: {}
+
+jobs:
+  trigger:
+    name: Trigger publish
+    runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+    steps:
+      - name: Trigger deployment
+        uses: bitwarden/gh-actions/trigger-actions@main
+        with:
+          azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          task: publish-sdk-internal-rust-crates
+          data: '{"version": "${{ inputs.version }}", "packages": "${{ inputs.packages }}"}'

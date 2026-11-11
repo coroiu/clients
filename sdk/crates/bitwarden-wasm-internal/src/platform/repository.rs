@@ -1,0 +1,296 @@
+/*!
+ * To support clients implementing the [Repository] trait in a [::wasm_bindgen] environment,
+ * we need to deal with an `extern "C"` interface, as that is what [::wasm_bindgen] supports:
+ *
+ * This looks something like this:
+ *
+ * ```rust,ignore
+ * #[wasm_bindgen]
+ * extern "C" {
+ *     pub type CipherRepository;
+ *
+ *     #[wasm_bindgen(method, catch)]
+ *     async fn get(this: &CipherRepository, id: String) -> Result<JsValue, JsValue>;
+ * }
+ * ```
+ *
+ * As you can see, this has a few limitations:
+ * - The type must be known at compile time, so we cannot use generics directly, which means we
+ *   can't use the existing [Repository] trait directly.
+ * - The return type must be [JsValue], so we need to convert our types to and from [JsValue].
+ *
+ * To facilitate this, we provide some utilities:
+ * - [WasmRepository] trait, which defines the methods as we expect them to come from
+ *   [::wasm_bindgen], using [JsValue]. This is generic and should be implemented for each
+ *   concrete repository we define, but the implementation should be very straightforward.
+ * - [WasmRepositoryChannel] struct, which wraps a [WasmRepository] in a [ThreadBoundRunner] and
+ *   implements the [Repository] trait. This has a few special considerations:
+ *   - It uses [tsify::serde_wasm_bindgen] to convert between [JsValue] and our types, so we can
+ *     use the existing [Repository] trait.
+ *   - It runs the calls in a thread-bound manner, so we can safely call the [WasmRepository]
+ *     methods from any thread.
+ * - The [create_wasm_repositories] macro, defines the [::wasm_bindgen] interface and implements
+ *   the [WasmRepository] trait for you.
+ */
+
+use std::{future::Future, marker::PhantomData, rc::Rc};
+
+use bitwarden_state::repository::{Repository, RepositoryError, RepositoryItem};
+use bitwarden_threading::ThreadBoundRunner;
+use wasm_bindgen::{JsValue, prelude::wasm_bindgen};
+
+/// This trait defines the methods that a [::wasm_bindgen] repository must implement.
+/// The trait itself exists to provide a generic way of handling the [::wasm_bindgen] interface,
+/// which is !Send + !Sync, and only deals with [JsValue].
+pub(crate) trait WasmRepository<T> {
+    async fn get(&self, id: String) -> Result<JsValue, JsValue>;
+    async fn list(&self) -> Result<JsValue, JsValue>;
+    async fn set(&self, id: String, value: T) -> Result<JsValue, JsValue>;
+    async fn set_bulk(&self, values: Vec<(String, T)>) -> Result<JsValue, JsValue>;
+    async fn remove(&self, id: String) -> Result<JsValue, JsValue>;
+    async fn remove_bulk(&self, keys: Vec<String>) -> Result<JsValue, JsValue>;
+    async fn remove_all(&self) -> Result<JsValue, JsValue>;
+}
+
+/// This struct wraps a [WasmRepository] in a [ThreadBoundRunner] to allow it to be used as a
+/// [Repository] in a thread-safe manner. It implements the [Repository] trait directly, by
+/// converting the values as needed with [tsify::serde_wasm_bindgen].
+pub(crate) struct WasmRepositoryChannel<T, R: WasmRepository<T> + 'static>(
+    ThreadBoundRunner<R>,
+    PhantomData<T>,
+);
+
+impl<T, R: WasmRepository<T> + 'static> WasmRepositoryChannel<T, R> {
+    pub(crate) fn new(repository: R) -> Self {
+        Self(ThreadBoundRunner::new(repository), PhantomData)
+    }
+}
+
+#[async_trait::async_trait]
+impl<T: RepositoryItem, R: WasmRepository<T> + 'static> Repository<T>
+    for WasmRepositoryChannel<T, R>
+{
+    async fn get(&self, key: T::Key) -> Result<Option<T>, RepositoryError> {
+        let key = key.to_string();
+        run_convert(&self.0, |s| async move { s.get(key).await }).await
+    }
+    async fn list(&self) -> Result<Vec<T>, RepositoryError> {
+        run_convert(&self.0, |s| async move { s.list().await }).await
+    }
+    async fn set(&self, key: T::Key, value: T) -> Result<(), RepositoryError> {
+        let key = key.to_string();
+        run_convert(
+            &self.0,
+            |s| async move { s.set(key, value).await.and(UNIT) },
+        )
+        .await
+    }
+    async fn set_bulk(&self, values: Vec<(T::Key, T)>) -> Result<(), RepositoryError> {
+        let values: Vec<(String, T)> = values
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v))
+            .collect();
+        run_convert(
+            &self.0,
+            |s| async move { s.set_bulk(values).await.and(UNIT) },
+        )
+        .await
+    }
+    async fn remove(&self, key: T::Key) -> Result<(), RepositoryError> {
+        let key = key.to_string();
+        run_convert(&self.0, |s| async move { s.remove(key).await.and(UNIT) }).await
+    }
+    async fn remove_bulk(&self, keys: Vec<T::Key>) -> Result<(), RepositoryError> {
+        let keys: Vec<String> = keys.into_iter().map(|k| k.to_string()).collect();
+        run_convert(
+            &self.0,
+            |s| async move { s.remove_bulk(keys).await.and(UNIT) },
+        )
+        .await
+    }
+    async fn remove_all(&self) -> Result<(), RepositoryError> {
+        run_convert(&self.0, |s| async move { s.remove_all().await.and(UNIT) }).await
+    }
+}
+
+#[wasm_bindgen(typescript_custom_section)]
+const REPOSITORY_CUSTOM_TS_TYPE: &'static str = r#"
+export interface Repository<T> {
+    get(id: string): Promise<T | null>;
+    list(): Promise<T[]>;
+    set(id: string, value: T): Promise<void>;
+    setBulk(values: [string, T][]): Promise<void>;
+    remove(id: string): Promise<void>;
+    removeBulk(keys: string[]): Promise<void>;
+    removeAll(): Promise<void>;
+}
+"#;
+
+/// This macro generates a [::wasm_bindgen] interface for a repository type, and provides the
+/// implementation of [WasmRepository] and a way to convert it into something that implements
+/// the [Repository] trait.
+macro_rules! create_wasm_repositories {
+    ( $container_name:ident ; $( $qualified_type_name:ty, $type_name:ident, $field_name:ident, $repo_name:ident );+ $(;)? ) => {
+
+        const _: () = {
+            #[wasm_bindgen(typescript_custom_section)]
+            const REPOSITORIES_CUSTOM_TS_TYPE: &'static str = concat!(
+                "export interface ",
+                stringify!($container_name),
+                "{\n",
+                $( stringify!($field_name), ": Repository<", stringify!($type_name), "> | null;\n", )+
+                "}\n"
+            );
+        };
+
+        #[wasm_bindgen]
+        extern "C" {
+            #[wasm_bindgen(typescript_type = $container_name)]
+            pub type $container_name;
+
+            $(
+                #[wasm_bindgen(method, getter)]
+                pub fn $field_name(this: &$container_name) -> Option<$repo_name>;
+            )+
+        }
+
+        impl $container_name {
+            pub fn register_all(self, client: &bitwarden_core::platform::StateClient) {
+                $(
+                    if let Some(repo) = self.$field_name() {
+                        let repo = repo.into_channel_impl();
+                        client.register_client_managed(repo);
+                    }
+                )+
+            }
+        }
+
+        $(
+            #[wasm_bindgen]
+            extern "C" {
+                #[wasm_bindgen]
+                pub type $repo_name;
+
+                #[wasm_bindgen(method, catch)]
+                async fn get(
+                    this: &$repo_name,
+                    id: String,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue>;
+                #[wasm_bindgen(method, catch)]
+                async fn list(this: &$repo_name)
+                    -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue>;
+                #[wasm_bindgen(method, catch)]
+                async fn set(
+                    this: &$repo_name,
+                    id: String,
+                    value: $qualified_type_name,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue>;
+                #[wasm_bindgen(method, catch, js_name = "setBulk")]
+                async fn set_bulk(
+                    this: &$repo_name,
+                    values: ::wasm_bindgen::JsValue,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue>;
+                #[wasm_bindgen(method, catch)]
+                async fn remove(
+                    this: &$repo_name,
+                    id: String,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue>;
+                #[wasm_bindgen(method, catch, js_name = "removeBulk")]
+                async fn remove_bulk(
+                    this: &$repo_name,
+                    keys: ::wasm_bindgen::JsValue,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue>;
+                #[wasm_bindgen(method, catch, js_name = "removeAll")]
+                async fn remove_all(
+                    this: &$repo_name,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue>;
+            }
+
+            impl $crate::platform::repository::WasmRepository<$qualified_type_name> for $repo_name {
+                async fn get(
+                    &self,
+                    id: String,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue> {
+                    self.get(id).await
+                }
+                async fn list(&self) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue> {
+                    self.list().await
+                }
+                async fn set(
+                    &self,
+                    id: String,
+                    value: $qualified_type_name,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue> {
+                    self.set(id, value).await
+                }
+                async fn set_bulk(
+                    &self,
+                    values: Vec<(String, $qualified_type_name)>,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue> {
+                    let js_val = ::tsify::serde_wasm_bindgen::to_value(&values)
+                        .map_err(|e| ::wasm_bindgen::JsValue::from_str(&e.to_string()))?;
+                    self.set_bulk(js_val).await
+                }
+                async fn remove(
+                    &self,
+                    id: String,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue> {
+                    self.remove(id).await
+                }
+                async fn remove_bulk(
+                    &self,
+                    keys: Vec<String>,
+                ) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue> {
+                    let js_val = ::tsify::serde_wasm_bindgen::to_value(&keys)
+                        .map_err(|e| ::wasm_bindgen::JsValue::from_str(&e.to_string()))?;
+                    self.remove_bulk(js_val).await
+                }
+                async fn remove_all(&self) -> Result<::wasm_bindgen::JsValue, ::wasm_bindgen::JsValue> {
+                    self.remove_all().await
+                }
+            }
+
+            impl $repo_name {
+                pub fn into_channel_impl(
+                    self,
+                ) -> ::std::sync::Arc<impl bitwarden_state::repository::Repository<$qualified_type_name>> {
+                    use $crate::platform::repository::WasmRepositoryChannel;
+                    ::std::sync::Arc::new(WasmRepositoryChannel::new(self))
+                }
+            }
+        )+
+    };
+}
+pub(crate) use create_wasm_repositories;
+
+const UNIT: Result<JsValue, JsValue> = Ok(JsValue::UNDEFINED);
+
+/// Utility function that runs a closure in a thread-bound manner, and converts the Result from
+/// [Result<JsValue, JsValue>] to a typed [Result<T, RepositoryError>].
+async fn run_convert<T: 'static, Func, Fut, Ret>(
+    runner: &::bitwarden_threading::ThreadBoundRunner<T>,
+    f: Func,
+) -> Result<Ret, RepositoryError>
+where
+    Func: FnOnce(Rc<T>) -> Fut + Send + Sync + 'static,
+    Fut: Future<Output = Result<JsValue, JsValue>>,
+    Ret: serde::de::DeserializeOwned + Send + Sync + 'static,
+{
+    runner
+        .run_in_thread(|state| async move { convert_result(f(state).await) })
+        .await
+        .expect("Task should not panic")
+}
+
+/// Converts a [Result<JsValue, JsValue>] to a typed [Result<T, RepositoryError>] using
+/// [tsify::serde_wasm_bindgen]
+fn convert_result<T: serde::de::DeserializeOwned>(
+    result: Result<JsValue, JsValue>,
+) -> Result<T, RepositoryError> {
+    result
+        .map_err(|e| RepositoryError::Internal(format!("{e:?}")))
+        .and_then(|value| {
+            ::tsify::serde_wasm_bindgen::from_value(value)
+                .map_err(|e| RepositoryError::Internal(e.to_string()))
+        })
+}

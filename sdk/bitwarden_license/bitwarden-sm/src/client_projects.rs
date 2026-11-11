@@ -1,0 +1,61 @@
+use crate::{
+    SecretsManagerClient,
+    error::SecretsManagerError,
+    projects::{
+        ProjectCreateRequest, ProjectGetRequest, ProjectPutRequest, ProjectResponse,
+        ProjectsDeleteRequest, ProjectsDeleteResponse, ProjectsListRequest, ProjectsResponse,
+        create_project, delete_projects, get_project, list_projects, update_project,
+    },
+};
+
+#[allow(missing_docs)]
+pub struct ProjectsClient {
+    client: SecretsManagerClient,
+}
+
+impl ProjectsClient {
+    #[allow(missing_docs)]
+    pub fn new(client: SecretsManagerClient) -> Self {
+        Self { client }
+    }
+
+    #[allow(missing_docs)]
+    pub async fn get(
+        &self,
+        input: &ProjectGetRequest,
+    ) -> Result<ProjectResponse, SecretsManagerError> {
+        get_project(&self.client, input).await
+    }
+
+    #[allow(missing_docs)]
+    pub async fn create(
+        &self,
+        input: &ProjectCreateRequest,
+    ) -> Result<ProjectResponse, SecretsManagerError> {
+        create_project(&self.client, input).await
+    }
+
+    #[allow(missing_docs)]
+    pub async fn list(
+        &self,
+        input: &ProjectsListRequest,
+    ) -> Result<ProjectsResponse, SecretsManagerError> {
+        list_projects(&self.client, input).await
+    }
+
+    #[allow(missing_docs)]
+    pub async fn update(
+        &self,
+        input: &ProjectPutRequest,
+    ) -> Result<ProjectResponse, SecretsManagerError> {
+        update_project(&self.client, input).await
+    }
+
+    #[allow(missing_docs)]
+    pub async fn delete(
+        &self,
+        input: ProjectsDeleteRequest,
+    ) -> Result<ProjectsDeleteResponse, SecretsManagerError> {
+        delete_projects(&self.client, input).await
+    }
+}

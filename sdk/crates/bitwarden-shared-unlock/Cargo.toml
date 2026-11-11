@@ -1,0 +1,62 @@
+[package]
+name = "bitwarden-shared-unlock"
+version.workspace = true
+publish = false
+
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+[features]
+# Expose the test hooks the integration tests need: non-default timing, and read access to a peer's
+# recorded lock state. Not enabled in any production build.
+test-support = []
+wasm = [
+    "bitwarden-core/wasm",
+    "bitwarden-ffi/wasm",
+    "dep:bitwarden-encoding",
+    "bitwarden-threading/wasm",
+    "dep:tsify",
+    "dep:wasm-bindgen",
+    "dep:wasm-bindgen-futures",
+    "bitwarden-crypto/wasm",
+    "bitwarden-ipc/wasm",
+]
+
+[dependencies]
+async-trait = { workspace = true }
+bitwarden-core = { workspace = true }
+bitwarden-crypto = { workspace = true }
+bitwarden-encoding = { workspace = true, optional = true }
+bitwarden-error = { workspace = true }
+bitwarden-ffi = { workspace = true }
+bitwarden-ipc = { workspace = true }
+bitwarden-threading = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tsify = { workspace = true, optional = true }
+wasm-bindgen = { workspace = true, optional = true }
+wasm-bindgen-futures = { workspace = true, optional = true }
+web-time = "1.1.0"
+zeroize = { version = "1.8.2", features = ["zeroize_derive"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = { workspace = true }
+
+[dev-dependencies]
+bitwarden-encoding = { workspace = true }
+bitwarden-ipc = { workspace = true, features = ["test-support"] }
+# Self dependency so the integration tests are compiled against the crate with `test-support` on.
+bitwarden-shared-unlock = { path = ".", features = ["test-support"] }
+tokio = { workspace = true, features = ["macros", "rt", "sync", "time"] }
+tracing-subscriber = { workspace = true }
+
+[lints]
+workspace = true

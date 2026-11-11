@@ -1,0 +1,167 @@
+name: Build Swift Package
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "rc"
+      - "hotfix-rc"
+      - "main"
+  workflow_dispatch:
+
+jobs:
+  version:
+    name: Get Version
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      package_version: ${{ steps.retrieve-version.outputs.package_version }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Get Package Version
+        id: retrieve-version
+        run: |
+          VERSION=$(grep -o '^version = ".*"' Cargo.toml | grep -Eo "[0-9]+\.[0-9]+\.[0-9]+")
+          echo "package_version=$VERSION" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build
+    runs-on: macos-26
+    needs: version
+    permissions:
+      contents: read
+    env:
+      _VERSION: ${{ needs.version.outputs.package_version }}
+    outputs:
+      short-sha: ${{ steps.build.outputs.short-sha }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+        with:
+          key: sdk-swift-cargo
+          # The build output cache below restores target/, including the dependencies.
+          cache-targets: false
+
+      - name: Rustup target
+        run: |
+          rustup target install aarch64-apple-ios-sim
+          rustup target install aarch64-apple-ios
+          rustup target install x86_64-apple-ios
+
+      # The build output cache also holds the workspace crates, so a run only recompiles the crates
+      # that changed and the crates that depend on them. Without any match, the run builds
+      # everything, using the crate downloads restored by rust-cache above.
+      - name: Cache build output
+        uses: bitwarden/gh-actions/cargo-build-cache@main
+        with:
+          key: swift
+
+      - name: Build
+        shell: bash
+        working-directory: crates/bitwarden-uniffi/swift
+        id: build
+        run: |
+          ./build.sh
+
+          # SHA Short
+          echo "short-sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Test build demo app
+        working-directory: crates/bitwarden-uniffi/swift/iOS
+        run: |
+          xcodebuild clean build \
+            -project App.xcodeproj \
+            -scheme App \
+            -destination generic/platform=iOS \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Zip BitwardenFFI.xcframework
+        run: |
+          mkdir artifacts
+          cp -rf crates/bitwarden-uniffi/swift/BitwardenFFI.xcframework artifacts
+
+      - name: Upload BitwardenFFI.xcframework artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: BitwardenFFI-${{ env._VERSION }}-${{ steps.build.outputs.short-sha }}.xcframework
+          path: artifacts
+          if-no-files-found: error
+
+      - name: Upload BitwardenSdk sources
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: BitwardenSdk-${{ env._VERSION }}-${{ steps.build.outputs.short-sha }}-sources
+          path: crates/bitwarden-uniffi/swift/Sources/BitwardenSdk
+          if-no-files-found: error
+
+  e2e-tests:
+    name: E2E tests
+    runs-on: macos-26
+    needs: [version, build]
+    permissions:
+      contents: read
+    env:
+      _VERSION: ${{ needs.version.outputs.package_version }}
+      _SHORT_SHA: ${{ needs.build.outputs.short-sha }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download BitwardenFFI.xcframework
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: BitwardenFFI-${{ env._VERSION }}-${{ env._SHORT_SHA }}.xcframework
+          path: crates/bitwarden-uniffi/swift
+
+      - name: Download generated BitwardenSdk sources
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: BitwardenSdk-${{ env._VERSION }}-${{ env._SHORT_SHA }}-sources
+          path: crates/bitwarden-uniffi/swift/Sources/BitwardenSdk
+
+      - name: Run e2e tests
+        run: ./e2e/swift/test.sh
+
+  trigger-swift-release:
+    name: Trigger Swift release
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    needs: build
+    permissions:
+      actions: write
+    steps:
+      - name: Trigger Swift release
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'bitwarden',
+              repo: 'sdk-internal',
+              workflow_id: 'release-swift.yml',
+              ref: 'main',
+              inputs: {
+                'build-run-id': '${{ github.run_id }}',
+                'build-run-number': '${{ github.run_number }}',
+                'sdk-swift-branch-name': 'unstable',
+                'update-ios-repo': 'true',
+              }
+            })

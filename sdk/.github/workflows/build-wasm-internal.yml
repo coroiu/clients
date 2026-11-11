@@ -1,0 +1,219 @@
+name: Build @bitwarden/sdk-internal
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+      - "rc"
+      - "hotfix-rc"
+  workflow_dispatch:
+    inputs:
+      skip_wasm2js:
+        description: "Build like a pull request, without the wasm2js fallback"
+        type: boolean
+        default: false
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+    working-directory: crates/bitwarden-wasm-internal
+
+jobs:
+  build:
+    name: Building @bitwarden/sdk-wasm-internal - ${{matrix.license_type.readable}}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        license_type:
+          - artifact_name: "sdk-internal"
+            build_flags: ""
+            npm_folder: "npm"
+            readable: "open source license"
+          - artifact_name: "commercial-sdk-internal"
+            build_flags: "-b"
+            npm_folder: "bitwarden_license/npm"
+            readable: "commercial license"
+
+    steps:
+      - name: Checkout repo (PR)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'pull_request'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
+
+      - name: Checkout repo (Push or manual run)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        with:
+          persist-credentials: false
+
+      - name: Set version (PR)
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          PR_HEAD_REF: "${{ github.event.pull_request.head.ref }}"
+        run: |
+          echo REF_NAME="${PR_HEAD_REF}" >> $GITHUB_ENV
+          echo SHA="${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+
+      - name: Set env variables (Branch/Tag)
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          echo REF_NAME="${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          echo SHA="${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: Set version
+        run: |
+          export SDK_VERSION="${REF_NAME} (${SHA:0:7})"
+          echo "SDK_VERSION='${SDK_VERSION}'" >> $GITHUB_ENV
+          echo "SDK_VERSION='${SDK_VERSION}'"
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          registry-url: "https://npm.pkg.github.com"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm i -g binaryen
+
+      - name: Set Rust Toolchain
+        id: toolchain
+        shell: bash
+        run: |
+          RUST_TOOLCHAIN="$(grep -oP '^channel.*"(\K.*?)(?=")' ../../rust-toolchain.toml)"
+          echo "RUST_TOOLCHAIN=${RUST_TOOLCHAIN}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: NPM setup
+        run: npm ci
+        working-directory: crates/bitwarden-wasm-internal/${{ matrix.license_type.npm_folder }}
+
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: "${{ steps.toolchain.outputs.RUST_TOOLCHAIN }}"
+          targets: wasm32-unknown-unknown
+          components: rust-src
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+        with:
+          key: wasm-cargo-cache
+          # The build output cache below restores target/, including the dependencies.
+          cache-targets: false
+
+      # The build output cache also holds the workspace crates, so a run only recompiles the crates
+      # that changed and the crates that depend on them. Each license has its own cache, because
+      # the features differ. The standard library is built from the rust-src sources (build-std),
+      # which a fresh toolchain install gives the current time.
+      - name: Cache build output
+        uses: bitwarden/gh-actions/cargo-build-cache@main
+        with:
+          key: wasm-${{ matrix.license_type.artifact_name }}
+          reset_sysroot_mtimes: true
+
+      # Pull requests skip the slow wasm2js fallback: their artifacts are only used for the type
+      # check in clients and the e2e tests, which don't load it.
+      - name: Build
+        id: build
+        env:
+          SKIP_WASM2JS_FLAG: ${{ (github.event_name == 'pull_request' || inputs.skip_wasm2js) && '-s' || '' }}
+        run: |
+          echo "CPUs: $(nproc)"
+          ./build.sh -r -p ${SKIP_WASM2JS_FLAG} ${{ matrix.license_type.build_flags }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ matrix.license_type.artifact_name }}
+          path: ${{ github.workspace }}/crates/bitwarden-wasm-internal/${{ matrix.license_type.npm_folder }}/*
+          if-no-files-found: error
+
+  e2e-tests:
+    name: E2E tests
+    runs-on: ubuntu-24.04
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo (PR)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'pull_request'
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
+
+      - name: Checkout repo (Push or manual run)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: e2e/wasm/package-lock.json
+
+      - name: Download SDK artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sdk-internal
+          path: crates/bitwarden-wasm-internal/npm
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: e2e/wasm
+
+      - name: Run e2e tests
+        run: npm test
+        working-directory: e2e/wasm
+
+  trigger-wasm-publish:
+    name: Trigger WASM publish
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    needs: build
+    permissions:
+      id-token: write
+    steps:
+      - name: Trigger deployment
+        uses: bitwarden/gh-actions/trigger-actions@main
+        with:
+          azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          task: publish-sdk-internal-npm
+          description: "Triggered by sdk-internal build on main"
+
+  trigger-breaking-change-check:
+    name: Trigger client breaking change checks
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: build
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    uses: ./.github/workflows/detect-breaking-changes.yml
+    secrets:
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+    with:
+      pr_number: ${{ github.event.number }}
+      pr_head_sha: ${{ github.event.pull_request.head.sha }}
+      pr_head_ref: ${{ github.event.pull_request.head.ref }}
+      build_run_id: ${{ github.run_id }}
+      client_repo: "bitwarden/clients"
+      client_label: "typescript"
+      client_workflow: "sdk-breaking-change-check.yml"
+      artifact_identifier: "sdk-internal"

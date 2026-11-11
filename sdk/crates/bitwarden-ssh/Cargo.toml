@@ -1,0 +1,60 @@
+[package]
+name = "bitwarden-ssh"
+description = """
+Internal crate for the bitwarden crate. Do not use.
+"""
+exclude = ["/resources"]
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+[features]
+wasm = [
+    "bitwarden-error/wasm",
+    "bitwarden-ffi/wasm",
+    "dep:tsify",
+    "dep:wasm-bindgen",
+] # WASM support
+uniffi = ["dep:uniffi"] # Uniffi bindings
+
+[dependencies]
+bitwarden-error = { workspace = true }
+bitwarden-ffi = { workspace = true }
+bitwarden-random = { workspace = true }
+block-padding = { version = "=0.4.2" }
+ed25519 = { version = "3.0.0", features = ["pkcs8"] }
+ed25519-dalek = { workspace = true, features = ["alloc", "pkcs8"] }
+p256 = { version = "0.14.0", features = ["alloc", "pkcs8"], default-features = false }
+p384 = { version = "0.14.0", features = ["alloc", "pkcs8"], default-features = false }
+p521 = { version = "0.14.0", features = ["alloc", "pkcs8"], default-features = false }
+pem-rfc7468 = "1.0.0"
+pkcs8 = { version = "0.11.0", features = ["encryption"] }
+rand = { workspace = true }
+rsa = { workspace = true }
+serde.workspace = true
+ssh-cipher = "0.3.0"
+ssh-key = { version = "0.7.0-rc.12", features = [
+    "ed25519",
+    "encryption",
+    "p256",
+    "p384",
+    "p521",
+    "rsa",
+], default-features = false }
+thiserror = { workspace = true }
+tsify = { workspace = true, optional = true }
+uniffi = { workspace = true, optional = true }
+wasm-bindgen = { workspace = true, optional = true }
+
+[dev-dependencies]
+rand_chacha = { workspace = true }
+
+[lints]
+workspace = true

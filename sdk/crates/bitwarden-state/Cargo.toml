@@ -1,0 +1,53 @@
+[package]
+name = "bitwarden-state"
+description = """
+Internal crate for the bitwarden crate. Do not use.
+"""
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+[features]
+uniffi = ["dep:uniffi"]
+wasm = ["bitwarden-ffi/wasm", "bitwarden-threading/wasm"]
+# Dev-only: generic debug browse over registered repositories, exposed to JS as
+# a typed handle. Never enable in production. The wasm deps are pulled here (not
+# by the `wasm` feature) so production wasm builds don't carry them.
+debug-capabilities = ["dep:wasm-bindgen", "dep:wasm-bindgen-futures"]
+# Enables browser-mode integration tests (IndexedDB). Requires a webdriver
+# (geckodriver/chromedriver) on PATH at test time.
+browser-tests = []
+
+[dependencies]
+async-trait = { workspace = true }
+bitwarden-error = { workspace = true }
+bitwarden-ffi = { workspace = true }
+bitwarden-threading = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+wasm-bindgen = { workspace = true, optional = true }
+wasm-bindgen-futures = { workspace = true, optional = true }
+
+[target.'cfg(not(target_arch="wasm32"))'.dependencies]
+rusqlite = { version = ">=0.37.0, <0.42", features = ["bundled"] }
+uniffi = { workspace = true, optional = true }
+
+[target.'cfg(target_arch="wasm32")'.dependencies]
+indexed-db = ">=0.4.2, <0.5"
+js-sys = { workspace = true }
+tsify = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt"] }
+wasm-bindgen-test = { workspace = true }
+
+[lints]
+workspace = true

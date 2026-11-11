@@ -1,0 +1,453 @@
+use bitwarden_api_api::{
+    apis::ApiClient,
+    models::{CipherCollectionsRequestModel, CipherRequestModel},
+};
+use bitwarden_collections::collection::CollectionId;
+use bitwarden_core::{
+    ApiError, MissingFieldError, NotAuthenticatedError, UserId, key_management::KeySlotIds,
+};
+use bitwarden_crypto::{CryptoError, IdentifyKey, KeyStore};
+use bitwarden_error::bitwarden_error;
+use bitwarden_state::repository::RepositoryError;
+use thiserror::Error;
+
+use super::CipherAdminClient;
+use crate::{
+    Cipher, CipherId, CipherView, DecryptError, ItemNotFoundError, VaultParseError,
+    cipher::cipher::{EncryptMode, PartialCipher, StrictDecrypt},
+    cipher_client::{
+        edit::{CipherEditRequest, convert_request_to_cipher_view},
+        should_use_blob_encryption,
+    },
+};
+
+#[allow(missing_docs)]
+#[bitwarden_error(flat)]
+#[derive(Debug, Error)]
+pub enum EditCipherAdminError {
+    #[error(transparent)]
+    ItemNotFound(#[from] ItemNotFoundError),
+    #[error(transparent)]
+    Crypto(#[from] CryptoError),
+    #[error(transparent)]
+    Api(#[from] ApiError),
+    #[error(transparent)]
+    VaultParse(#[from] VaultParseError),
+    #[error(transparent)]
+    MissingField(#[from] MissingFieldError),
+    #[error(transparent)]
+    NotAuthenticated(#[from] NotAuthenticatedError),
+    #[error(transparent)]
+    Repository(#[from] RepositoryError),
+    #[error(transparent)]
+    Uuid(#[from] uuid::Error),
+    #[error(transparent)]
+    Decrypt(#[from] DecryptError),
+    /// `edit` was handed a partial view as the original.
+    #[error("Editing a PAM-gated cipher requires a full original; the supplied view is partial")]
+    PartialOriginal,
+}
+
+async fn edit_cipher(
+    key_store: &KeyStore<KeySlotIds>,
+    api_client: &bitwarden_api_api::apis::ApiClient,
+    encrypted_for: UserId,
+    original_cipher_view: CipherView,
+    request: CipherEditRequest,
+    use_strict_decryption: bool,
+    use_blob: bool,
+) -> Result<CipherView, EditCipherAdminError> {
+    let cipher_id = request.id;
+    // CipherMiniResponseModel does not include folder_id or favorite — save them from the
+    // request before it is consumed so they can be applied to the merged result.
+    let folder_id = request.folder_id;
+    let favorite = request.favorite;
+
+    // A partial original has every secret field stripped: password history diffed against it
+    // would drop the item's real history. The encrypt of the merge original below would also
+    // refuse it (EncryptRestrictedView), but only incidentally — fail clearly and first.
+    if original_cipher_view.partial {
+        return Err(EditCipherAdminError::PartialOriginal);
+    }
+
+    let mut view: CipherView = convert_request_to_cipher_view(request);
+    view.update_password_history(&original_cipher_view);
+
+    // Admin endpoints operate on organization-owned ciphers, which aren't
+    // expected to use blob encryption yet — `should_use_blob_encryption`
+    // returns `false` for any `Some(org)` today. Routing through the same
+    // dispatcher means org blob support (PM-32430) flips on automatically
+    // here when the helper learns to return `true` for orgs.
+    let encrypted_by_key_id = key_store
+        .context()
+        .get_symmetric_key_id(view.key_identifier())
+        .map(|id| id.to_string());
+    let mode = if use_blob {
+        EncryptMode::Blob(view)
+    } else {
+        EncryptMode::Legacy(view)
+    };
+    let cipher: Cipher = key_store.encrypt(mode)?;
+    let mut cipher_request: CipherRequestModel = cipher.try_into()?;
+    cipher_request.encrypted_for = Some(encrypted_for.into());
+    cipher_request.encrypted_by_key_id = encrypted_by_key_id;
+
+    let orig_mode = if use_blob {
+        EncryptMode::Blob(original_cipher_view)
+    } else {
+        EncryptMode::Legacy(original_cipher_view)
+    };
+    let orig_cipher = key_store.encrypt(orig_mode)?;
+
+    let mut cipher: Cipher = api_client
+        .ciphers_api()
+        .put_admin(cipher_id.into(), Some(cipher_request))
+        .await?
+        .merge_with_cipher(Some(orig_cipher))?;
+
+    cipher.folder_id = folder_id;
+    cipher.favorite = favorite;
+
+    Ok(if use_strict_decryption {
+        key_store.decrypt(&StrictDecrypt(cipher))?
+    } else {
+        key_store.decrypt(&cipher)?
+    })
+}
+
+/// Adds the cipher matched by [CipherId] to any number of collections on the server.
+pub async fn add_to_collections(
+    cipher_id: CipherId,
+    collection_ids: Vec<CollectionId>,
+    api_client: &ApiClient,
+    key_store: &KeyStore<KeySlotIds>,
+    use_strict_decryption: bool,
+) -> Result<CipherView, EditCipherAdminError> {
+    let req = CipherCollectionsRequestModel {
+        collection_ids: collection_ids
+            .into_iter()
+            .map(|id| id.to_string())
+            .collect(),
+    };
+
+    let api = api_client.ciphers_api();
+    let cipher: Cipher = api
+        .put_collections_admin(&cipher_id.to_string(), Some(req))
+        .await?
+        .merge_with_cipher(None)?;
+
+    Ok(if use_strict_decryption {
+        key_store.decrypt(&StrictDecrypt(cipher))?
+    } else {
+        key_store.decrypt(&cipher)?
+    })
+}
+
+#[allow(deprecated)]
+#[bitwarden_ffi::wasm_export]
+impl CipherAdminClient {
+    /// Edit an existing [Cipher] and save it to the server.
+    pub async fn edit(
+        &self,
+        request: CipherEditRequest,
+        original_cipher_view: CipherView,
+    ) -> Result<CipherView, EditCipherAdminError> {
+        let key_store = self.client.internal.get_key_store();
+        let config = self.client.internal.get_api_configurations();
+
+        let user_id = self
+            .client
+            .internal
+            .get_user_id()
+            .ok_or(NotAuthenticatedError)?;
+
+        let use_blob = should_use_blob_encryption(&key_store.context(), request.organization_id);
+
+        edit_cipher(
+            key_store,
+            &config.api_client,
+            user_id,
+            original_cipher_view,
+            request,
+            self.is_strict_decrypt().await,
+            use_blob,
+        )
+        .await
+    }
+
+    /// Adds the cipher matched by [CipherId] to any number of collections on the server.
+    pub async fn update_collection(
+        &self,
+        cipher_id: CipherId,
+        collection_ids: Vec<CollectionId>,
+    ) -> Result<CipherView, EditCipherAdminError> {
+        add_to_collections(
+            cipher_id,
+            collection_ids,
+            &self.client.internal.get_api_configurations().api_client,
+            self.client.internal.get_key_store(),
+            self.is_strict_decrypt().await,
+        )
+        .await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bitwarden_api_api::{apis::ApiClient, models::CipherMiniResponseModel};
+    use bitwarden_core::key_management::SymmetricKeySlotId;
+    use bitwarden_crypto::{KeyStore, SymmetricCryptoKey, SymmetricKeyAlgorithm};
+
+    use super::*;
+    use crate::{CipherId, CipherRepromptType, CipherType, LoginView};
+
+    const TEST_CIPHER_ID: &str = "5faa9684-c793-4a2d-8a12-b33900187097";
+    const TEST_USER_ID: &str = "550e8400-e29b-41d4-a716-446655440000";
+
+    fn generate_test_cipher() -> CipherView {
+        CipherView {
+            partial: false,
+            id: Some(TEST_CIPHER_ID.parse().unwrap()),
+            organization_id: None,
+            folder_id: None,
+            collection_ids: vec![],
+            key: None,
+            name: "Test Login".to_string(),
+            notes: None,
+            r#type: CipherType::Login,
+            login: Some(LoginView {
+                username: Some("test@example.com".to_string()),
+                password: Some("password123".to_string()),
+                password_revision_date: None,
+                uris: None,
+                totp: None,
+                autofill_on_page_load: None,
+                http_authentication_enabled: None,
+                fido2_credentials: None,
+            }),
+            identity: None,
+            card: None,
+            secure_note: None,
+            ssh_key: None,
+            bank_account: None,
+            drivers_license: None,
+            passport: None,
+            favorite: false,
+            reprompt: CipherRepromptType::None,
+            organization_use_totp: true,
+            edit: true,
+            permissions: None,
+            view_password: true,
+            local_data: None,
+            attachments: None,
+            attachment_decryption_failures: None,
+            fields: None,
+            password_history: None,
+            creation_date: "2025-01-01T00:00:00Z".parse().unwrap(),
+            deleted_date: None,
+            revision_date: "2025-01-01T00:00:00Z".parse().unwrap(),
+            archived_date: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn test_edit_cipher() {
+        let store: KeyStore<KeySlotIds> = KeyStore::default();
+        #[allow(deprecated)]
+        let _ = store.context_mut().set_symmetric_key(
+            SymmetricKeySlotId::User,
+            SymmetricCryptoKey::make(SymmetricKeyAlgorithm::Aes256CbcHmac),
+        );
+
+        let cipher_id: CipherId = TEST_CIPHER_ID.parse().unwrap();
+
+        let api_client = ApiClient::new_mocked(move |mock| {
+            mock.ciphers_api
+                .expect_put_admin()
+                .returning(move |_id, body| {
+                    let body = body.unwrap();
+                    Ok(CipherMiniResponseModel {
+                        object: Some("cipher".to_string()),
+                        id: Some(cipher_id.into()),
+                        name: body.name,
+                        r#type: body.r#type,
+                        organization_id: body
+                            .organization_id
+                            .as_ref()
+                            .and_then(|id| uuid::Uuid::parse_str(id).ok()),
+                        reprompt: body.reprompt,
+                        key: body.key,
+                        notes: body.notes,
+                        organization_use_totp: Some(true),
+                        revision_date: Some("2025-01-01T00:00:00Z".to_string()),
+                        creation_date: Some("2025-01-01T00:00:00Z".to_string()),
+                        deleted_date: None,
+                        login: body.login,
+                        card: body.card,
+                        identity: body.identity,
+                        secure_note: body.secure_note,
+                        ssh_key: body.ssh_key,
+                        bank_account: body.bank_account,
+                        drivers_license: body.drivers_license,
+                        passport: body.passport,
+                        fields: body.fields,
+                        password_history: body.password_history,
+                        attachments: None,
+                        data: None,
+                        partial_data: None,
+                    })
+                })
+                .once();
+        });
+
+        let folder_a: crate::FolderId = "a4e13cc0-1234-5678-abcd-b181009709b8".parse().unwrap();
+        let folder_b: crate::FolderId = "b5e13cc0-1234-5678-abcd-b181009709b8".parse().unwrap();
+
+        let mut original_cipher_view = generate_test_cipher();
+        original_cipher_view.folder_id = Some(folder_a);
+        let mut cipher_view = original_cipher_view.clone();
+        cipher_view.name = "New Cipher Name".to_string();
+        // Change folder: request carries folder_b, original has folder_a.
+        cipher_view.folder_id = Some(folder_b);
+
+        let request: CipherEditRequest = cipher_view.try_into().unwrap();
+
+        let result = edit_cipher(
+            &store,
+            &api_client,
+            TEST_USER_ID.parse().unwrap(),
+            original_cipher_view,
+            request,
+            false,
+            false,
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(result.id, Some(cipher_id));
+        assert_eq!(result.name, "New Cipher Name");
+        // folder_id must come from the request, not from the original cipher.
+        assert_eq!(result.folder_id, Some(folder_b));
+    }
+
+    /// A blob edit must use the `data` blob the server returns, not the stale
+    /// pre-edit blob re-sealed from the original view.
+    #[tokio::test]
+    async fn test_edit_cipher_blob_uses_echoed_data() {
+        let store: KeyStore<KeySlotIds> = KeyStore::default();
+        #[allow(deprecated)]
+        let _ = store.context_mut().set_symmetric_key(
+            SymmetricKeySlotId::User,
+            SymmetricCryptoKey::make(SymmetricKeyAlgorithm::Aes256CbcHmac),
+        );
+
+        let cipher_id: CipherId = TEST_CIPHER_ID.parse().unwrap();
+
+        // Echo the request's blob (`key` + `data`) back, as the server does.
+        let api_client = ApiClient::new_mocked(move |mock| {
+            mock.ciphers_api
+                .expect_put_admin()
+                .returning(move |_id, body| {
+                    let body = body.unwrap();
+                    Ok(CipherMiniResponseModel {
+                        id: Some(cipher_id.into()),
+                        r#type: body.r#type,
+                        key: body.key,
+                        data: body.data,
+                        creation_date: Some("2025-01-01T00:00:00Z".to_string()),
+                        revision_date: Some("2025-01-01T00:00:00Z".to_string()),
+                        ..Default::default()
+                    })
+                })
+                .once();
+        });
+
+        let original_cipher_view = generate_test_cipher();
+        let mut cipher_view = original_cipher_view.clone();
+        cipher_view.name = "New Cipher Name".to_string();
+
+        let request: CipherEditRequest = cipher_view.try_into().unwrap();
+
+        let result = edit_cipher(
+            &store,
+            &api_client,
+            TEST_USER_ID.parse().unwrap(),
+            original_cipher_view,
+            request,
+            false,
+            true, // use_blob
+        )
+        .await
+        .unwrap();
+
+        // The edited name lives inside the blob, so recovering it proves the
+        // echoed blob was used rather than the stale original.
+        assert_eq!(result.name, "New Cipher Name");
+    }
+
+    /// A partial original has every secret field stripped, so building on it would drop the
+    /// item's real password history. The guard must fire before any request is built.
+    #[tokio::test]
+    async fn test_edit_refuses_a_partial_original() {
+        let store: KeyStore<KeySlotIds> = KeyStore::default();
+        #[allow(deprecated)]
+        let _ = store.context_mut().set_symmetric_key(
+            SymmetricKeySlotId::User,
+            SymmetricCryptoKey::make(SymmetricKeyAlgorithm::Aes256CbcHmac),
+        );
+
+        // Deliberately no `expect_put_admin`: the guard has to fire before any request is built.
+        let api_client = ApiClient::new_mocked(|_mock| {});
+
+        let mut original_cipher_view = generate_test_cipher();
+        original_cipher_view.partial = true;
+        let cipher_view = original_cipher_view.clone();
+        // `CipherEditRequest` carries no `partial` field, so only the original view can gate.
+        let request: CipherEditRequest = cipher_view.try_into().unwrap();
+
+        let result = edit_cipher(
+            &store,
+            &api_client,
+            TEST_USER_ID.parse().unwrap(),
+            original_cipher_view,
+            request,
+            false,
+            false,
+        )
+        .await;
+
+        assert!(matches!(result, Err(EditCipherAdminError::PartialOriginal)));
+    }
+
+    #[tokio::test]
+    async fn test_edit_cipher_http_error() {
+        let store: KeyStore<KeySlotIds> = KeyStore::default();
+        #[allow(deprecated)]
+        let _ = store.context_mut().set_symmetric_key(
+            SymmetricKeySlotId::User,
+            SymmetricCryptoKey::make(SymmetricKeyAlgorithm::Aes256CbcHmac),
+        );
+
+        let api_client = ApiClient::new_mocked(move |mock| {
+            mock.ciphers_api
+                .expect_put_admin()
+                .returning(move |_id, _body| Err(std::io::Error::other("Simulated error").into()));
+        });
+        let orig_cipher_view = generate_test_cipher();
+        let cipher_view = orig_cipher_view.clone();
+        let request: CipherEditRequest = cipher_view.try_into().unwrap();
+        let result = edit_cipher(
+            &store,
+            &api_client,
+            TEST_USER_ID.parse().unwrap(),
+            orig_cipher_view,
+            request,
+            false,
+            false,
+        )
+        .await;
+
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), EditCipherAdminError::Api(_)));
+    }
+}

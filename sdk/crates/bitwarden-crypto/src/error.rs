@@ -1,0 +1,158 @@
+use std::fmt::Debug;
+
+use bitwarden_encoding::NotB64EncodedError;
+use bitwarden_error::bitwarden_error;
+use coset::iana::KeyOperation;
+use thiserror::Error;
+use uuid::Uuid;
+
+use crate::fingerprint::FingerprintError;
+
+#[allow(missing_docs)]
+#[bitwarden_error(flat)]
+#[derive(Debug, Error)]
+pub enum CryptoError {
+    #[error("The decryption operation failed")]
+    Decrypt,
+    #[error("The provided key is not the expected type")]
+    InvalidKey,
+    #[error("Error while decrypting EncString")]
+    KeyDecrypt,
+    #[error("The cipher key has an invalid length")]
+    InvalidKeyLen,
+    #[error("The value is not a valid UTF8 String")]
+    InvalidUtf8String,
+    #[error("Missing Key for organization with ID {0}")]
+    MissingKey(Uuid),
+    #[error("The item was missing a required field: {0}")]
+    MissingField(&'static str),
+    #[error("Missing Key for Id: {0}")]
+    MissingKeyId(String),
+    #[error("Key operation not supported by key: {0:?}")]
+    KeyOperationNotSupported(KeyOperation),
+    #[error("Cannot encrypt a restricted (partial) view; its secret fields were never decrypted")]
+    EncryptRestrictedView,
+    #[error("A restricted (partial) cipher can only be decrypted when it is organization-owned")]
+    RestrictedCipherRequiresOrganization,
+
+    // Note: These variants will be moved into their own key store error in a follow up ticket,
+    // since the crypto error is growing too large
+    #[error("Crypto store is read-only")]
+    ReadOnlyKeyStore,
+    #[error("Invalid key store operation")]
+    InvalidKeyStoreOperation,
+
+    #[error("Insufficient KDF parameters")]
+    InsufficientKdfParameters,
+
+    #[error("EncString error, {0}")]
+    EncString(#[from] EncStringParseError),
+
+    #[error("The encrypted string is malformed and cannot be decrypted")]
+    UnparseableEncString,
+
+    #[error("Rsa error, {0}")]
+    Rsa(#[from] RsaError),
+
+    #[error("Fingerprint error, {0}")]
+    Fingerprint(#[from] FingerprintError),
+
+    #[error("Argon2 error, {0}")]
+    Argon(#[from] argon2::Error),
+
+    #[error("Number is zero")]
+    ZeroNumber,
+
+    #[error("Unsupported operation, {0}")]
+    OperationNotSupported(UnsupportedOperationError),
+
+    #[error("Key algorithm does not match encrypted data type")]
+    WrongKeyType,
+
+    #[error("Key ID in the COSE Encrypt0 message does not match the key ID in the key")]
+    WrongCoseKeyId,
+
+    #[error("Invalid nonce length")]
+    InvalidNonceLength,
+
+    #[error("Invalid padding")]
+    InvalidPadding,
+
+    #[error("Signature error, {0}")]
+    Signature(#[from] SignatureError),
+
+    #[error("Encoding error, {0}")]
+    Encoding(#[from] EncodingError),
+}
+
+#[derive(Debug, Error)]
+pub enum UnsupportedOperationError {
+    #[error("Encryption is not implemented for key")]
+    EncryptionNotImplementedForKey,
+    #[error("Decryption is not implemented for key")]
+    DecryptionNotImplementedForKey,
+}
+
+#[derive(Debug, Error)]
+pub enum EncStringParseError {
+    #[error("No type detected, missing '.' separator")]
+    NoType,
+    #[error("Invalid symmetric type, got type {enc_type} with {parts} parts")]
+    InvalidTypeSymm { enc_type: String, parts: usize },
+    #[error("Invalid asymmetric type, got type {enc_type} with {parts} parts")]
+    InvalidTypeAsymm { enc_type: String, parts: usize },
+    #[error("Error decoding base64: {0}")]
+    InvalidBase64(#[from] NotB64EncodedError),
+    #[error("Invalid length: expected {expected}, got {got}")]
+    InvalidLength { expected: usize, got: usize },
+    #[error("Invalid encoding {0}")]
+    InvalidCoseEncoding(coset::CoseError),
+    #[error("Algorithm missing in COSE header")]
+    CoseMissingAlgorithm,
+    #[error("Content type missing in COSE header")]
+    CoseMissingContentType,
+}
+
+#[derive(Debug, Error)]
+pub enum RsaError {
+    #[error("Unable to create public key")]
+    CreatePublicKey,
+    #[error("Unable to create private key")]
+    CreatePrivateKey,
+    #[error("Rsa error, {0}")]
+    Rsa(#[from] rsa::Error),
+}
+
+#[derive(Debug, Error)]
+pub enum SignatureError {
+    #[error("Invalid signature")]
+    InvalidSignature,
+    #[error("Invalid namespace")]
+    InvalidNamespace,
+}
+
+/// Error type issues en- or de-coding values
+#[derive(Debug, Error)]
+pub enum EncodingError {
+    /// An error occurred while serializing or deserializing a value using COSE
+    #[error("Invalid cose encoding")]
+    InvalidCoseEncoding,
+    /// An error occurred while serializing or deserializing a value using CBOR
+    #[error("Cbor serialization error")]
+    InvalidCborSerialization,
+    /// An error occurred while serializing or deserializing a value using Base64
+    #[error("Invalid base64 encoding")]
+    InvalidBase64Encoding,
+    /// A required value is missing from the serialized message
+    #[error("Missing value {0}")]
+    MissingValue(&'static str),
+    /// A value is invalid / outside the expected range
+    #[error("Invalid value {0}")]
+    InvalidValue(&'static str),
+    /// A value is unsupported but may be valid
+    #[error("Unsupported value {0}")]
+    UnsupportedValue(&'static str),
+}
+
+/// Alias for `Result<T, CryptoError>`.
+pub(crate) type Result<T, E = CryptoError> = std::result::Result<T, E>;

@@ -1,0 +1,69 @@
+name: Direct Minimum Version
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+      - "rc"
+      - "hotfix-rc"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  direct-minimal-versions:
+    name: Check dependencies minimal versions for - ${{ matrix.settings.os }} - ${{ matrix.settings.target }}
+    runs-on: ${{ matrix.settings.os || 'ubuntu-24.04' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          #- os: macos-14
+          #  target: x86_64-apple-darwin
+
+          #- os: macos-14
+          #  target: aarch64-apple-darwin
+
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set Rust Nightly Toolchain
+        id: nightly-toolchain
+        shell: bash
+        env:
+          LANG: "C.UTF-8" # Windows uses a different encoding from everything else, which breaks `grep -P`
+        run: |
+          RUST_NIGHTLY_TOOLCHAIN="$(grep -oP '^nightly-channel.*"(\K.*?)(?=")' rust-toolchain.toml)"
+          echo "RUST_NIGHTLY_TOOLCHAIN=${RUST_NIGHTLY_TOOLCHAIN}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: "${{ steps.nightly-toolchain.outputs.RUST_NIGHTLY_TOOLCHAIN }}"
+          targets: ${{ matrix.settings.target }}
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+        with:
+          key: dmv-${{ matrix.settings.target }}-cargo-${{ matrix.settings.os }}
+
+      - name: Cargo check direct-minimal-versions
+        env:
+          RUST_NIGHTLY_TOOLCHAIN: ${{ steps.nightly-toolchain.outputs.RUST_NIGHTLY_TOOLCHAIN }}
+        run: cargo +"${RUST_NIGHTLY_TOOLCHAIN}" check -Z direct-minimal-versions --all-features

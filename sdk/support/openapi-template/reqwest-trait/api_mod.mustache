@@ -1,0 +1,89 @@
+// Reexport base types from bitwarden-api-base for backwards compatibility
+pub use bitwarden_api_base::*;
+
+{{#apiInfo}}
+{{#apis}}
+pub mod {{{classFilename}}};
+{{/apis}}
+{{/apiInfo}}
+
+// Reexport Configuration type from bitwarden-api-base for backwards compatibility
+pub mod configuration {
+    pub use bitwarden_api_base::Configuration;
+}
+
+{{#topLevelApiClient}}
+use std::sync::Arc;
+
+#[allow(clippy::large_enum_variant, private_interfaces)]
+pub enum ApiClient {
+    Real(ApiClientReal),
+    {{#mockall}}
+    #[cfg(feature = "mockall")]
+    Mock(ApiClientMock),
+    {{/mockall}}
+}
+
+struct ApiClientReal {
+    {{#apiInfo}}
+    {{#apis}}
+    {{{classFilename}}}: {{{classFilename}}}::{{classname}}Client,
+    {{/apis}}
+    {{/apiInfo}}
+}
+
+{{#mockall}}
+#[cfg(feature = "mockall")]
+pub struct ApiClientMock {
+    {{#apiInfo}}
+    {{#apis}}
+    pub {{{classFilename}}}: {{{classFilename}}}::Mock{{classname}},
+    {{/apis}}
+    {{/apiInfo}}
+}
+ {{/mockall}}
+
+impl ApiClient {
+    pub fn new(configuration: &Arc<bitwarden_api_base::Configuration>) -> Self {
+        Self::Real(ApiClientReal {
+            {{#apiInfo}}
+            {{#apis}}
+            {{{classFilename}}}: {{{classFilename}}}::{{classname}}Client::new(configuration.clone()),
+            {{/apis}}
+            {{/apiInfo}}
+        })
+    }
+
+    {{#mockall}}
+    #[cfg(feature = "mockall")]
+    pub fn new_mocked(func: impl FnOnce(&mut ApiClientMock)) -> Self {
+        let mut mock = ApiClientMock {
+            {{#apiInfo}}
+            {{#apis}}
+            {{{classFilename}}}: {{{classFilename}}}::Mock{{classname}}::new(),
+            {{/apis}}
+            {{/apiInfo}}
+        };
+        func(&mut mock);
+        Self::Mock(mock)
+    }
+    {{/mockall}}
+}
+
+impl ApiClient {
+    {{#apiInfo}}
+    {{#apis}}
+    pub fn {{{classFilename}}}(&self) -> &dyn {{{classFilename}}}::{{classname}} {
+        match self {
+            ApiClient::Real(real) => &real.{{{classFilename}}},
+            {{#mockall}}
+            #[cfg(feature = "mockall")]
+            ApiClient::Mock(mock) => &mock.{{{classFilename}}},
+            {{/mockall}}
+        }
+    }
+    {{/apis}}
+    {{/apiInfo}}
+}
+
+{{/topLevelApiClient}}

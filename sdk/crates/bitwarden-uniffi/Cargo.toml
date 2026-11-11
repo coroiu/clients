@@ -1,0 +1,78 @@
+[package]
+name = "bitwarden-uniffi"
+version = "0.1.0"
+publish = false
+
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+[lib]
+crate-type = ["lib", "staticlib", "cdylib"]
+bench = false
+
+[features]
+# Dev-only debug-capability tree, exposed to the mobile bindings. Never enable in
+# production.
+debug-capabilities = [
+    "bitwarden-pm/debug-capabilities",
+    "bitwarden-state/debug-capabilities",
+]
+# WARNING: This feature is for debugging purposes only and should never be enabled in production.
+# It disables compile-time debug prevention for cryptographic keys, exposing sensitive key material
+# in debug output, and adds tracing debug logs to encrypt/decrypt operations.
+dangerous-crypto-debug = ["bitwarden-core/dangerous-crypto-debug"]
+
+[dependencies]
+async-trait = { workspace = true }
+bitwarden-auth = { workspace = true, features = ["uniffi"] }
+bitwarden-collections = { workspace = true, features = ["uniffi"] }
+bitwarden-core = { workspace = true, features = ["uniffi"] }
+bitwarden-crypto = { workspace = true, features = ["uniffi"] }
+bitwarden-crypto-sync-handler = { workspace = true, features = ["uniffi"] }
+bitwarden-encoding = { workspace = true, features = ["uniffi"] }
+bitwarden-exporters = { workspace = true, features = ["uniffi"] }
+bitwarden-fido = { workspace = true, features = ["uniffi"] }
+bitwarden-generators = { workspace = true, features = ["uniffi"] }
+bitwarden-importers = { workspace = true, features = ["uniffi"] }
+bitwarden-managed-settings = { workspace = true, features = ["uniffi"] }
+bitwarden-managed-settings-types = { workspace = true, features = ["uniffi"] }
+bitwarden-organizations = { workspace = true, features = ["uniffi"] }
+bitwarden-pm = { workspace = true, features = ["uniffi"] }
+bitwarden-policies = { workspace = true, features = ["uniffi"] }
+bitwarden-random = { workspace = true, features = ["uniffi"] }
+bitwarden-send = { workspace = true, features = ["uniffi"] }
+bitwarden-server-communication-config = { workspace = true, features = ["uniffi"] }
+bitwarden-ssh = { workspace = true, features = ["uniffi"] }
+bitwarden-state = { workspace = true, features = ["uniffi"] }
+bitwarden-uniffi-error = { workspace = true }
+bitwarden-unlock = { workspace = true, features = ["uniffi"] }
+bitwarden-user-crypto-management = { workspace = true, features = ["uniffi"] }
+bitwarden-vault = { workspace = true, features = ["uniffi"] }
+chrono = { workspace = true, features = ["std"] }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uniffi = { workspace = true }
+uuid = { workspace = true }
+
+[target.'cfg(target_os = "android")'.dependencies]
+# The use of rustls-platform-verifier requires some extra support to communicate with the Android platform
+jni = ">=0.22, <0.23"
+libloading = ">=0.8.1, <0.9"
+rustls-platform-verifier = { workspace = true }
+tracing-android = "0.2.0"
+
+[target.'cfg(target_os = "ios")'.dependencies]
+tracing-oslog = "0.3.0"
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
+
+[lints]
+workspace = true

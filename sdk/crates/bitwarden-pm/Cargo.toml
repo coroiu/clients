@@ -1,0 +1,113 @@
+[package]
+name = "bitwarden-pm"
+description = """
+Internal crate for the bitwarden crate. Do not use.
+"""
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+[features]
+cli = ["bitwarden-unlock/cli"]
+# Dev-only debug-capability tree rooted on the top-level client.
+debug-capabilities = [
+    "bitwarden-core/debug-capabilities",
+    "bitwarden-state/debug-capabilities",
+]
+no-memory-hardening = ["bitwarden-core/no-memory-hardening"]
+uniffi = [
+    "bitwarden-collections/uniffi",
+    "bitwarden-core/uniffi",
+    "bitwarden-crypto-cipher-suite/uniffi",
+    "bitwarden-crypto-sync-handler/uniffi",
+    "bitwarden-exporters/uniffi",
+    "bitwarden-fido/uniffi",
+    "bitwarden-generators/uniffi",
+    "bitwarden-importers/uniffi",
+    "bitwarden-managed-settings/uniffi",
+    "bitwarden-send/uniffi",
+    "bitwarden-state/uniffi",
+    "bitwarden-unlock/uniffi",
+    "bitwarden-vault/uniffi",
+    "dep:uniffi",
+]
+wasm = [
+    "bitwarden-auth/wasm",
+    "bitwarden-collections/wasm",
+    "bitwarden-commercial-vault?/wasm",
+    "bitwarden-core/wasm",
+    "bitwarden-crypto-cipher-suite/wasm",
+    "bitwarden-crypto-sync-handler/wasm",
+    "bitwarden-emergency-access/wasm",
+    "bitwarden-encrypted-migrator/wasm",
+    "bitwarden-exporters/wasm",
+    "bitwarden-ffi/wasm",
+    "bitwarden-generators/wasm",
+    "bitwarden-importers/wasm",
+    "bitwarden-managed-settings/wasm",
+    "bitwarden-member-administration/wasm",
+    "bitwarden-organization-crypto-management/wasm",
+    "bitwarden-organization-domains/wasm",
+    "bitwarden-organization-invite-link/wasm",
+    "bitwarden-organizations/wasm",
+    "bitwarden-pam?/wasm",
+    "bitwarden-policies/wasm",
+    "bitwarden-send/wasm",
+    "bitwarden-state/wasm",
+    "bitwarden-unlock/wasm",
+    "bitwarden-vault/wasm",
+    "dep:wasm-bindgen",
+    "dep:wasm-bindgen-futures",
+    "dep:tsify",
+]
+bitwarden-license = ["dep:bitwarden-commercial-vault", "dep:bitwarden-pam"]
+
+[dependencies]
+async-trait = { workspace = true }
+bitwarden-auth = { workspace = true }
+bitwarden-collections = { workspace = true }
+bitwarden-commercial-vault = { workspace = true, optional = true }
+bitwarden-core = { workspace = true, features = ["internal"] }
+bitwarden-crypto = { workspace = true }
+bitwarden-crypto-cipher-suite = { workspace = true }
+bitwarden-crypto-sync-handler = { workspace = true }
+bitwarden-emergency-access = { workspace = true }
+bitwarden-encrypted-migrator = { workspace = true }
+bitwarden-exporters = { workspace = true }
+bitwarden-ffi = { workspace = true }
+bitwarden-fido = { workspace = true }
+bitwarden-generators = { workspace = true }
+bitwarden-importers = { workspace = true }
+bitwarden-managed-settings = { workspace = true }
+bitwarden-member-administration = { workspace = true }
+bitwarden-organization-crypto-management = { workspace = true }
+bitwarden-organization-domains = { workspace = true }
+bitwarden-organization-invite-link = { workspace = true }
+bitwarden-organizations = { workspace = true }
+bitwarden-pam = { workspace = true, optional = true }
+bitwarden-policies = { workspace = true }
+bitwarden-send = { workspace = true }
+bitwarden-server-communication-config = { workspace = true }
+bitwarden-state = { workspace = true }
+bitwarden-sync = { workspace = true }
+bitwarden-unlock = { workspace = true }
+bitwarden-user-crypto-management = { workspace = true }
+bitwarden-vault = { workspace = true }
+
+reqwest-middleware = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tsify = { workspace = true, optional = true }
+uniffi = { workspace = true, optional = true, features = ["tokio"] }
+wasm-bindgen = { workspace = true, optional = true }
+wasm-bindgen-futures = { workspace = true, optional = true }
+
+[lints]
+workspace = true

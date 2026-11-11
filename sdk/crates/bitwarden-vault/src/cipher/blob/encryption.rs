@@ -1,0 +1,760 @@
+use bitwarden_core::key_management::{KeySlotIds, SymmetricKeySlotId};
+use bitwarden_crypto::{
+    CompositeEncryptable, CryptoError, Decryptable, IdentifyKey, KeyStoreContext,
+};
+use bitwarden_logging::instrument;
+use thiserror::Error;
+
+use super::{CipherBlob, CipherBlobLatest, SealedCipherBlob, SealedCipherBlobError};
+use crate::cipher::{
+    attachment,
+    cipher::{Cipher, CipherRepromptType, CipherType, CipherView},
+};
+
+/// Errors produced while sealing or unsealing a blob-format cipher.
+#[derive(Debug, Error)]
+pub enum BlobEncryptionError {
+    /// A cryptographic primitive (wrap, unwrap, encrypt, decrypt) failed.
+    #[error(transparent)]
+    Crypto(#[from] CryptoError),
+    /// The sealed blob container could not be encoded or decoded.
+    #[error(transparent)]
+    SealedBlob(#[from] SealedCipherBlobError),
+}
+
+/// Maps the blob module's error type onto [`CryptoError`]. Format and envelope
+/// errors collapse to [`CryptoError::Decrypt`]; the specific cause is preserved
+/// in the log.
+impl From<BlobEncryptionError> for CryptoError {
+    fn from(err: BlobEncryptionError) -> Self {
+        tracing::warn!(error = %err, error_debug = ?err, "blob operation failed");
+        match err {
+            BlobEncryptionError::Crypto(c) => c,
+            BlobEncryptionError::SealedBlob(_) => CryptoError::Decrypt,
+        }
+    }
+}
+
+/// Seals a `CipherView` into an opaque blob string under the given `cipher_key` slot.
+/// The caller is responsible for loading the key slot before calling (e.g. via
+/// `CipherView::load_cipher_key_slot`); this avoids allocating a duplicate slot.
+fn seal_cipher(
+    view: &CipherView,
+    ctx: &mut KeyStoreContext<KeySlotIds>,
+    cipher_key: SymmetricKeySlotId,
+) -> Result<String, BlobEncryptionError> {
+    let blob = CipherBlobLatest::from_cipher_view(view)?;
+    seal_blob_content(blob, cipher_key, ctx)
+}
+
+/// Seals a constructed `CipherBlobLatest` under `cipher_key`, returning the
+/// opaque string form. Shared by all `CipherBlobLatest` producers so they
+/// don't each re-implement the versioned-enum wrap + COSE seal + base64 chain.
+fn seal_blob_content(
+    blob: CipherBlobLatest,
+    cipher_key: SymmetricKeySlotId,
+    ctx: &mut KeyStoreContext<KeySlotIds>,
+) -> Result<String, BlobEncryptionError> {
+    let versioned: CipherBlob = blob.into();
+    let sealed = SealedCipherBlob::seal(versioned, &cipher_key, ctx)?;
+    Ok(sealed.to_opaque_string()?)
+}
+
+/// Returns the parsed [`SealedCipherBlob`] if `cipher.data` holds one. Returns
+/// `None` for legacy ciphers (missing or unparseable `data`).
+pub(crate) fn try_parse_blob(cipher: &Cipher) -> Option<SealedCipherBlob> {
+    let data = cipher.data.as_deref()?;
+    SealedCipherBlob::from_opaque_string(data).ok()
+}
+
+/// Encrypts a `CipherView` into a blob-encrypted `Cipher`.
+///
+/// Generates a cipher key if missing, seals the sensitive data into a single blob,
+/// and encrypts attachments and local data separately. The outer wrapping key is
+/// derived from `view.key_identifier()`; see
+/// [`encrypt_blob_cipher_with_wrapping_key`] for the rotation case where the
+/// caller supplies an explicit wrapping key.
+pub(crate) fn encrypt_blob_cipher(
+    view: &mut CipherView,
+    ctx: &mut KeyStoreContext<KeySlotIds>,
+) -> Result<Cipher, BlobEncryptionError> {
+    let wrapping_key = view.key_identifier();
+    encrypt_blob_cipher_with_wrapping_key(view, ctx, wrapping_key)
+}
+
+/// Variant of [`encrypt_blob_cipher`] that accepts an explicit outer wrapping
+/// key. Used by key rotation, where the new user/org key is installed under a
+/// `Local` slot id — `key_identifier()` would resolve to the original
+/// `User`/`Organization` slot and wrap the cipher key under the old key.
+pub(crate) fn encrypt_blob_cipher_with_wrapping_key(
+    view: &mut CipherView,
+    ctx: &mut KeyStoreContext<KeySlotIds>,
+    wrapping_key: SymmetricKeySlotId,
+) -> Result<Cipher, BlobEncryptionError> {
+    // Fail closed: a restricted (partial) view has all secret fields stripped; re-encrypting it
+    // would overwrite the item's secrets with empty values. See `decrypt_restricted_cipher_view`.
+    if view.partial {
+        return Err(BlobEncryptionError::Crypto(
+            CryptoError::EncryptRestrictedView,
+        ));
+    }
+
+    let cipher_key = view.load_cipher_key_slot(ctx)?;
+
+    let sealed_string = seal_cipher(view, ctx, cipher_key)?;
+
+    let attachments = view.attachments.encrypt_composite(ctx, cipher_key)?;
+    let local_data = view.local_data.encrypt_composite(ctx, cipher_key)?;
+
+    Ok(Cipher {
+        partial_data: None,
+        // Metadata
+        id: view.id,
+        organization_id: view.organization_id,
+        folder_id: view.folder_id,
+        collection_ids: view.collection_ids.clone(),
+        key: Some(ctx.wrap_symmetric_key(wrapping_key, cipher_key)?),
+        r#type: view.r#type,
+        favorite: view.favorite,
+        reprompt: view.reprompt,
+        organization_use_totp: view.organization_use_totp,
+        edit: view.edit,
+        permissions: view.permissions,
+        view_password: view.view_password,
+        creation_date: view.creation_date,
+        deleted_date: view.deleted_date,
+        revision_date: view.revision_date,
+        archived_date: view.archived_date,
+
+        // Sensitive data
+        data: Some(sealed_string),
+        attachments,
+        local_data,
+
+        // Obsolete fields — sensitive data lives in the blob
+        name: None,
+        notes: None,
+        login: None,
+        identity: None,
+        card: None,
+        secure_note: None,
+        ssh_key: None,
+        bank_account: None,
+        drivers_license: None,
+        passport: None,
+        fields: None,
+        password_history: None,
+    })
+}
+
+/// Decrypts a pre-parsed blob-encrypted `Cipher` into a `CipherView`. Callers
+/// should obtain the [`SealedCipherBlob`] via [`try_parse_blob`].
+///
+/// `wrapping_key` is the outer key under which the cipher's CEK is wrapped —
+/// usually the user/organization key, but during key rotation it can be a
+/// `Local` slot containing the new user key.
+#[instrument(err, fields(cipher_id = ?cipher.id, org_id = ?cipher.organization_id))]
+pub(crate) fn decrypt_blob_cipher(
+    cipher: &Cipher,
+    sealed: &SealedCipherBlob,
+    ctx: &mut KeyStoreContext<KeySlotIds>,
+    wrapping_key: SymmetricKeySlotId,
+) -> Result<CipherView, BlobEncryptionError> {
+    let cipher_key = Cipher::decrypt_cipher_key(ctx, wrapping_key, &cipher.key)?;
+
+    let CipherBlob::CipherBlobV1(blob) = sealed.unseal(&cipher_key, ctx)?;
+
+    let (attachments, attachment_decryption_failures) =
+        attachment::decrypt_attachments_with_failures(
+            cipher.attachments.as_deref().unwrap_or_default(),
+            ctx,
+            cipher_key,
+        );
+
+    let local_data = cipher.local_data.decrypt(ctx, cipher_key).ok().flatten();
+
+    let mut view = CipherView {
+        partial: false,
+        // Metadata
+        id: cipher.id,
+        organization_id: cipher.organization_id,
+        folder_id: cipher.folder_id,
+        collection_ids: cipher.collection_ids.clone(),
+        key: if cipher.key.is_some() {
+            #[allow(deprecated)]
+            Some(ctx.dangerous_get_symmetric_key(cipher_key)?.clone())
+        } else {
+            None
+        },
+        r#type: cipher.r#type,
+        favorite: cipher.favorite,
+        reprompt: cipher.reprompt,
+        organization_use_totp: cipher.organization_use_totp,
+        edit: cipher.edit,
+        permissions: cipher.permissions,
+        view_password: cipher.view_password,
+        creation_date: cipher.creation_date,
+        deleted_date: cipher.deleted_date,
+        revision_date: cipher.revision_date,
+        archived_date: cipher.archived_date,
+
+        // Sensitive data — decrypted separately from the blob
+        attachments: Some(attachments),
+        attachment_decryption_failures: Some(attachment_decryption_failures),
+        local_data,
+
+        // Populated by blob.apply_to_cipher_view() below
+        name: String::new(),
+        notes: None,
+        login: None,
+        identity: None,
+        card: None,
+        secure_note: None,
+        ssh_key: None,
+        bank_account: None,
+        drivers_license: None,
+        passport: None,
+        fields: None,
+        password_history: None,
+    };
+
+    blob.apply_to_cipher_view(&mut view)?;
+
+    Ok(view)
+}
+
+/// Item Send payloads: the sealed blob is the entire `data` string of an Item Send, sealed
+/// directly under the send key. It has no outer cipher key and no metadata; only the blob
+/// contents (name, notes, type data, fields, password history) round-trip.
+///
+/// ```text
+/// CipherView --seal_blob_for_item_sends(send key)--> SendItem.data (opaque string)
+/// SendItem.data --unseal_blob_for_item_sends(send key)--> CipherView (metadata defaulted)
+/// ```
+impl CipherView {
+    /// Seals the sensitive contents of this view into an opaque blob string under `key`.
+    pub fn seal_blob_for_item_sends(
+        &self,
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        key: SymmetricKeySlotId,
+    ) -> Result<String, CryptoError> {
+        // Fail closed: a restricted view has its secrets stripped.
+        if self.partial {
+            return Err(CryptoError::EncryptRestrictedView);
+        }
+
+        let blob = CipherBlobLatest::from_cipher_view(self)?;
+        Ok(seal_blob_content(blob, key, ctx)?)
+    }
+
+    /// Unseals a blob produced by [`CipherView::seal_blob_for_item_sends`]. Metadata absent
+    /// from the blob (ids, dates, flags) is set to defaults; the type follows the blob contents.
+    pub fn unseal_blob_for_item_sends(
+        data: &str,
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        key: SymmetricKeySlotId,
+    ) -> Result<CipherView, CryptoError> {
+        let sealed =
+            SealedCipherBlob::from_opaque_string(data).map_err(BlobEncryptionError::from)?;
+        let CipherBlob::CipherBlobV1(blob) = sealed
+            .unseal(&key, ctx)
+            .map_err(BlobEncryptionError::from)?;
+
+        let mut view = CipherView {
+            partial: false,
+            id: None,
+            organization_id: None,
+            folder_id: None,
+            collection_ids: Vec::new(),
+            key: None,
+            name: String::new(),
+            notes: None,
+            // Overwritten from the blob type data below.
+            r#type: CipherType::Login,
+            login: None,
+            identity: None,
+            card: None,
+            secure_note: None,
+            ssh_key: None,
+            bank_account: None,
+            drivers_license: None,
+            passport: None,
+            favorite: false,
+            reprompt: CipherRepromptType::None,
+            organization_use_totp: false,
+            edit: false,
+            permissions: None,
+            view_password: true,
+            local_data: None,
+            attachments: None,
+            attachment_decryption_failures: None,
+            fields: None,
+            password_history: None,
+            creation_date: Default::default(),
+            deleted_date: None,
+            revision_date: Default::default(),
+            archived_date: None,
+        };
+        blob.apply_to_cipher_view(&mut view)?;
+
+        Ok(view)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bitwarden_crypto::{IdentifyKey, PrimitiveEncryptable};
+    use uuid::Uuid;
+
+    use super::*;
+    use crate::{
+        cipher::{
+            bank_account::BankAccountView,
+            blob::conversions::test_support::{create_shell_cipher_view, create_test_key_store},
+            card::CardView,
+            cipher::{CipherId, CipherRepromptType, CipherType},
+            field::{FieldType, FieldView},
+            identity::IdentityView,
+            login::LoginView,
+            secure_note::{SecureNoteType, SecureNoteView},
+            ssh_key::SshKeyView,
+        },
+        password_history::PasswordHistoryView,
+    };
+
+    fn make_test_cipher_with_data(
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        data: Option<String>,
+    ) -> Cipher {
+        let name = "test"
+            .encrypt(
+                ctx,
+                bitwarden_core::key_management::SymmetricKeySlotId::User,
+            )
+            .unwrap();
+        Cipher {
+            partial_data: None,
+            id: None,
+            organization_id: None,
+            folder_id: None,
+            collection_ids: vec![],
+            key: None,
+            name: Some(name),
+            notes: None,
+            r#type: CipherType::SecureNote,
+            login: None,
+            identity: None,
+            card: None,
+            secure_note: None,
+            ssh_key: None,
+            bank_account: None,
+            drivers_license: None,
+            passport: None,
+            favorite: false,
+            reprompt: CipherRepromptType::None,
+            organization_use_totp: false,
+            edit: true,
+            permissions: None,
+            view_password: true,
+            local_data: None,
+            attachments: None,
+            fields: None,
+            password_history: None,
+            creation_date: chrono::Utc::now(),
+            deleted_date: None,
+            revision_date: chrono::Utc::now(),
+            archived_date: None,
+            data,
+        }
+    }
+
+    #[test]
+    fn test_try_parse_blob_returns_some_after_encrypt() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let mut view = create_shell_cipher_view(CipherType::SecureNote);
+        view.name = "Blob Test".to_string();
+        view.secure_note = Some(SecureNoteView {
+            r#type: SecureNoteType::Generic,
+        });
+
+        let cipher = encrypt_blob_cipher(&mut view, &mut ctx).unwrap();
+        assert!(try_parse_blob(&cipher).is_some());
+    }
+
+    #[test]
+    fn test_seal_unseal_round_trip() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let mut view = create_shell_cipher_view(CipherType::SecureNote);
+        view.name = "Round Trip".to_string();
+        view.notes = Some("Some notes".to_string());
+        view.secure_note = Some(SecureNoteView {
+            r#type: SecureNoteType::Generic,
+        });
+        let cipher_key = view.load_cipher_key_slot(&mut ctx).unwrap();
+
+        let sealed_string = seal_cipher(&view, &mut ctx, cipher_key).unwrap();
+
+        let mut cipher = make_test_cipher_with_data(&mut ctx, Some(sealed_string));
+        if let Some(key) = &view.key {
+            let slot = ctx.add_local_symmetric_key(key.clone());
+            cipher.key = Some(ctx.wrap_symmetric_key(view.key_identifier(), slot).unwrap());
+        }
+
+        let view = decrypt_blob_cipher(
+            &cipher,
+            &try_parse_blob(&cipher).unwrap(),
+            &mut ctx,
+            cipher.key_identifier(),
+        )
+        .unwrap();
+        assert_eq!(view.name, "Round Trip");
+        assert_eq!(view.notes, Some("Some notes".to_string()));
+    }
+
+    #[test]
+    fn test_encrypt_blob_cipher_sets_data() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let mut view = create_shell_cipher_view(CipherType::SecureNote);
+        view.name = "Has Data".to_string();
+        view.secure_note = Some(SecureNoteView {
+            r#type: SecureNoteType::Generic,
+        });
+
+        let cipher = encrypt_blob_cipher(&mut view, &mut ctx).unwrap();
+        assert!(cipher.data.is_some());
+    }
+
+    #[test]
+    fn test_encrypt_blob_cipher_clears_legacy_fields() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let mut view = create_shell_cipher_view(CipherType::Login);
+        view.name = "Login".to_string();
+        view.login = Some(LoginView {
+            username: Some("user".to_string()),
+            password: Some("pass".to_string()),
+            password_revision_date: None,
+            uris: None,
+            totp: None,
+            autofill_on_page_load: None,
+            http_authentication_enabled: None,
+            fido2_credentials: None,
+        });
+
+        let cipher = encrypt_blob_cipher(&mut view, &mut ctx).unwrap();
+        assert!(cipher.login.is_none());
+        assert!(cipher.card.is_none());
+        assert!(cipher.identity.is_none());
+        assert!(cipher.secure_note.is_none());
+        assert!(cipher.ssh_key.is_none());
+        assert!(cipher.bank_account.is_none());
+        assert!(cipher.notes.is_none());
+        assert!(cipher.fields.is_none());
+        assert!(cipher.password_history.is_none());
+    }
+
+    #[test]
+    fn test_encrypt_blob_cipher_generates_key() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let mut view = create_shell_cipher_view(CipherType::SecureNote);
+        view.secure_note = Some(SecureNoteView {
+            r#type: SecureNoteType::Generic,
+        });
+        assert!(view.key.is_none());
+
+        let cipher = encrypt_blob_cipher(&mut view, &mut ctx).unwrap();
+        assert!(cipher.key.is_some());
+        assert!(view.key.is_some());
+    }
+
+    #[test]
+    fn test_encrypt_blob_cipher_preserves_metadata() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let cipher_id = CipherId::new(Uuid::new_v4());
+        let mut view = create_shell_cipher_view(CipherType::SecureNote);
+        view.id = Some(cipher_id);
+        view.favorite = true;
+        view.reprompt = CipherRepromptType::Password;
+        view.name = "Metadata Test".to_string();
+        view.secure_note = Some(SecureNoteView {
+            r#type: SecureNoteType::Generic,
+        });
+
+        let cipher = encrypt_blob_cipher(&mut view, &mut ctx).unwrap();
+        assert_eq!(cipher.id, Some(cipher_id));
+        assert!(cipher.favorite);
+        assert_eq!(cipher.reprompt, CipherRepromptType::Password);
+        assert_eq!(cipher.r#type, CipherType::SecureNote);
+        assert_eq!(cipher.creation_date, view.creation_date);
+        assert_eq!(cipher.revision_date, view.revision_date);
+    }
+
+    #[test]
+    fn test_encrypt_blob_cipher_each_type() {
+        let (key_store, _) = create_test_key_store();
+
+        // Login
+        {
+            let mut ctx = key_store.context_mut();
+            let mut view = create_shell_cipher_view(CipherType::Login);
+            view.name = "Login".to_string();
+            view.login = Some(LoginView {
+                username: Some("user".to_string()),
+                password: None,
+                password_revision_date: None,
+                uris: None,
+                totp: None,
+                autofill_on_page_load: None,
+                http_authentication_enabled: None,
+                fido2_credentials: None,
+            });
+            assert!(encrypt_blob_cipher(&mut view, &mut ctx).is_ok());
+        }
+
+        // Card
+        {
+            let mut ctx = key_store.context_mut();
+            let mut view = create_shell_cipher_view(CipherType::Card);
+            view.name = "Card".to_string();
+            view.card = Some(CardView {
+                cardholder_name: Some("John".to_string()),
+                exp_month: None,
+                exp_year: None,
+                code: None,
+                brand: None,
+                number: None,
+            });
+            assert!(encrypt_blob_cipher(&mut view, &mut ctx).is_ok());
+        }
+
+        // Identity
+        {
+            let mut ctx = key_store.context_mut();
+            let mut view = create_shell_cipher_view(CipherType::Identity);
+            view.name = "Identity".to_string();
+            view.identity = Some(IdentityView {
+                title: None,
+                first_name: Some("Jane".to_string()),
+                middle_name: None,
+                last_name: None,
+                address1: None,
+                address2: None,
+                address3: None,
+                city: None,
+                state: None,
+                postal_code: None,
+                country: None,
+                company: None,
+                email: None,
+                phone: None,
+                ssn: None,
+                username: None,
+                passport_number: None,
+                license_number: None,
+            });
+            assert!(encrypt_blob_cipher(&mut view, &mut ctx).is_ok());
+        }
+
+        // SecureNote
+        {
+            let mut ctx = key_store.context_mut();
+            let mut view = create_shell_cipher_view(CipherType::SecureNote);
+            view.name = "Note".to_string();
+            view.secure_note = Some(SecureNoteView {
+                r#type: SecureNoteType::Generic,
+            });
+            assert!(encrypt_blob_cipher(&mut view, &mut ctx).is_ok());
+        }
+
+        // SshKey
+        {
+            let mut ctx = key_store.context_mut();
+            let mut view = create_shell_cipher_view(CipherType::SshKey);
+            view.name = "SSH".to_string();
+            view.ssh_key = Some(SshKeyView {
+                private_key: "private".to_string(),
+                public_key: "public".to_string(),
+                fingerprint: "fingerprint".to_string(),
+            });
+            assert!(encrypt_blob_cipher(&mut view, &mut ctx).is_ok());
+        }
+
+        // BankAccount
+        {
+            let mut ctx = key_store.context_mut();
+            let mut view = create_shell_cipher_view(CipherType::BankAccount);
+            view.name = "Bank".to_string();
+            view.bank_account = Some(BankAccountView {
+                bank_name: Some("Bank".to_string()),
+                name_on_account: None,
+                account_type: None,
+                account_number: None,
+                routing_number: None,
+                branch_number: None,
+                pin: None,
+                swift_code: None,
+                iban: None,
+                bank_contact_phone: None,
+            });
+            assert!(encrypt_blob_cipher(&mut view, &mut ctx).is_ok());
+        }
+    }
+
+    #[test]
+    fn test_end_to_end_round_trip() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let mut view = create_shell_cipher_view(CipherType::Login);
+        view.name = "My Login".to_string();
+        view.notes = Some("Secret notes".to_string());
+        view.login = Some(LoginView {
+            username: Some("testuser@example.com".to_string()),
+            password: Some("p@ssw0rd".to_string()),
+            password_revision_date: None,
+            uris: None,
+            totp: None,
+            autofill_on_page_load: None,
+            http_authentication_enabled: None,
+            fido2_credentials: None,
+        });
+        view.fields = Some(vec![FieldView {
+            name: Some("custom".to_string()),
+            value: Some("field-value".to_string()),
+            r#type: FieldType::Text,
+            linked_id: None,
+        }]);
+        let history_date = chrono::Utc::now();
+        view.password_history = Some(vec![PasswordHistoryView {
+            password: "old-p@ssw0rd".to_string(),
+            last_used_date: history_date,
+        }]);
+
+        let cipher = encrypt_blob_cipher(&mut view, &mut ctx).unwrap();
+        assert!(try_parse_blob(&cipher).is_some());
+
+        let restored = decrypt_blob_cipher(
+            &cipher,
+            &try_parse_blob(&cipher).unwrap(),
+            &mut ctx,
+            cipher.key_identifier(),
+        )
+        .unwrap();
+
+        assert_eq!(restored.name, "My Login");
+        assert_eq!(restored.notes, Some("Secret notes".to_string()));
+        let login = restored.login.unwrap();
+        assert_eq!(login.username, Some("testuser@example.com".to_string()));
+        assert_eq!(login.password, Some("p@ssw0rd".to_string()));
+
+        let fields = restored.fields.unwrap();
+        assert_eq!(fields.len(), 1);
+        assert_eq!(fields[0].name, Some("custom".to_string()));
+        assert_eq!(fields[0].value, Some("field-value".to_string()));
+        assert_eq!(fields[0].r#type, FieldType::Text);
+
+        let history = restored.password_history.unwrap();
+        assert_eq!(history.len(), 1);
+        assert_eq!(history[0].password, "old-p@ssw0rd");
+        assert_eq!(history[0].last_used_date, history_date);
+    }
+
+    #[test]
+    fn test_decrypt_blob_cipher() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let mut view = create_shell_cipher_view(CipherType::Card);
+        view.name = "My Card".to_string();
+        view.notes = Some("Card notes".to_string());
+        view.card = Some(CardView {
+            cardholder_name: Some("John Doe".to_string()),
+            exp_month: Some("12".to_string()),
+            exp_year: Some("2030".to_string()),
+            code: Some("123".to_string()),
+            brand: Some("Visa".to_string()),
+            number: Some("4111111111111111".to_string()),
+        });
+
+        let cipher = encrypt_blob_cipher(&mut view, &mut ctx).unwrap();
+        let restored = decrypt_blob_cipher(
+            &cipher,
+            &try_parse_blob(&cipher).unwrap(),
+            &mut ctx,
+            cipher.key_identifier(),
+        )
+        .unwrap();
+
+        assert_eq!(restored.name, "My Card");
+        assert_eq!(restored.notes, Some("Card notes".to_string()));
+        let card = restored.card.unwrap();
+        assert_eq!(card.cardholder_name, Some("John Doe".to_string()));
+        assert_eq!(card.number, Some("4111111111111111".to_string()));
+        assert_eq!(card.code, Some("123".to_string()));
+        assert_eq!(card.brand, Some("Visa".to_string()));
+    }
+
+    #[test]
+    fn test_decrypt_blob_cipher_preserves_metadata() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let cipher_id = CipherId::new(Uuid::new_v4());
+        let mut view = create_shell_cipher_view(CipherType::SecureNote);
+        view.id = Some(cipher_id);
+        view.favorite = true;
+        view.reprompt = CipherRepromptType::Password;
+        view.organization_use_totp = true;
+        view.edit = false;
+        view.view_password = false;
+        view.name = "Metadata".to_string();
+        view.secure_note = Some(SecureNoteView {
+            r#type: SecureNoteType::Generic,
+        });
+        let creation_date = view.creation_date;
+        let revision_date = view.revision_date;
+
+        let cipher = encrypt_blob_cipher(&mut view, &mut ctx).unwrap();
+        let restored = decrypt_blob_cipher(
+            &cipher,
+            &try_parse_blob(&cipher).unwrap(),
+            &mut ctx,
+            cipher.key_identifier(),
+        )
+        .unwrap();
+
+        assert_eq!(restored.id, Some(cipher_id));
+        assert!(restored.favorite);
+        assert_eq!(restored.reprompt, CipherRepromptType::Password);
+        assert!(restored.organization_use_totp);
+        assert!(!restored.edit);
+        assert!(!restored.view_password);
+        assert_eq!(restored.r#type, CipherType::SecureNote);
+        assert_eq!(restored.creation_date, creation_date);
+        assert_eq!(restored.revision_date, revision_date);
+        assert!(restored.key.is_some());
+    }
+
+    #[test]
+    fn test_try_parse_blob_returns_none_for_legacy() {
+        let (key_store, _) = create_test_key_store();
+        let mut ctx = key_store.context_mut();
+
+        let cipher = make_test_cipher_with_data(&mut ctx, None);
+        assert!(try_parse_blob(&cipher).is_none());
+
+        let cipher = make_test_cipher_with_data(&mut ctx, Some("not a blob".to_string()));
+        assert!(try_parse_blob(&cipher).is_none());
+    }
+}

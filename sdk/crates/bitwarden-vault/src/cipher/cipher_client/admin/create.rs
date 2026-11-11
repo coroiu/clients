@@ -1,0 +1,232 @@
+use bitwarden_api_api::models::{CipherCreateRequestModel, CipherRequestModel};
+use bitwarden_core::{
+    ApiError, MissingFieldError, NotAuthenticatedError, UserId, key_management::KeySlotIds,
+};
+use bitwarden_crypto::{CryptoError, IdentifyKey, KeyStore};
+use bitwarden_error::bitwarden_error;
+use thiserror::Error;
+
+use crate::{
+    Cipher, CipherView, VaultParseError,
+    cipher::{
+        cipher::{EncryptMode, PartialCipher, StrictDecrypt},
+        cipher_client::create::convert_request_to_cipher_view,
+    },
+    cipher_client::{
+        admin::CipherAdminClient, create::CipherCreateRequest, should_use_blob_encryption,
+    },
+};
+
+#[allow(missing_docs)]
+#[bitwarden_error(flat)]
+#[derive(Debug, Error)]
+pub enum CreateCipherAdminError {
+    #[error(transparent)]
+    Crypto(#[from] CryptoError),
+    #[error(transparent)]
+    Api(#[from] ApiError),
+    #[error(transparent)]
+    VaultParse(#[from] VaultParseError),
+    #[error(transparent)]
+    MissingField(#[from] MissingFieldError),
+    #[error(transparent)]
+    NotAuthenticated(#[from] NotAuthenticatedError),
+}
+
+/// Wraps the API call to create a cipher using the admin endpoint, for easier testing.
+async fn create_cipher(
+    view: CipherView,
+    encrypted_for: UserId,
+    api_client: &bitwarden_api_api::apis::ApiClient,
+    key_store: &KeyStore<KeySlotIds>,
+    use_strict_decryption: bool,
+    use_blob: bool,
+) -> Result<CipherView, CreateCipherAdminError> {
+    let collection_ids = view.collection_ids.clone();
+    // CipherMiniResponseModel does not include folder_id, favorite, or edit — save them from
+    // the view before it is consumed so they can be applied to the merged result.
+    let folder_id = view.folder_id;
+    let favorite = view.favorite;
+
+    // Admin endpoints operate on organization-owned ciphers, which aren't
+    // expected to use blob encryption yet — `should_use_blob_encryption`
+    // returns `false` for any `Some(org)` today. Routing through the same
+    // dispatcher means org blob support (PM-32430) flips on automatically
+    // here when the helper learns to return `true` for orgs.
+    let encrypted_by_key_id = key_store
+        .context()
+        .get_symmetric_key_id(view.key_identifier())
+        .map(|id| id.to_string());
+    let mode = if use_blob {
+        EncryptMode::Blob(view)
+    } else {
+        EncryptMode::Legacy(view)
+    };
+    let cipher: Cipher = key_store.encrypt(mode)?;
+    let mut cipher_request: CipherRequestModel = cipher.try_into()?;
+    cipher_request.encrypted_for = Some(encrypted_for.into());
+    cipher_request.encrypted_by_key_id = encrypted_by_key_id;
+
+    let mut cipher: Cipher = api_client
+        .ciphers_api()
+        .post_admin(Some(CipherCreateRequestModel {
+            collection_ids: Some(collection_ids.iter().cloned().map(Into::into).collect()),
+            cipher: Box::new(cipher_request),
+        }))
+        .await?
+        .merge_with_cipher(None)?;
+
+    cipher.collection_ids = collection_ids;
+    cipher.folder_id = folder_id;
+    cipher.favorite = favorite;
+    cipher.edit = true;
+    cipher.view_password = true;
+
+    Ok(if use_strict_decryption {
+        key_store.decrypt(&StrictDecrypt(cipher))?
+    } else {
+        key_store.decrypt(&cipher)?
+    })
+}
+
+#[allow(deprecated)]
+#[bitwarden_ffi::wasm_export]
+impl CipherAdminClient {
+    /// Creates a new [Cipher] for an organization, using the admin server endpoints.
+    /// Creates the Cipher on the server only, does not store it to local state.
+    pub async fn create(
+        &self,
+        request: CipherCreateRequest,
+    ) -> Result<CipherView, CreateCipherAdminError> {
+        let key_store = self.client.internal.get_key_store();
+        let config = self.client.internal.get_api_configurations();
+
+        let user_id = self
+            .client
+            .internal
+            .get_user_id()
+            .ok_or(NotAuthenticatedError)?;
+
+        let view: CipherView = convert_request_to_cipher_view(request);
+
+        let use_blob = should_use_blob_encryption(&key_store.context(), view.organization_id);
+
+        create_cipher(
+            view,
+            user_id,
+            &config.api_client,
+            key_store,
+            self.is_strict_decrypt().await,
+            use_blob,
+        )
+        .await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bitwarden_api_api::models::CipherMiniResponseModel;
+    use bitwarden_core::{OrganizationId, key_management::SymmetricKeySlotId};
+    use bitwarden_crypto::{SymmetricCryptoKey, SymmetricKeyAlgorithm};
+    use chrono::Utc;
+
+    use super::*;
+    use crate::{CipherRepromptType, CipherViewType, LoginView};
+
+    const TEST_CIPHER_ID: &str = "5faa9684-c793-4a2d-8a12-b33900187097";
+    const TEST_COLLECTION_ID: &str = "73546b86-8802-4449-ad2a-69ea981b4ffd";
+    const TEST_USER_ID: &str = "550e8400-e29b-41d4-a716-446655440000";
+    const TEST_ORG_ID: &str = "1bc9ac1e-f5aa-45f2-94bf-b181009709b8";
+
+    #[tokio::test]
+    async fn test_create_org_cipher() {
+        let api_client = bitwarden_api_api::apis::ApiClient::new_mocked(|mock| {
+            mock.ciphers_api
+                .expect_post_admin()
+                .returning(move |request| {
+                    let request = request.unwrap();
+
+                    Ok(CipherMiniResponseModel {
+                        id: Some(TEST_CIPHER_ID.try_into().unwrap()),
+                        organization_id: request
+                            .cipher
+                            .organization_id
+                            .and_then(|id| id.parse().ok()),
+                        name: request.cipher.name.clone(),
+                        r#type: request.cipher.r#type,
+                        key: request.cipher.key.clone(),
+                        creation_date: Some(
+                            Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true),
+                        ),
+                        revision_date: Some(
+                            Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true),
+                        ),
+                        ..Default::default()
+                    })
+                });
+        });
+
+        let store: KeyStore<KeySlotIds> = KeyStore::default();
+        #[allow(deprecated)]
+        let _ = store.context_mut().set_symmetric_key(
+            SymmetricKeySlotId::User,
+            SymmetricCryptoKey::make(SymmetricKeyAlgorithm::Aes256CbcHmac),
+        );
+        #[allow(deprecated)]
+        let _ = store.context_mut().set_symmetric_key(
+            SymmetricKeySlotId::Organization(TEST_ORG_ID.parse::<OrganizationId>().unwrap()),
+            SymmetricCryptoKey::make(SymmetricKeyAlgorithm::Aes256CbcHmac),
+        );
+
+        let test_folder_id: crate::FolderId =
+            "a4e13cc0-1234-5678-abcd-b181009709b8".parse().unwrap();
+        let test_collection_id: bitwarden_collections::collection::CollectionId =
+            TEST_COLLECTION_ID.parse().unwrap();
+
+        let view: CipherView = convert_request_to_cipher_view(CipherCreateRequest {
+            organization_id: Some(TEST_ORG_ID.parse().unwrap()),
+            collection_ids: vec![test_collection_id],
+            folder_id: Some(test_folder_id),
+            name: "Test Cipher".into(),
+            notes: None,
+            favorite: true,
+            reprompt: CipherRepromptType::None,
+            r#type: CipherViewType::Login(LoginView {
+                username: None,
+                password: None,
+                password_revision_date: None,
+                uris: None,
+                totp: None,
+                autofill_on_page_load: None,
+                http_authentication_enabled: None,
+                fido2_credentials: None,
+            }),
+            fields: vec![],
+            archived_date: None,
+        });
+
+        let response = create_cipher(
+            view.clone(),
+            TEST_USER_ID.parse().unwrap(),
+            &api_client,
+            &store,
+            false,
+            false,
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(response.id, Some(TEST_CIPHER_ID.parse().unwrap()));
+        assert_eq!(response.organization_id, view.organization_id);
+        assert_eq!(response.name, "Test Cipher");
+        // Fields omitted from CipherMiniResponseModel must be preserved from the request.
+        assert_eq!(response.collection_ids, view.collection_ids);
+        assert_eq!(response.folder_id, view.folder_id);
+        assert_eq!(response.favorite, view.favorite);
+        assert!(response.edit, "edit should be true after admin create");
+        assert!(
+            response.view_password,
+            "view_password should be true after admin create"
+        );
+    }
+}

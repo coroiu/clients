@@ -1,0 +1,28 @@
+#![doc = include_str!("../README.md")]
+
+#[cfg(feature = "uniffi")]
+uniffi::setup_scaffolding!();
+
+/// This module provides a generic repository interface for storing and retrieving items.
+pub mod repository;
+
+/// This module provides a registry for managing repositories of different types.
+pub mod registry;
+
+/// Dev-only generic debug browse over registered repositories. Compiled only
+/// under the `debug-capabilities` feature; never ship in production.
+#[cfg(feature = "debug-capabilities")]
+pub mod debug;
+
+/// Type-safe persisted values API for storing application configuration and state.
+pub mod persisted_value;
+
+pub(crate) mod any_map;
+pub(crate) mod persist;
+pub(crate) mod sdk_managed;
+
+pub use persist::Persist;
+pub use persisted_value::{
+    PersistedValue, PersistedValueError, PersistedValueItem, PersistedValueKey, PersistedValueTrait,
+};
+pub use sdk_managed::{DatabaseConfiguration, DatabaseError};

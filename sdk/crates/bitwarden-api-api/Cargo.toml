@@ -1,0 +1,38 @@
+[package]
+name = "bitwarden-api-api"
+description = "Api bindings for the Bitwarden API."
+categories = ["api-bindings"]
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+# The generated code has no unit tests or doc tests, so skip building a test harness and running
+# rustdoc over it. Building the test harness for this crate takes minutes in CI.
+[lib]
+test = false
+doctest = false
+
+[features]
+mockall = ["dep:mockall"]
+
+[dependencies]
+async-trait = { workspace = true }
+bitwarden-api-base = { workspace = true }
+mockall = { workspace = true, optional = true }
+reqwest = { workspace = true }
+reqwest-middleware = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_with = { version = ">=3.8, <4", default-features = false, features = [
+    "base64",
+    "std",
+    "macros",
+] }
+url = ">=2.5, <3"
+uuid = { workspace = true }

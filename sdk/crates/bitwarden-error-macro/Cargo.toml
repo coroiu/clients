@@ -1,0 +1,37 @@
+[package]
+name = "bitwarden-error-macro"
+description = """
+Internal crate for the bitwarden crate. Do not use.
+"""
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+[lib]
+proc-macro = true
+
+[features]
+wasm = []
+
+[dependencies]
+darling = "0.24.0"
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
+
+[dev-dependencies]
+js-sys.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+tsify.workspace = true
+wasm-bindgen.workspace = true
+
+[lints]
+workspace = true

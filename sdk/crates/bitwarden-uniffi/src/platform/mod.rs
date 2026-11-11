@@ -1,0 +1,75 @@
+#![allow(deprecated)]
+
+use std::sync::Arc;
+
+use bitwarden_core::{Client, platform::FingerprintRequest};
+use bitwarden_fido::ClientFido2Ext;
+use repository::create_uniffi_repositories;
+
+use crate::error::Result;
+
+mod fido2;
+mod repository;
+mod server_communication_config;
+
+// Re-export ServerCommunicationConfig types for UniFFI bindings
+pub use bitwarden_server_communication_config::{
+    AcquiredCookie, BootstrapConfig, ServerCommunicationConfig, SsoCookieVendorConfig,
+};
+pub use server_communication_config::{
+    ServerCommunicationConfigClient, ServerCommunicationConfigRepository,
+};
+
+#[derive(uniffi::Object)]
+pub struct PlatformClient(pub(crate) bitwarden_core::Client);
+
+#[uniffi::export(async_runtime = "tokio")]
+impl PlatformClient {
+    /// Fingerprint (public key)
+    pub fn fingerprint(&self, req: FingerprintRequest) -> Result<String> {
+        Ok(self.0.platform().fingerprint(&req)?)
+    }
+
+    /// Fingerprint using logged in user's public key
+    pub fn user_fingerprint(&self, fingerprint_material: String) -> Result<String> {
+        Ok(self.0.platform().user_fingerprint(fingerprint_material)?)
+    }
+
+    /// Load feature flags into the client
+    pub async fn load_flags(&self, flags: std::collections::HashMap<String, bool>) -> Result<()> {
+        self.0.flags().load(flags).await;
+        Ok(())
+    }
+
+    /// FIDO2 operations
+    pub fn fido2(&self) -> fido2::ClientFido2 {
+        fido2::ClientFido2(self.0.fido2())
+    }
+
+    pub fn state(&self) -> StateClient {
+        StateClient(self.0.clone())
+    }
+
+    /// Server communication configuration operations
+    pub fn server_communication_config(
+        &self,
+        repository: Arc<dyn server_communication_config::ServerCommunicationConfigRepository>,
+        platform_api: Arc<
+            dyn bitwarden_server_communication_config::ServerCommunicationConfigPlatformApi,
+        >,
+    ) -> Arc<server_communication_config::ServerCommunicationConfigClient> {
+        server_communication_config::ServerCommunicationConfigClient::new(repository, platform_api)
+    }
+}
+
+#[derive(uniffi::Object)]
+pub struct StateClient(Client);
+
+bitwarden_pm::create_client_managed_repositories!(Repositories, create_uniffi_repositories);
+
+#[uniffi::export]
+impl StateClient {
+    pub fn register_client_managed_repositories(&self, repositories: Repositories) {
+        repositories.register_all(&self.0.platform().state());
+    }
+}

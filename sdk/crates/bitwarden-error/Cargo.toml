@@ -1,0 +1,37 @@
+[package]
+name = "bitwarden-error"
+description = """
+Internal crate for the bitwarden crate. Do not use.
+"""
+
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
+license = "GPL-3.0-only OR LicenseRef-Bitwarden-SDK"
+keywords.workspace = true
+
+[features]
+wasm = [
+    "bitwarden-error-macro/wasm",
+    "dep:js-sys",
+    "dep:tsify",
+    "dep:wasm-bindgen",
+]
+
+[dependencies]
+bitwarden-error-macro = { workspace = true }
+js-sys = { workspace = true, optional = true }
+tsify = { workspace = true, optional = true }
+wasm-bindgen = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde.workspace = true
+trybuild = "1.0.101"
+wasm-bindgen-test = { workspace = true }
+
+[lints]
+workspace = true

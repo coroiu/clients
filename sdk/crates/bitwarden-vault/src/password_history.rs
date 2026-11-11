@@ -1,0 +1,106 @@
+use bitwarden_api_api::models::CipherPasswordHistoryModel;
+use bitwarden_core::key_management::{KeySlotIds, SymmetricKeySlotId};
+use bitwarden_crypto::{
+    CompositeEncryptable, CryptoError, Decryptable, EncString, IdentifyKey, KeyStoreContext,
+    PrimitiveEncryptable,
+};
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+use crate::VaultParseError;
+
+/// Maximum number of password history entries to retain
+pub(crate) const MAX_PASSWORD_HISTORY_ENTRIES: usize = 5;
+
+#[allow(missing_docs)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[bitwarden_ffi::wasm_record]
+pub struct PasswordHistory {
+    password: EncString,
+    last_used_date: DateTime<Utc>,
+}
+
+#[allow(missing_docs)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[bitwarden_ffi::wasm_record]
+pub struct PasswordHistoryView {
+    pub password: String,
+    pub last_used_date: DateTime<Utc>,
+}
+
+impl IdentifyKey<SymmetricKeySlotId> for PasswordHistory {
+    fn key_identifier(&self) -> SymmetricKeySlotId {
+        SymmetricKeySlotId::LocalUserData
+    }
+}
+impl IdentifyKey<SymmetricKeySlotId> for PasswordHistoryView {
+    fn key_identifier(&self) -> SymmetricKeySlotId {
+        SymmetricKeySlotId::LocalUserData
+    }
+}
+
+impl CompositeEncryptable<KeySlotIds, SymmetricKeySlotId, PasswordHistory> for PasswordHistoryView {
+    fn encrypt_composite(
+        &self,
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        key: SymmetricKeySlotId,
+    ) -> Result<PasswordHistory, CryptoError> {
+        Ok(PasswordHistory {
+            password: self.password.encrypt(ctx, key)?,
+            last_used_date: self.last_used_date,
+        })
+    }
+}
+
+impl Decryptable<KeySlotIds, SymmetricKeySlotId, PasswordHistoryView> for PasswordHistory {
+    fn decrypt(
+        &self,
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        key: SymmetricKeySlotId,
+    ) -> Result<PasswordHistoryView, CryptoError> {
+        Ok(PasswordHistoryView {
+            password: self.password.decrypt(ctx, key).ok().unwrap_or_default(),
+            last_used_date: self.last_used_date,
+        })
+    }
+}
+
+impl TryFrom<CipherPasswordHistoryModel> for PasswordHistory {
+    type Error = VaultParseError;
+
+    fn try_from(model: CipherPasswordHistoryModel) -> Result<Self, Self::Error> {
+        Ok(Self {
+            password: model.password.parse()?,
+            last_used_date: model.last_used_date.parse()?,
+        })
+    }
+}
+
+impl From<PasswordHistory> for CipherPasswordHistoryModel {
+    fn from(history: PasswordHistory) -> Self {
+        Self {
+            password: history.password.to_string(),
+            last_used_date: history.last_used_date.to_rfc3339(),
+        }
+    }
+}
+
+impl PasswordHistoryView {
+    pub(crate) fn new_password(old_password: &str) -> Self {
+        Self {
+            password: old_password.to_string(),
+            last_used_date: Utc::now(),
+        }
+    }
+
+    pub(crate) fn new_field(field_name: &str, old_value: &str) -> Self {
+        Self {
+            password: format!("{field_name}: {old_value}"),
+            last_used_date: Utc::now(),
+        }
+    }
+}

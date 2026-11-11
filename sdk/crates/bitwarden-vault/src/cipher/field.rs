@@ -1,0 +1,262 @@
+use std::collections::HashMap;
+
+use bitwarden_api_api::models::CipherFieldModel;
+use bitwarden_core::{
+    MissingFieldError,
+    key_management::{KeySlotIds, SymmetricKeySlotId},
+    require,
+};
+use bitwarden_crypto::{
+    CompositeEncryptable, CryptoError, Decryptable, EncString, KeyStoreContext,
+    PrimitiveEncryptable,
+};
+use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
+
+use super::{cipher::StrictDecrypt, linked_id::LinkedIdType};
+use crate::{PasswordHistoryView, VaultParseError};
+
+/// Represents the type of a [FieldView].
+#[derive(Clone, Copy, Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq)]
+#[repr(u8)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Enum))]
+#[bitwarden_ffi::wasm_object]
+pub enum FieldType {
+    /// Text field
+    Text = 0,
+    /// Hidden text field
+    Hidden = 1,
+    /// Boolean field
+    Boolean = 2,
+    /// Linked field
+    Linked = 3,
+}
+
+impl TryFrom<u8> for FieldType {
+    type Error = MissingFieldError;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(FieldType::Text),
+            1 => Ok(FieldType::Hidden),
+            2 => Ok(FieldType::Boolean),
+            3 => Ok(FieldType::Linked),
+            _ => Err(MissingFieldError("FieldType")),
+        }
+    }
+}
+
+#[serde_with::skip_serializing_none]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[bitwarden_ffi::wasm_record]
+pub struct Field {
+    name: Option<EncString>,
+    value: Option<EncString>,
+    r#type: FieldType,
+
+    linked_id: Option<LinkedIdType>,
+}
+
+#[serde_with::skip_serializing_none]
+#[allow(missing_docs)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[bitwarden_ffi::wasm_record]
+pub struct FieldView {
+    pub name: Option<String>,
+    pub value: Option<String>,
+    pub r#type: FieldType,
+
+    pub linked_id: Option<LinkedIdType>,
+}
+
+/// Minimal field view for list/search operations.
+/// Contains only the fields needed for search indexing.
+#[serde_with::skip_serializing_none]
+#[cfg(feature = "wasm")]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Record))]
+#[bitwarden_ffi::wasm_record]
+pub struct FieldListView {
+    /// Only populated if the field has a name.
+    pub name: Option<String>,
+    /// Only populated for [FieldType::Text] fields.
+    pub value: Option<String>,
+    /// The field type.
+    pub r#type: FieldType,
+}
+
+#[cfg(feature = "wasm")]
+impl From<FieldView> for FieldListView {
+    fn from(field: FieldView) -> Self {
+        Self {
+            name: field.name,
+            value: if field.r#type == FieldType::Text {
+                field.value
+            } else {
+                None
+            },
+            r#type: field.r#type,
+        }
+    }
+}
+
+impl CompositeEncryptable<KeySlotIds, SymmetricKeySlotId, Field> for FieldView {
+    fn encrypt_composite(
+        &self,
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        key: SymmetricKeySlotId,
+    ) -> Result<Field, CryptoError> {
+        Ok(Field {
+            name: self.name.encrypt(ctx, key)?,
+            value: self.value.encrypt(ctx, key)?,
+            r#type: self.r#type,
+            linked_id: self.linked_id,
+        })
+    }
+}
+
+impl FieldView {
+    /// Compares two sets of FieldView and detects changes in hidden fields, for building password
+    /// history.
+    pub(crate) fn detect_hidden_field_changes(
+        fields: &[FieldView],
+        original: &[FieldView],
+    ) -> Vec<PasswordHistoryView> {
+        let current_fields = Self::extract_hidden_fields(fields);
+        let original_fields = Self::extract_hidden_fields(original);
+
+        original_fields
+            .into_iter()
+            .filter_map(|(field_name, original_value)| {
+                let current_value = current_fields.get(&field_name);
+                if current_value != Some(&original_value) {
+                    Some(PasswordHistoryView::new_field(&field_name, &original_value))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    fn extract_hidden_fields(fields: &[FieldView]) -> HashMap<String, String> {
+        fields
+            .iter()
+            .filter_map(|f| match (&f.r#type, &f.name, &f.value) {
+                (FieldType::Hidden, Some(name), Some(value))
+                    if !name.is_empty() && !value.is_empty() =>
+                {
+                    Some((name.clone(), value.clone()))
+                }
+                _ => None,
+            })
+            .collect()
+    }
+}
+
+impl Decryptable<KeySlotIds, SymmetricKeySlotId, FieldView> for Field {
+    fn decrypt(
+        &self,
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        key: SymmetricKeySlotId,
+    ) -> Result<FieldView, CryptoError> {
+        Ok(FieldView {
+            name: self.name.decrypt(ctx, key).ok().flatten(),
+            value: self.value.decrypt(ctx, key).ok().flatten(),
+            r#type: self.r#type,
+            linked_id: self.linked_id,
+        })
+    }
+}
+
+impl Decryptable<KeySlotIds, SymmetricKeySlotId, FieldView> for StrictDecrypt<&Field> {
+    fn decrypt(
+        &self,
+        ctx: &mut KeyStoreContext<KeySlotIds>,
+        key: SymmetricKeySlotId,
+    ) -> Result<FieldView, CryptoError> {
+        Ok(FieldView {
+            name: self.0.name.decrypt(ctx, key)?,
+            value: self.0.value.decrypt(ctx, key)?,
+            r#type: self.0.r#type,
+            linked_id: self.0.linked_id,
+        })
+    }
+}
+
+impl TryFrom<CipherFieldModel> for Field {
+    type Error = VaultParseError;
+
+    fn try_from(model: CipherFieldModel) -> Result<Self, Self::Error> {
+        Ok(Self {
+            name: EncString::try_from_optional(model.name)?,
+            value: EncString::try_from_optional(model.value)?,
+            r#type: require!(model.r#type).try_into()?,
+            linked_id: model
+                .linked_id
+                .map(|id| (id as u32).try_into())
+                .transpose()?,
+        })
+    }
+}
+
+impl TryFrom<bitwarden_api_api::models::FieldType> for FieldType {
+    type Error = MissingFieldError;
+
+    fn try_from(model: bitwarden_api_api::models::FieldType) -> Result<Self, Self::Error> {
+        Ok(match model {
+            bitwarden_api_api::models::FieldType::Text => FieldType::Text,
+            bitwarden_api_api::models::FieldType::Hidden => FieldType::Hidden,
+            bitwarden_api_api::models::FieldType::Boolean => FieldType::Boolean,
+            bitwarden_api_api::models::FieldType::Linked => FieldType::Linked,
+            bitwarden_api_api::models::FieldType::__Unknown(_) => {
+                return Err(MissingFieldError("type"));
+            }
+        })
+    }
+}
+
+impl From<Field> for bitwarden_api_api::models::CipherFieldModel {
+    fn from(field: Field) -> Self {
+        Self {
+            name: field.name.map(|n| n.to_string()),
+            value: field.value.map(|v| v.to_string()),
+            r#type: Some(field.r#type.into()),
+            linked_id: field.linked_id.map(|id| u32::from(id) as i32),
+        }
+    }
+}
+
+impl From<FieldType> for bitwarden_api_api::models::FieldType {
+    fn from(field_type: FieldType) -> Self {
+        match field_type {
+            FieldType::Text => bitwarden_api_api::models::FieldType::Text,
+            FieldType::Hidden => bitwarden_api_api::models::FieldType::Hidden,
+            FieldType::Boolean => bitwarden_api_api::models::FieldType::Boolean,
+            FieldType::Linked => bitwarden_api_api::models::FieldType::Linked,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_field_type_try_from_u8_valid() {
+        assert_eq!(FieldType::try_from(0).unwrap(), FieldType::Text);
+        assert_eq!(FieldType::try_from(1).unwrap(), FieldType::Hidden);
+        assert_eq!(FieldType::try_from(2).unwrap(), FieldType::Boolean);
+        assert_eq!(FieldType::try_from(3).unwrap(), FieldType::Linked);
+    }
+
+    #[test]
+    fn test_field_type_try_from_u8_invalid() {
+        assert!(FieldType::try_from(4).is_err());
+        assert!(FieldType::try_from(255).is_err());
+    }
+}

@@ -1,0 +1,49 @@
+name: Check Rust feature-powerset
+
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Building for ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os || 'ubuntu-24.04' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-26
+          - ubuntu-24.04
+          - windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+
+      - name: Install cargo-run-bin
+        run: cargo install cargo-run-bin --locked --version 1.7.4
+
+      - name: Check cargo-binstall is not configured
+        run: ./scripts/check-no-binstall.sh
+
+      - name: Build
+        run: cargo bin cargo-hack check --workspace --feature-powerset --no-dev-deps
+        env:
+          RUSTFLAGS: "-D warnings"

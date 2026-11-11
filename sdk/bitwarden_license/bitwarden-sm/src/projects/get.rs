@@ -1,0 +1,27 @@
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::{SecretsManagerClient, error::SecretsManagerError, projects::ProjectResponse};
+
+#[allow(missing_docs)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProjectGetRequest {
+    /// ID of the project to retrieve
+    pub id: Uuid,
+}
+
+pub(crate) async fn get_project(
+    client: &SecretsManagerClient,
+    input: &ProjectGetRequest,
+) -> Result<ProjectResponse, SecretsManagerError> {
+    let client = client.client();
+    let config = client.internal.get_api_configurations();
+
+    let res = config.api_client.projects_api().get(input.id).await?;
+
+    let key_store = client.internal.get_key_store();
+
+    ProjectResponse::process_response(res, &mut key_store.context())
+}

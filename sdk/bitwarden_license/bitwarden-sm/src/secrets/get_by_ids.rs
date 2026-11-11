@@ -1,0 +1,34 @@
+use bitwarden_api_api::models::GetSecretsRequestModel;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::{SecretsManagerClient, error::SecretsManagerError, secrets::SecretsResponse};
+
+#[allow(missing_docs)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SecretsGetRequest {
+    /// IDs of the secrets to retrieve
+    pub ids: Vec<Uuid>,
+}
+
+pub(crate) async fn get_secrets_by_ids(
+    client: &SecretsManagerClient,
+    input: SecretsGetRequest,
+) -> Result<SecretsResponse, SecretsManagerError> {
+    let client = client.client();
+    let request = Some(GetSecretsRequestModel { ids: input.ids });
+
+    let config = client.internal.get_api_configurations();
+
+    let res = config
+        .api_client
+        .secrets_api()
+        .get_secrets_by_ids(request)
+        .await?;
+
+    let key_store = client.internal.get_key_store();
+
+    SecretsResponse::process_response(res, &mut key_store.context())
+}

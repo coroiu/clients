@@ -1,0 +1,81 @@
+use bitwarden_core::Client;
+use bitwarden_vault::CipherView;
+use thiserror::Error;
+
+use crate::{
+    DeviceAuthKeyAuthenticator, DeviceAuthKeyStore, Fido2Authenticator, Fido2Client,
+    Fido2CredentialAutofillView, Fido2CredentialAutofillViewError, Fido2CredentialStore,
+    Fido2UserInterface,
+};
+
+#[allow(missing_docs)]
+#[derive(Clone)]
+pub struct ClientFido2 {
+    pub(crate) client: Client,
+}
+
+#[allow(missing_docs)]
+#[derive(Debug, Error)]
+#[cfg_attr(feature = "uniffi", derive(uniffi::Error), uniffi(flat_error))]
+pub enum GetFido2AutofillCredentialsError {
+    #[error(transparent)]
+    Fido2CredentialAutofillView(#[from] Fido2CredentialAutofillViewError),
+}
+
+impl ClientFido2 {
+    #[allow(missing_docs)]
+    pub fn new(client: Client) -> Self {
+        Self { client }
+    }
+
+    #[allow(missing_docs)]
+    pub fn create_authenticator<'a>(
+        &'a self,
+        user_interface: &'a dyn Fido2UserInterface,
+        credential_store: &'a dyn Fido2CredentialStore,
+    ) -> Fido2Authenticator<'a> {
+        Fido2Authenticator::new(&self.client, user_interface, credential_store)
+    }
+
+    #[allow(missing_docs)]
+    pub fn create_client<'a>(
+        &'a self,
+        user_interface: &'a dyn Fido2UserInterface,
+        credential_store: &'a dyn Fido2CredentialStore,
+    ) -> Fido2Client<'a> {
+        Fido2Client {
+            authenticator: self.create_authenticator(user_interface, credential_store),
+        }
+    }
+
+    /// Create an authenticator intended to be used with a device-bound
+    /// credential to log into and unlock a Bitwarden vault.
+    pub fn create_device_key_authenticator<'a>(
+        &'a self,
+        store: &'a mut dyn DeviceAuthKeyStore,
+    ) -> DeviceAuthKeyAuthenticator<'a> {
+        DeviceAuthKeyAuthenticator {
+            client: &self.client,
+            store,
+        }
+    }
+
+    #[allow(missing_docs)]
+    pub fn get_fido2_autofill_credentials(
+        &self,
+        cipher_view: CipherView,
+    ) -> Result<Vec<Fido2CredentialAutofillView>, GetFido2AutofillCredentialsError> {
+        Ok(Fido2CredentialAutofillView::from_cipher_view(&cipher_view)?)
+    }
+}
+
+#[allow(missing_docs)]
+pub trait ClientFido2Ext {
+    fn fido2(&self) -> ClientFido2;
+}
+
+impl ClientFido2Ext for Client {
+    fn fido2(&self) -> ClientFido2 {
+        ClientFido2::new(self.clone())
+    }
+}
