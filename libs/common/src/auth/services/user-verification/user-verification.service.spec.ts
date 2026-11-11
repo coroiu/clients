@@ -1,20 +1,16 @@
 import { mock } from "jest-mock-extended";
 import { of } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 // eslint-disable-next-line no-restricted-imports
+import { KdfConfig } from "@bitwarden/legacy-crypto";
+
+import { FakeAccountService, mockAccountServiceWith } from "../../../../spec";
 import {
   BiometricsService,
   BiometricsStatus,
   KeyService,
   KdfConfigService,
-} from "@bitwarden/key-management";
-// eslint-disable-next-line no-restricted-imports
-import { KdfConfig } from "@bitwarden/legacy-crypto";
-
-import { FakeAccountService, mockAccountServiceWith } from "../../../../spec";
+} from "../../../key-management/km-lib";
 import { MasterPasswordUnlockService } from "../../../key-management/master-password/abstractions/master-password-unlock.service";
 import { InternalMasterPasswordServiceAbstraction } from "../../../key-management/master-password/abstractions/master-password.service.abstraction";
 import { PinServiceAbstraction } from "../../../key-management/pin/pin.service.abstraction";

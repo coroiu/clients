@@ -3,11 +3,6 @@
 import { matches, mock } from "jest-mock-extended";
 import { BehaviorSubject, firstValueFrom, of } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import {
   CryptoFunctionService,
@@ -44,6 +39,7 @@ import { Utils } from "../../../platform/misc/utils";
 import { StorageOptions } from "../../../platform/models/domain/storage-options";
 import { UserId } from "../../../types/guid";
 import { DeviceKey, UserKey } from "../../../types/key";
+import { KeyService } from "../../km-lib";
 
 import {
   SHOULD_TRUST_DEVICE,

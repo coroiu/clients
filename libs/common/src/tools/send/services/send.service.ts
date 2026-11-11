@@ -2,9 +2,6 @@
 // @ts-strict-ignore
 import { Observable, concatMap, distinctUntilChanged, firstValueFrom, map } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import {
   EncArrayBuffer,
@@ -16,6 +13,7 @@ import {
 } from "@bitwarden/legacy-crypto";
 
 import { AccountService } from "../../../auth/abstractions/account.service";
+import { KeyService } from "../../../key-management/km-lib";
 import { I18nService } from "../../../platform/abstractions/i18n.service";
 import { SdkService } from "../../../platform/abstractions/sdk/sdk.service";
 import { Utils } from "../../../platform/misc/utils";

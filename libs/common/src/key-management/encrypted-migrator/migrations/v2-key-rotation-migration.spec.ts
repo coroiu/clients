@@ -2,8 +2,6 @@ import { mock } from "jest-mock-extended";
 import { of } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
-// eslint-disable-next-line no-restricted-imports
 import { SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 import { LogService } from "@bitwarden/logging";
 
@@ -16,6 +14,7 @@ import { UserKey } from "../../../types/key";
 import { CipherService } from "../../../vault/abstractions/cipher.service";
 import { AttachmentView } from "../../../vault/models/view/attachment.view";
 import { CipherView } from "../../../vault/models/view/cipher.view";
+import { KeyService } from "../../km-lib";
 import { MasterPasswordServiceAbstraction } from "../../master-password/abstractions/master-password.service.abstraction";
 import { UserKeyRotationService as UserKeyRotationServiceAbstraction } from "../../user-key-rotation/user-key-rotation.service.abstraction";
 

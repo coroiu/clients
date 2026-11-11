@@ -1,4 +1,4 @@
-import { KeyDefinition, UserKeyDefinition } from "@bitwarden/common/platform/state";
+import { KeyDefinition, UserKeyDefinition } from "../../../platform/state";
 
 import {
   BIOMETRIC_UNLOCK_ENABLED,

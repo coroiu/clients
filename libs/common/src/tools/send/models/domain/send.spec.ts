@@ -1,9 +1,6 @@
 import { mock } from "jest-mock-extended";
 import { of } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import {
   EncryptService,
@@ -12,6 +9,7 @@ import {
 } from "@bitwarden/legacy-crypto";
 
 import { makeStaticByteArray, mockContainerService, mockEnc } from "../../../../../spec";
+import { KeyService } from "../../../../key-management/km-lib";
 import { ContainerService } from "../../../../platform/services/container.service";
 import { emptyGuid, UserId } from "../../../../types/guid";
 import { UserKey } from "../../../../types/key";

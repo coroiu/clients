@@ -2,11 +2,6 @@
 // @ts-strict-ignore
 import { firstValueFrom, map, Observable, Subject, switchMap } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import {
   CryptoFunctionService,
@@ -40,6 +35,7 @@ import { DEVICE_TRUST_DISK_LOCAL, StateProvider, UserKeyDefinition } from "../..
 import { UserId } from "../../../types/guid";
 import { UserKey, DeviceKey } from "../../../types/key";
 import { RotateableKeySet } from "../../keys/models/rotateable-key-set";
+import { KeyService } from "../../km-lib";
 import { DeviceTrustServiceAbstraction } from "../abstractions/device-trust.service.abstraction";
 
 /** Uses disk storage so that the device key can persist after log out and tab removal. */

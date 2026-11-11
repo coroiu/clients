@@ -18,9 +18,6 @@ import {
   of,
 } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService, KdfConfigService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import { EncString } from "@bitwarden/legacy-crypto";
 import { PerfTrackGroup } from "@bitwarden/logging";
@@ -38,6 +35,7 @@ import {
 import { ApiService } from "../../../abstractions/api.service";
 import { AccountInfo, AccountService } from "../../../auth/abstractions/account.service";
 import { AccountCryptographicStateService } from "../../../key-management/account-cryptography/account-cryptographic-state.service";
+import { KeyService, KdfConfigService } from "../../../key-management/km-lib";
 import { JsWasmStateBridge } from "../../../key-management/state-bridge";
 import { V2UpgradeTokenStateService } from "../../../key-management/upgrade-token/abstractions/v2-upgrade-token-state.service.abstraction";
 import { OrganizationId, UserId } from "../../../types/guid";

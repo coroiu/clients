@@ -15,12 +15,6 @@ import {
   switchMap,
 } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { BiometricStateService } from "@bitwarden/key-management";
-
 import { PolicyService } from "../../../admin-console/abstractions/policy/policy.service.abstraction";
 import { PolicyType } from "../../../admin-console/enums";
 import { getFirstPolicy } from "../../../admin-console/services/policy/default-policy.service";
@@ -31,6 +25,7 @@ import { getUserId } from "../../../auth/services/account.service";
 import { LogService } from "../../../platform/abstractions/log.service";
 import { StateProvider } from "../../../platform/state";
 import { UserId } from "../../../types/guid";
+import { BiometricStateService } from "../../km-lib";
 import { MaximumSessionTimeoutPolicyData, SessionTimeoutTypeService } from "../../session-timeout";
 import {
   PIN_PROTECTED_USER_KEY_ENVELOPE_EPHEMERAL,

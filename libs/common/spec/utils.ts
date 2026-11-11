@@ -3,7 +3,6 @@
 import { mock, MockProxy } from "jest-mock-extended";
 
 import { ContainerService } from "@bitwarden/common/platform/services/container.service";
-import { KeyService } from "@bitwarden/key-management";
 import {
   EncryptionType,
   EncryptService,
@@ -12,6 +11,7 @@ import {
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 
+import { KeyService } from "../src/key-management/km-lib";
 import { Utils } from "../src/platform/misc/utils";
 
 function newGuid() {

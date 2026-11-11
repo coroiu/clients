@@ -1,9 +1,6 @@
 import { mock } from "jest-mock-extended";
 import { BehaviorSubject, Observable, firstValueFrom, map, of, throwError } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { CipherDecryptionKeys, KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import {
   EncArrayBuffer,
@@ -21,6 +18,7 @@ import { makeStaticByteArray, makeSymmetricCryptoKey } from "../../../spec/utils
 import { ApiService } from "../../abstractions/api.service";
 import { AutofillSettingsService } from "../../autofill/services/autofill-settings.service";
 import { DomainSettingsService } from "../../autofill/services/domain-settings.service";
+import { CipherDecryptionKeys, KeyService } from "../../key-management/km-lib";
 import { UriMatchStrategy } from "../../models/domain/domain-service";
 import { ConfigService } from "../../platform/abstractions/config/config.service";
 import { I18nService } from "../../platform/abstractions/i18n.service";

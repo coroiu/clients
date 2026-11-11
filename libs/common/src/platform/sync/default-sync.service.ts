@@ -2,14 +2,7 @@
 // @ts-strict-ignore
 import { firstValueFrom, map } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
 import { PerfTrackGroup } from "@bitwarden/logging";
-
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 
 import { ApiService } from "../../abstractions/api.service";
 import { InternalOrganizationServiceAbstraction } from "../../admin-console/abstractions/organization/organization.service.abstraction";
@@ -32,6 +25,7 @@ import { DomainSettingsService } from "../../autofill/services/domain-settings.s
 import { BillingAccountProfileStateService } from "../../billing/abstractions";
 import { FeatureFlag } from "../../enums/feature-flag.enum";
 import { KeyConnectorService } from "../../key-management/key-connector/abstractions/key-connector.service";
+import { KeyService } from "../../key-management/km-lib";
 import { InternalMasterPasswordServiceAbstraction } from "../../key-management/master-password/abstractions/master-password.service.abstraction";
 import { UserDecryptionResponse } from "../../key-management/models/response/user-decryption.response";
 import { withPasswordManagerSdk } from "../../key-management/utils";

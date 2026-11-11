@@ -1,10 +1,5 @@
 import { combineLatest, concatMap, firstValueFrom, map, Observable } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import { EncryptService, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 import {
@@ -34,6 +29,7 @@ import { MasterPasswordPolicyOptions } from "../../../../admin-console/models/do
 import { Policy } from "../../../../admin-console/models/domain/policy";
 import { OrganizationKeysRequest } from "../../../../admin-console/models/request/organization-keys.request";
 import { FeatureFlag } from "../../../../enums/feature-flag.enum";
+import { KeyService } from "../../../../key-management/km-lib";
 import { ErrorResponse } from "../../../../models/response/error.response";
 import { ConfigService } from "../../../../platform/abstractions/config/config.service";
 import { I18nService } from "../../../../platform/abstractions/i18n.service";

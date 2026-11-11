@@ -2,8 +2,6 @@ import { mock } from "jest-mock-extended";
 import { of } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import { BiometricStateService, BiometricsService, KeyService } from "@bitwarden/key-management";
-// eslint-disable-next-line no-restricted-imports
 import { SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 import { LogService } from "@bitwarden/logging";
 import { CryptoClient } from "@bitwarden/sdk-internal";
@@ -13,6 +11,7 @@ import { PlatformUtilsService } from "../../../platform/abstractions/platform-ut
 import { Utils } from "../../../platform/misc/utils";
 import { UserId } from "../../../types/guid";
 import { UserKey } from "../../../types/key";
+import { BiometricStateService, BiometricsService, KeyService } from "../../km-lib";
 
 import { BiometricPersistentMigration } from "./biometric-persistent-encryption-migration";
 
