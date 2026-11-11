@@ -3,7 +3,6 @@ import { firstValueFrom } from "rxjs";
 // eslint-disable-next-line no-restricted-imports
 import { SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 import { UserId, PeerLockState, SharedUnlockDriver, SymmetricKey } from "@bitwarden/sdk-internal";
-import { LockService, LockSource, UnlockService } from "@bitwarden/unlock";
 import { UserId as TSUserId } from "@bitwarden/user-core";
 
 import { AccountService } from "../../auth/abstractions/account.service";
@@ -12,6 +11,7 @@ import { PlatformUtilsService } from "../../platform/abstractions/platform-utils
 import { asUuid, uuidAsString } from "../../platform/abstractions/sdk/sdk.service";
 import { SHARED_UNLOCK_DISK, StateProvider, UserKeyDefinition } from "../../platform/state";
 import { UserKey } from "../../types/key";
+import { LockService, LockSource, UnlockService } from "../unlock-abstractions";
 import { VaultTimeoutSettingsService } from "../vault-timeout/abstractions/vault-timeout-settings.service";
 
 /**

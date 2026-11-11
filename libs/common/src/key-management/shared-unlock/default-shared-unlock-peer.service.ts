@@ -9,7 +9,6 @@ import {
 } from "rxjs";
 
 import { SharedUnlockClient, SharedUnlockPeer } from "@bitwarden/sdk-internal";
-import { LockService, LockSource, UnlockMethod, UnlockService } from "@bitwarden/unlock";
 
 import { AccountService } from "../../auth/abstractions/account.service";
 import { ClientType } from "../../enums";
@@ -21,6 +20,7 @@ import { asUuid } from "../../platform/abstractions/sdk/sdk.service";
 import { IpcService } from "../../platform/ipc";
 import { StateProvider } from "../../platform/state";
 import { UserId } from "../../types/guid";
+import { LockService, LockSource, UnlockMethod, UnlockService } from "../unlock-abstractions";
 import { VaultTimeoutSettingsService } from "../vault-timeout/abstractions/vault-timeout-settings.service";
 
 import { JsSharedUnlockDriver } from "./shared-unlock-driver";

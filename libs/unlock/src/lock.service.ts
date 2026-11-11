@@ -6,6 +6,7 @@ import { AuthenticationStatus } from "@bitwarden/common/auth/enums/authenticatio
 import { LogoutService } from "@bitwarden/common/auth/logout";
 import { assertNonNullish } from "@bitwarden/common/auth/utils";
 import { ProcessReloadServiceAbstraction } from "@bitwarden/common/key-management/process-reload";
+import { LockService } from "@bitwarden/common/key-management/unlock-abstractions/lock.service.abstraction";
 import { VaultTimeoutSettingsService } from "@bitwarden/common/key-management/vault-timeout";
 import { MessagingService } from "@bitwarden/common/platform/abstractions/messaging.service";
 import { SdkService } from "@bitwarden/common/platform/abstractions/sdk/sdk.service";
@@ -22,30 +23,6 @@ import { LockSource } from "./lock-source.enum";
 /** Callers batching multiple locks reload the process once, after the last lock. */
 const SuppressProcessReload = true;
 const PerformProcessReload = false;
-
-export abstract class LockService {
-  /**
-   * Locks all accounts.
-   * @param source What caused the lock
-   */
-  abstract lockAll(source: LockSource): Promise<void>;
-  /**
-   * Performs lock for a user.
-   * @param userId The user id to lock
-   * @param source What caused the lock
-   */
-  abstract lock(userId: UserId, source: LockSource): Promise<void>;
-
-  abstract runPlatformOnLockActions(userId: UserId, source: LockSource): Promise<void>;
-  /**
-   * Registers an action to be run when a user is locked through this service.
-   *
-   * @param action Callback invoked after a lock with the user id and what caused the lock.
-   */
-  abstract registerOnLockAction(
-    action: (userId: UserId, source: LockSource) => Promise<void>,
-  ): void;
-}
 
 export class DefaultLockService implements LockService {
   private onLockActions: Array<(userId: UserId, source: LockSource) => Promise<void>> = [];
@@ -200,3 +177,5 @@ export class DefaultLockService implements LockService {
     return;
   }
 }
+
+export { LockService };

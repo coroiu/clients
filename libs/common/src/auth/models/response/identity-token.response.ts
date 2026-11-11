@@ -9,9 +9,9 @@ import {
   KdfType,
   PBKDF2KdfConfig,
 } from "@bitwarden/legacy-crypto";
-import { KeyConnectorUnlockData } from "@bitwarden/unlock";
 
 import { PrivateKeysResponseModel } from "../../../key-management/keys/response/private-keys.response";
+import { KeyConnectorUnlockData } from "../../../key-management/unlock-abstractions";
 import { BaseResponse } from "../../../models/response/base.response";
 
 import { MasterPasswordPolicyResponse } from "./master-password-policy.response";

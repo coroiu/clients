@@ -16,7 +16,6 @@ import {
 } from "@bitwarden/legacy-crypto";
 import { LogService } from "@bitwarden/logging";
 import { PureCrypto } from "@bitwarden/sdk-internal";
-import { UnlockService } from "@bitwarden/unlock";
 
 import { ApiService } from "../../../abstractions/api.service";
 import { OrganizationService } from "../../../admin-console/abstractions/organization/organization.service.abstraction";
@@ -36,6 +35,7 @@ import { KEY_CONNECTOR_DISK, StateProvider, UserKeyDefinition } from "../../../p
 import { UserId } from "../../../types/guid";
 import { AccountCryptographicStateService } from "../../account-cryptography/account-cryptographic-state.service";
 import { InternalMasterPasswordServiceAbstraction } from "../../master-password/abstractions/master-password.service.abstraction";
+import { UnlockService } from "../../unlock-abstractions";
 import { withPasswordManagerSdk } from "../../utils";
 import { KeyConnectorService as KeyConnectorServiceAbstraction } from "../abstractions/key-connector.service";
 import { KeyConnectorDomainConfirmation } from "../models/key-connector-domain-confirmation";

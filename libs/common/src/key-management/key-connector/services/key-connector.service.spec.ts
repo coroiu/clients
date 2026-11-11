@@ -17,7 +17,6 @@ import {
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 import { BitwardenClient, PureCrypto } from "@bitwarden/sdk-internal";
-import { UnlockService } from "@bitwarden/unlock";
 
 import { FakeAccountService, FakeStateProvider, mockAccountServiceWith } from "../../../../spec";
 import { ApiService } from "../../../abstractions/api.service";
@@ -40,6 +39,7 @@ import { MasterKey, UserKey } from "../../../types/key";
 import { AccountCryptographicStateService } from "../../account-cryptography/account-cryptographic-state.service";
 import { FakeMasterPasswordService } from "../../master-password/services/fake-master-password.service";
 import { MasterPasswordSalt } from "../../master-password/types/master-password.types";
+import { UnlockService } from "../../unlock-abstractions";
 import { KeyConnectorUserKeyRequest } from "../models/key-connector-user-key.request";
 import { NewSsoUserKeyConnectorConversion } from "../models/new-sso-user-key-connector-conversion";
 import { SetKeyConnectorKeyRequest } from "../models/set-key-connector-key.request";

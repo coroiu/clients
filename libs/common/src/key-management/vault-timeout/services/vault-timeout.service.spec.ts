@@ -3,8 +3,6 @@
 import { MockProxy, mock } from "jest-mock-extended";
 import { BehaviorSubject, from, of } from "rxjs";
 
-import { LockService, LockSource } from "@bitwarden/unlock";
-
 import { FakeAccountService, mockAccountServiceWith, mockAccountInfoWith } from "../../../../spec";
 import { AccountInfo } from "../../../auth/abstractions/account.service";
 import { AuthService } from "../../../auth/abstractions/auth.service";
@@ -15,6 +13,7 @@ import { PlatformUtilsService } from "../../../platform/abstractions/platform-ut
 import { Utils } from "../../../platform/misc/utils";
 import { TaskSchedulerService } from "../../../platform/scheduling";
 import { UserId } from "../../../types/guid";
+import { LockService, LockSource } from "../../unlock-abstractions";
 import { VaultTimeoutAction } from "../enums/vault-timeout-action.enum";
 import { VaultTimeout, VaultTimeoutStringType } from "../types/vault-timeout.type";
 
