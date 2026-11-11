@@ -14,6 +14,9 @@ apps/desktop/src/locales
 apps/desktop/dist-safari
 apps/desktop/desktop_native
 
+# The SDK has its own prettier configuration and lint workflow
+sdk
+
 apps/cli/src/locales
 apps/cli/.github
 

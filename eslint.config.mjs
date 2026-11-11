@@ -864,6 +864,9 @@ export default tseslint.config(
 
       "apps/desktop/desktop_native",
 
+      // The SDK has its own lint workflow and configuration.
+      "sdk/",
+
       "apps/web/config.js",
       "apps/web/scripts/*.js",
       "apps/web/tailwind.config.js",
