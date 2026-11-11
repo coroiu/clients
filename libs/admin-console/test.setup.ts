@@ -1,7 +1,20 @@
 import { webcrypto } from "crypto";
 
+import { setupZoneTestEnv } from "jest-preset-angular/setup-env/zone";
+
 import { addCustomMatchers } from "@bitwarden/common/spec";
-import "@bitwarden/ui-common/setup-jest";
+
+setupZoneTestEnv({ errorOnUnknownElements: true, errorOnUnknownProperties: true });
+
+// JSDOM has no ResizeObserver, which `bitOverflowList` constructs on init. Suites
+// that assert on packing install their own over this one.
+class ResizeObserverStub implements ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+global.ResizeObserver ??= ResizeObserverStub;
 
 // jsdom does not expose Symbol.dispose / Symbol.asyncDispose, but TypeScript's compiled
 // output for `using` declarations requires them. Polyfill here so specs that test code
