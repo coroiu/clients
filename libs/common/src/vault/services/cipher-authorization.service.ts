@@ -1,10 +1,9 @@
 import { combineLatest, map, Observable, of, switchMap } from "rxjs";
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { CollectionService } from "@bitwarden/admin-console/common";
 
 import { OrganizationService } from "../../admin-console/abstractions/organization/organization.service.abstraction";
+import { CollectionService } from "../../admin-console/ac-lib";
 import { AccountService } from "../../auth/abstractions/account.service";
 import { getOptionalUserId, getUserId } from "../../auth/services/account.service";
 import { uuidAsString } from "../../platform/abstractions/sdk/sdk.service";

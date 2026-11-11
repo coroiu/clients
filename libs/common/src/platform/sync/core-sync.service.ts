@@ -3,11 +3,11 @@
 import { firstValueFrom, map, Observable, of, switchMap } from "rxjs";
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { CollectionService } from "@bitwarden/admin-console/common";
+
 import { SendId as SdkSendId } from "@bitwarden/sdk-internal";
 
 import { ApiService } from "../../abstractions/api.service";
+import { CollectionService } from "../../admin-console/ac-lib";
 import { AccountService } from "../../auth/abstractions/account.service";
 import { AuthService } from "../../auth/abstractions/auth.service";
 import { TokenService } from "../../auth/abstractions/token.service";

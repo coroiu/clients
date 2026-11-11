@@ -3,8 +3,7 @@
 import { firstValueFrom, map } from "rxjs";
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { CollectionService } from "@bitwarden/admin-console/common";
+
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 // eslint-disable-next-line no-restricted-imports
 import { KeyService } from "@bitwarden/key-management";
@@ -16,6 +15,7 @@ import { InternalUserDecryptionOptionsServiceAbstraction } from "../../../../aut
 import { ApiService } from "../../abstractions/api.service";
 import { InternalOrganizationServiceAbstraction } from "../../admin-console/abstractions/organization/organization.service.abstraction";
 import { InternalPolicyService } from "../../admin-console/abstractions/policy/policy.service.abstraction";
+import { CollectionService } from "../../admin-console/ac-lib";
 import { OrganizationUserType } from "../../admin-console/enums";
 import { CollectionData, CollectionDetailsResponse } from "../../admin-console/models/collections";
 import { OrganizationData } from "../../admin-console/models/data/organization.data";

@@ -1,5 +1,1 @@
-export * from "./organization-user.response";
-export * from "./organization-user-bulk.response";
-export * from "./organization-user-bulk-public-key.response";
-export * from "./organization-user-mini.response";
-export * from "./organization-user-pending-auto-confirm.response";
+export * from "@bitwarden/common/admin-console/ac-lib/organization-user/models/responses/index";

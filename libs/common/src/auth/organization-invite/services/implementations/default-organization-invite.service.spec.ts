@@ -2,8 +2,7 @@ import { MockProxy, mock } from "jest-mock-extended";
 import { BehaviorSubject, firstValueFrom } from "rxjs";
 
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { OrganizationUserApiService } from "@bitwarden/admin-console/common";
+
 import { newGuid } from "@bitwarden/guid";
 // This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 // eslint-disable-next-line no-restricted-imports
@@ -17,6 +16,7 @@ import { ApiService } from "../../../../abstractions/api.service";
 import { OrganizationApiServiceAbstraction } from "../../../../admin-console/abstractions/organization/organization-api.service.abstraction";
 import { PolicyApiServiceAbstraction } from "../../../../admin-console/abstractions/policy/policy-api.service.abstraction";
 import { PolicyService } from "../../../../admin-console/abstractions/policy/policy.service.abstraction";
+import { OrganizationUserApiService } from "../../../../admin-console/ac-lib";
 import { PolicyType } from "../../../../admin-console/enums";
 import { MasterPasswordPolicyOptions } from "../../../../admin-console/models/domain/master-password-policy-options";
 import { Policy } from "../../../../admin-console/models/domain/policy";

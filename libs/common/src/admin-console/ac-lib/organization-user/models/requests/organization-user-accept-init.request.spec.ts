@@ -1,4 +1,4 @@
-import { OrganizationKeysRequest } from "@bitwarden/common/admin-console/models/request/organization-keys.request";
+import { OrganizationKeysRequest } from "../../../../models/request/organization-keys.request";
 
 import { OrganizationUserAcceptInitRequest } from "./organization-user-accept-init.request";
 

@@ -1,9 +1,1 @@
-import { EncString } from "@bitwarden/sdk-internal";
-
-export class OrganizationUserRestoreRequest {
-  defaultUserCollectionName: EncString | undefined;
-
-  constructor(defaultUserCollectionName?: EncString) {
-    this.defaultUserCollectionName = defaultUserCollectionName;
-  }
-}
+export * from "@bitwarden/common/admin-console/ac-lib/organization-user/models/requests/organization-user-restore.request";
