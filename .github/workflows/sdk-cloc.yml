@@ -1,0 +1,32 @@
+name: SDK CLOC
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main", "monorepo/main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: sdk
+
+jobs:
+  cloc:
+    name: CLOC
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up cloc
+        run: |
+          sudo apt update
+          sudo apt -y install cloc
+
+      - name: Print lines of code
+        run: cloc --vcs git

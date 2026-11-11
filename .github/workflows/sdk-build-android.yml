@@ -1,0 +1,239 @@
+name: SDK Build Android
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+      - "monorepo/main"
+  workflow_dispatch:
+    inputs:
+      update-android-repo:
+        description: "Update Android Repo - Opens a PR updating the SDK in bitwarden/android"
+        type: boolean
+        default: false
+  workflow_call:
+    secrets:
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_CLIENT_ID:
+        required: true
+
+defaults:
+  run:
+    working-directory: sdk
+    shell: bash
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - target: aarch64-linux-android
+          - target: armv7-linux-androideabi
+          - target: x86_64-linux-android
+          - target: i686-linux-android
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+        with:
+          workspaces: "sdk -> target"
+          key: ${{ matrix.settings.target }}-cargo
+          # The build output cache below restores target/, including the dependencies.
+          cache-targets: false
+
+      # Cache cargo-run-bin's built tools (.bin), so cross isn't compiled on every run. The tools
+      # depend only on their pinned versions (Cargo.toml) and the toolchain. There are no restore
+      # keys: cargo-run-bin stores cross under its version only, not its git rev, so an older cache
+      # would keep an old cross after the rev in Cargo.toml changes.
+      - name: Cache cargo-run-bin tools
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: sdk/.bin
+          key: cargo-bin-${{ runner.os }}-cross-${{ hashFiles('sdk/Cargo.toml', 'sdk/rust-toolchain.toml') }}
+
+      # cross builds inside this image, which provides the NDK and linker. Cargo's fingerprints don't
+      # cover them, so the build output cache is keyed on the image digest: a new image starts a new
+      # cache instead of reusing output built with the old one.
+      - name: Pull cross image
+        id: cross-image
+        env:
+          TARGET: ${{ matrix.settings.target }}
+        run: |
+          image="ghcr.io/cross-rs/${TARGET}:main"
+          docker pull --quiet "$image"
+          digest=$(docker inspect --format '{{index .RepoDigests 0}}' "$image")
+          echo "Using $digest"
+          echo "digest=${digest##*@sha256:}" >> "$GITHUB_OUTPUT"
+
+      # The build output cache also holds the workspace crates, so a run only recompiles the crates
+      # that changed and the crates that depend on them. Without any match, the run builds
+      # everything, using the crate downloads restored by rust-cache above.
+      - name: Cache build output
+        uses: bitwarden/gh-actions/cargo-build-cache@main
+        with:
+          working_directory: sdk
+          key: ${{ github.job }}-${{ matrix.settings.target }}-${{ steps.cross-image.outputs.digest }}
+
+      - name: Install cargo-run-bin
+        run: cargo install cargo-run-bin --locked --version 1.7.4
+
+      - name: Check cargo-binstall is not configured
+        run: ./scripts/check-no-binstall.sh
+
+      - name: Build
+        id: build
+        env:
+          TARGET: ${{ matrix.settings.target }}
+        run: cargo bin cross build -p bitwarden-uniffi --release --target=${{ matrix.settings.target }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: android-${{ matrix.settings.target }}
+          path: ./sdk/target/${{ matrix.settings.target }}/release/libbitwarden_uniffi.so
+          if-no-files-found: error
+
+  combine:
+    name: Combine
+    runs-on: ubuntu-24.04
+    needs: build
+    outputs:
+      sdk-package-id: ${{ steps.publish.outputs.sdk-package-id }}
+      sdk-version: ${{ steps.publish.outputs.sdk-version }}
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repo (PR)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          persist-credentials: false
+
+      - name: Checkout repo (Push or manual run)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+        with:
+          workspaces: "sdk -> target"
+          key: cargo-combine-cache
+
+      - name: Setup Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+
+      - name: Move artifacts
+        working-directory: sdk/crates/bitwarden-uniffi/kotlin/sdk/src/main/jniLibs
+        run: |
+          mkdir armeabi-v7a arm64-v8a x86 x86_64
+          mv ${GITHUB_WORKSPACE}/android-armv7-linux-androideabi/libbitwarden_uniffi.so ./armeabi-v7a/libbitwarden_uniffi.so
+          mv ${GITHUB_WORKSPACE}/android-aarch64-linux-android/libbitwarden_uniffi.so ./arm64-v8a/libbitwarden_uniffi.so
+          mv ${GITHUB_WORKSPACE}/android-i686-linux-android/libbitwarden_uniffi.so ./x86/libbitwarden_uniffi.so
+          mv ${GITHUB_WORKSPACE}/android-x86_64-linux-android/libbitwarden_uniffi.so ./x86_64/libbitwarden_uniffi.so
+
+      - name: Generate bindings
+        working-directory: sdk/crates/bitwarden-uniffi/kotlin
+        run: ./build-schemas.sh
+
+      - name: Setup gradle
+        uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5.0.1
+
+      # The Gradle build cache lets tasks whose inputs are unchanged, such as compiling and linting
+      # the generated bindings when the SDK's API is the same, reuse the output of an earlier run.
+      # setup-gradle above saves and restores it as part of the Gradle user home.
+      - name: Test build demo app
+        working-directory: sdk/crates/bitwarden-uniffi/kotlin
+        run: |
+          ./gradlew build --build-cache --warning-mode all --stacktrace
+
+      # Monorepo CI experiment: publishing to GitHub Packages is disabled in the fork.
+      - name: Publish
+        id: publish
+        if: false
+        run: ./gradlew sdk:publish
+        working-directory: sdk/crates/bitwarden-uniffi/kotlin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update:
+    name: Trigger SDK update in Android repo
+    runs-on: ubuntu-24.04
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || inputs.update-android-repo
+    needs: combine
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Log in to Azure
+        uses: bitwarden/gh-actions/azure-login@main
+        with:
+          subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+          client_id: ${{ secrets.AZURE_CLIENT_ID }}
+
+      - name: Get Azure Key Vault secrets
+        id: get-kv-secrets
+        uses: bitwarden/gh-actions/get-keyvault-secrets@main
+        with:
+          keyvault: gh-org-bitwarden
+          secrets: "BW-GHAPP-ID,BW-GHAPP-KEY"
+
+      - name: Log out from Azure
+        uses: bitwarden/gh-actions/azure-logout@main
+
+      - name: Generate GH App token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: app-token
+        with:
+          app-id: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-ID }}
+          private-key: ${{ steps.get-kv-secrets.outputs.BW-GHAPP-KEY }}
+          owner: bitwarden
+          repositories: android
+          permission-actions: write
+
+      - name: Call SDLC SDK Update workflow in Android repo
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          _SDK_PACKAGE: ${{ needs.combine.outputs.sdk-package-id }}
+          _SDK_VERSION: ${{ needs.combine.outputs.sdk-version }}
+        run: |
+          echo "🚀 Triggering sdlc-sdk-update.yml workflow in bitwarden/android repo..."
+          gh workflow run sdlc-sdk-update.yml --repo bitwarden/android --ref main -f run-mode=Update -f sdk-package=$_SDK_PACKAGE -f sdk-version=$_SDK_VERSION

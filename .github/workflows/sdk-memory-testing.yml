@@ -1,0 +1,53 @@
+name: SDK Test for memory leaks
+
+on:
+  pull_request:
+    paths:
+      - "sdk/crates/bitwarden-crypto/**"
+      - "sdk/crates/memory-testing/**"
+  push:
+    paths:
+      - "sdk/crates/bitwarden-crypto/**"
+      - "sdk/crates/memory-testing/**"
+    branches:
+      - "main"
+      - "monorepo/main"
+      - "rc"
+      - "hotfix-rc"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: sdk
+
+jobs:
+  memory-test:
+    name: Testing
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up gdb
+        run: |
+          sudo apt update
+          sudo apt -y install gdb
+
+      - name: Install rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+        with:
+          workspaces: "sdk -> target"
+          key: memtest-cargo
+
+      - name: Test
+        run: ./crates/memory-testing/run_test.sh no-docker

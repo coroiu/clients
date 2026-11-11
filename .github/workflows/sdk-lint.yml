@@ -1,0 +1,233 @@
+name: SDK Lint
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main", "monorepo/main"]
+  pull_request:
+
+permissions: {}
+
+env:
+  CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    working-directory: sdk
+
+jobs:
+  check:
+    name: Check Style
+    runs-on: ubuntu-24.04
+    needs: style
+    if: always()
+    steps:
+      - name: Verify all style checks passed
+        if: ${{ needs.style.result != 'success' }}
+        run: exit 1
+
+  style:
+    name: ${{ matrix.check }}
+
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - check: fmt
+            needs_rust: true
+            needs_rust_nightly: true
+          - check: clippy
+            needs_rust: true
+            build_cache: true
+          - check: sort
+            needs_rust: true
+          - check: udeps
+            needs_rust: true
+            needs_rust_nightly: true
+            build_cache: true
+          # Temporarily disabled.
+          # - check: dylint
+          #   needs_rust: true
+          - check: doc
+            needs_rust: true
+            build_cache: true
+          - check: prettier
+            needs_node: true
+          - check: dep-ownership
+            needs_node: true
+          - check: cargo-lock
+            needs_rust: true
+          - check: bans
+            needs_rust: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set Rust toolchain version
+        if: matrix.needs_rust
+        id: toolchain
+        shell: bash
+        run: |
+          RUST_TOOLCHAIN="$(grep -oP '^channel.*"(\K.*?)(?=")' rust-toolchain.toml)"
+          echo "RUST_TOOLCHAIN=${RUST_TOOLCHAIN}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Set Rust nightly toolchain version
+        if: matrix.needs_rust_nightly
+        id: nightly-toolchain
+        shell: bash
+        run: |
+          RUST_NIGHTLY_TOOLCHAIN="$(grep -oP '^nightly-channel.*"(\K.*?)(?=")' rust-toolchain.toml)"
+          echo "RUST_NIGHTLY_TOOLCHAIN=${RUST_NIGHTLY_TOOLCHAIN}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Install Rust
+        if: matrix.needs_rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: "${{ steps.toolchain.outputs.RUST_TOOLCHAIN }}"
+          components: clippy, rustfmt
+
+      - name: Install Rust nightly
+        if: matrix.needs_rust_nightly
+        env:
+          RUST_NIGHTLY_TOOLCHAIN: ${{ steps.nightly-toolchain.outputs.RUST_NIGHTLY_TOOLCHAIN }}
+        run: |
+          rustup toolchain install "${RUST_NIGHTLY_TOOLCHAIN}"
+          rustup component add rustfmt --toolchain "${RUST_NIGHTLY_TOOLCHAIN}"-x86_64-unknown-linux-gnu
+
+      - name: Cache cargo registry
+        if: matrix.needs_rust
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+        with:
+          workspaces: "sdk -> target"
+          # The build output cache below restores target/ for the checks that compile the
+          # workspace. The other checks compile nothing.
+          cache-targets: false
+
+      # Each check that compiles the workspace keeps its own build output cache, because clippy,
+      # rustdoc and the nightly compiler used by udeps produce different output. cargo-udeps builds
+      # with -Zbinary-dep-depinfo, so Cargo also compares the times of the nightly toolchain's
+      # files, which a fresh install makes new.
+      - name: Cache build output
+        if: matrix.build_cache
+        uses: bitwarden/gh-actions/cargo-build-cache@main
+        with:
+          working_directory: sdk
+          key: lint-${{ matrix.check }}
+          toolchain: ${{ matrix.check == 'udeps' && steps.nightly-toolchain.outputs.RUST_NIGHTLY_TOOLCHAIN || '' }}
+          reset_sysroot_mtimes: ${{ matrix.check == 'udeps' }}
+
+      # Cache cargo-run-bin's built tools (.bin) separately from rust-cache. The
+      # tools depend only on their pinned versions (Cargo.toml) and the toolchain,
+      # not on Cargo.lock, so this key avoids rust-cache's lockfile rotation. Keyed
+      # per check so each one caches only the tools it builds, with no contention
+      # (rust-cache keys all matrix checks under one shared job-based key).
+      - name: Cache cargo-run-bin tools
+        if: matrix.needs_rust
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: sdk/.bin
+          key: cargo-bin-${{ runner.os }}-${{ matrix.check }}-${{ hashFiles('sdk/Cargo.toml', 'sdk/rust-toolchain.toml') }}
+          restore-keys: |
+            cargo-bin-${{ runner.os }}-${{ matrix.check }}-
+
+      - name: Install cargo-run-bin
+        if: matrix.needs_rust
+        run: cargo install cargo-run-bin --locked --version 1.7.4
+
+      - name: Check cargo-binstall is not configured
+        if: matrix.needs_rust
+        run: ./scripts/check-no-binstall.sh
+
+      # This step is the clippy check: it runs the same command as `lint.sh --only clippy`, which is
+      # skipped below. `shell: bash` sets pipefail, so clippy findings fail the step.
+      - name: Run clippy with SARIF output
+        if: matrix.check == 'clippy'
+        id: clippy
+        shell: bash
+        # Pass `-D warnings` to clippy directly rather than via RUSTFLAGS so the
+        # deny level applies only to the linted crates, not to the from-source
+        # builds of clippy-sarif/sarif-fmt that `cargo bin` triggers in this step
+        # (some of their transitive deps emit warnings we don't control).
+        run: cargo clippy --all-features --all-targets --message-format=json -- -D warnings |
+          cargo bin clippy-sarif | tee clippy_result.sarif | cargo bin sarif-fmt
+
+      - name: Upload clippy results to GitHub
+        if: always() && matrix.check == 'clippy' && hashFiles('sdk/clippy_result.sarif') != ''
+        uses: github/codeql-action/upload-sarif@6bc82e05fd0ea64601dd4b465378bbcf57de0314 # v4.32.1
+        with:
+          sarif_file: sdk/clippy_result.sarif
+          sha: ${{ contains(github.event_name, 'pull_request') && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ contains(github.event_name, 'pull_request') && format('refs/pull/{0}/head', github.event.pull_request.number) || github.ref }}
+
+      - name: Set up Node
+        if: matrix.needs_node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          cache: "npm"
+          cache-dependency-path: "sdk/package-lock.json"
+          node-version: "16"
+
+      - name: NPM setup
+        if: matrix.needs_node
+        run: npm ci
+
+      - name: Run lint --only ${{ matrix.check }}
+        if: matrix.check != 'clippy'
+        run: ./scripts/lint.sh --only ${{ matrix.check }}
+
+  # A newly published RustSec advisory can make this check fail on an unchanged tree, so it is kept
+  # out of the `check` gate and does not block merging.
+  rust-advisories:
+    name: Rust advisories
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set Rust toolchain version
+        id: toolchain
+        shell: bash
+        run: |
+          RUST_TOOLCHAIN="$(grep -oP '^channel.*"(\K.*?)(?=")' rust-toolchain.toml)"
+          echo "RUST_TOOLCHAIN=${RUST_TOOLCHAIN}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: "${{ steps.toolchain.outputs.RUST_TOOLCHAIN }}"
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2.8.2
+        with:
+          workspaces: "sdk -> target"
+          cache-targets: false
+
+      - name: Cache cargo-run-bin tools
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: sdk/.bin
+          key: cargo-bin-${{ runner.os }}-advisories-${{ hashFiles('sdk/Cargo.toml', 'sdk/rust-toolchain.toml') }}
+          restore-keys: |
+            cargo-bin-${{ runner.os }}-advisories-
+
+      - name: Install cargo-run-bin
+        run: cargo install cargo-run-bin --locked --version 1.7.4
+
+      - name: Check cargo-binstall is not configured
+        run: ./scripts/check-no-binstall.sh
+
+      - name: Run lint --only advisories
+        run: ./scripts/lint.sh --only advisories
