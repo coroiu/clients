@@ -13,7 +13,7 @@ import { mockAccountServiceWith } from "@bitwarden/common/spec";
 import { SendType } from "@bitwarden/common/tools/send/types/send-type";
 import { PolicyId, UserId } from "@bitwarden/common/types/guid";
 
-import { SendPolicyService } from "..";
+import { SendPolicyService } from "./send-policy.service";
 
 const userId = "test-user-id" as UserId;
 

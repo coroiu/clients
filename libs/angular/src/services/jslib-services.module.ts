@@ -450,9 +450,6 @@ import {
   UserKeyRotationService,
   UserKeyRotationServiceAbstraction,
 } from "@bitwarden/user-crypto-management";
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { PasswordRepromptService } from "@bitwarden/vault";
 import {
   DefaultVaultExportApiService,
   IndividualVaultExportService,
@@ -489,6 +486,7 @@ import { safeProvider, SafeProvider } from "../platform/utils/safe-provider";
 import { ViewCacheService } from "../platform/view-cache";
 // eslint-disable-next-line no-restricted-imports -- Needed for DI
 import { NoopViewCacheService } from "../platform/view-cache/internal";
+import { PasswordRepromptService } from "../vault/password-reprompt/password-reprompt.service";
 
 import {
   CLIENT_TYPE,
