@@ -1,8 +1,5 @@
-import { mock } from "jest-mock-extended";
-
-import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
-import { SdkLoadService } from "@bitwarden/common/platform/abstractions/sdk/sdk-load.service";
-import { Utils } from "@bitwarden/common/platform/misc/utils";
+import { Utils } from "../misc/utils";
+import { SdkLoadService } from "../sdk/sdk-load.service";
 
 import { WebCryptoFunctionService } from "./web-crypto-function.service";
 
@@ -359,8 +356,5 @@ function testRsaGenerateKeyPair(length: 2048) {
 }
 
 function getWebCryptoFunctionService() {
-  const platformUtilsMock = mock<PlatformUtilsService>();
-  platformUtilsMock.isEdge.mockImplementation(() => navigator.userAgent.indexOf(" Edg/") !== -1);
-
   return new WebCryptoFunctionService(window);
 }

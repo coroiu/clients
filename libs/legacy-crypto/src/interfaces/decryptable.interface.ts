@@ -1,6 +1,6 @@
-import { InitializerMetadata } from "@bitwarden/common/platform/interfaces/initializer-metadata.interface";
-
 import { SymmetricCryptoKey } from "../models/symmetric-crypto-key";
+
+import { InitializerMetadata } from "./initializer-metadata.interface";
 
 /**
  * An object that contains EncStrings and knows how to decrypt them. This is usually a domain object with the

@@ -1,4 +1,4 @@
-import { Utils } from "@bitwarden/common/platform/misc/utils";
+import { Utils } from "../misc/utils";
 
 import { DANGEROUS_aesEcbDecryptLastpassImport } from "./dangerous_lastpass_crypto";
 

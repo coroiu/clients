@@ -1,5 +1,4 @@
-import { makeStaticByteArray } from "@bitwarden/common/spec";
-
+import { makeStaticByteArray } from "../../spec/test-helpers";
 import { EncryptionType } from "../enums/encryption-type.enum";
 
 import { EncArrayBuffer } from "./enc-array-buffer";

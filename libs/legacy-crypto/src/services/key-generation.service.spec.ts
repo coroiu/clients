@@ -1,12 +1,12 @@
 import { mock } from "jest-mock-extended";
 
-import { SdkLoadService } from "@bitwarden/common/platform/abstractions/sdk/sdk-load.service";
 import { SdkRandomNumberClient } from "@bitwarden/sdk-internal";
 
 import { CryptoFunctionService } from "../abstractions/crypto-function.service";
 import { EncryptionType } from "../enums/encryption-type.enum";
 import { PBKDF2KdfConfig, Argon2KdfConfig } from "../models/kdf-config";
 import { SymmetricCryptoKey } from "../models/symmetric-crypto-key";
+import { SdkLoadService } from "../sdk/sdk-load.service";
 import { CsprngArray } from "../types/csprng";
 
 import { DefaultKeyGenerationService } from "./default-key-generation.service";

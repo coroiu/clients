@@ -2,11 +2,11 @@ import "core-js/proposals/explicit-resource-management";
 
 import { webcrypto } from "crypto";
 
-import { addCustomMatchers } from "@bitwarden/common/spec";
+import { toEqualBuffer } from "./spec/to-equal-buffer";
 
 Object.defineProperty(window, "crypto", {
   value: webcrypto,
 });
 
 // Add custom matchers
-addCustomMatchers();
+expect.extend({ toEqualBuffer });

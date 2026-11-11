@@ -1,16 +1,16 @@
 // FIXME: Update this file to be type safe and remove this and next line
 // @ts-strict-ignore
 
-import { SdkLoadService } from "@bitwarden/common/platform/abstractions/sdk/sdk-load.service";
-import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { measured, PerfTrackGroup } from "@bitwarden/logging";
 import { PureCrypto, SdkRandomNumberClient } from "@bitwarden/sdk-internal";
 
 import { CryptoFunctionService } from "../abstractions/crypto-function.service";
 import { KeyGenerationService } from "../abstractions/key-generation.service";
 import { EncryptionType } from "../enums/encryption-type.enum";
+import { Utils } from "../misc/utils";
 import type { KdfConfig } from "../models/kdf-config";
 import { SymmetricCryptoKey } from "../models/symmetric-crypto-key";
+import { SdkLoadService } from "../sdk/sdk-load.service";
 import { CsprngArray } from "../types/csprng";
 
 const PERF_TRACK_GROUP = PerfTrackGroup.Crypto;

@@ -1,6 +1,5 @@
-import { Utils } from "@bitwarden/common/platform/misc/utils";
-
 import { EncryptionType } from "../enums/encryption-type.enum";
+import { Utils } from "../misc/utils";
 import { Aes256CbcHmacKey } from "../models/symmetric-crypto-key";
 
 import { DANGEROUS_aesDecryptDuckDuckGoNoPaddingAes256CbcHmac } from "./dangerous_duckduckgo_crypto";

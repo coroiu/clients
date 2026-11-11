@@ -2,13 +2,13 @@
 // @ts-strict-ignore
 import { Jsonify } from "type-fest";
 
-import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { EncString as SdkEncString } from "@bitwarden/sdk-internal";
 
 import {
   EncryptionType,
   EXPECTED_NUM_PARTS_BY_ENCRYPTION_TYPE,
 } from "../enums/encryption-type.enum";
+import { Utils } from "../misc/utils";
 
 export const DECRYPT_ERROR = "[error: cannot decrypt]";
 

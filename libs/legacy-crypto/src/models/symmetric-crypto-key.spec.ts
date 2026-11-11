@@ -1,7 +1,6 @@
-import { Utils } from "@bitwarden/common/platform/misc/utils";
-import { makeStaticByteArray } from "@bitwarden/common/spec";
-
+import { makeStaticByteArray } from "../../spec/test-helpers";
 import { EncryptionType } from "../enums/encryption-type.enum";
+import { Utils } from "../misc/utils";
 
 import { Aes256CbcHmacKey, SymmetricCryptoKey } from "./symmetric-crypto-key";
 
