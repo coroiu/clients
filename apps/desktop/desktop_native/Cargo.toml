@@ -28,7 +28,7 @@ aes-gcm = "=0.11.0"
 anyhow = "=1.0.103"
 arboard = { version = "=3.6.1", default-features = false }
 ashpd = "=0.13.11"
-async-trait = "=0.1.89"
+async-trait = "=0.1.92"
 base64 = "=0.22.1"
 bitwarden-crypto = { git = "https://github.com/bitwarden/sdk-internal", rev = "c5e53d3e82ab80fdc9fd79ebd74058399a6444b6" }
 bitwarden-random = { git = "https://github.com/bitwarden/sdk-internal", rev = "c5e53d3e82ab80fdc9fd79ebd74058399a6444b6" }

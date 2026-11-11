@@ -7,7 +7,7 @@ publish = { workspace = true }
 
 [dependencies]
 anyhow = { workspace = true }
-async-trait = "=0.1.89"
+async-trait = "=0.1.92"
 dirs = { workspace = true }
 hex = { workspace = true }
 itertools = { workspace = true }
