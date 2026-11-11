@@ -1,7 +1,7 @@
-import type { Cart, InvoicePreview } from "@bitwarden/pricing";
-import type { Storage, SubscriptionPreview, SubscriptionStatus } from "@bitwarden/subscription";
-
 import { BaseResponse } from "../../../models/response/base.response";
+import type { Cart, InvoicePreview } from "../../pricing-types";
+import type { Storage, SubscriptionPreview, SubscriptionStatus } from "../../subscription-types";
+
 
 import { InvoicePreviewResponse } from "./invoice-preview.response";
 import { StorageResponse } from "./storage.response";

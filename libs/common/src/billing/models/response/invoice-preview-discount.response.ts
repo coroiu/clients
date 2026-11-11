@@ -1,6 +1,6 @@
-import type { DiscountType, InvoicePreviewDiscount } from "@bitwarden/pricing";
-
 import { BaseResponse } from "../../../models/response/base.response";
+import type { DiscountType, InvoicePreviewDiscount } from "../../pricing-types";
+
 
 const AmountOff: DiscountType = "amount-off";
 const PercentOff: DiscountType = "percent-off";

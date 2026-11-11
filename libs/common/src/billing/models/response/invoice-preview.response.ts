@@ -1,3 +1,4 @@
+import { BaseResponse } from "../../../models/response/base.response";
 import {
   InvoicePreview,
   InvoicePreviewDiscount,
@@ -5,9 +6,7 @@ import {
   PlanTier,
   PurchasableProration,
   PurchasableReference,
-} from "@bitwarden/pricing";
-
-import { BaseResponse } from "../../../models/response/base.response";
+} from "../../pricing-types";
 import { SubscriptionCadence, SubscriptionCadenceIds } from "../../types/subscription-pricing-tier";
 
 import { InvoicePreviewDiscountResponse } from "./invoice-preview-discount.response";

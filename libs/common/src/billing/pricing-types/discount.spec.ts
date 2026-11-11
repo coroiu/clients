@@ -1,6 +1,6 @@
 import { mock } from "jest-mock-extended";
 
-import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
+import { I18nService } from "../../platform/abstractions/i18n.service";
 
 import { CartDiscount, Discount, DiscountTypes, getAmount, getLabel } from "./discount";
 

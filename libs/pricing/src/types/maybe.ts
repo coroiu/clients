@@ -1,1 +1,1 @@
-export type Maybe<T> = T | null | undefined;
+export * from "@bitwarden/common/billing/pricing-types/maybe";
