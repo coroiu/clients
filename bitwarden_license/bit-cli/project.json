@@ -1,0 +1,23 @@
+{
+  "name": "bit-cli",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "bitwarden_license/bit-cli/src",
+  "projectType": "library",
+  "tags": ["scope:bitwarden-license"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["bitwarden_license/bit-cli/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "bitwarden_license/bit-cli/jest.config.js"
+      }
+    }
+  }
+}
