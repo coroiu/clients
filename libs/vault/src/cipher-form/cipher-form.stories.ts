@@ -36,11 +36,7 @@ import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
 import { FolderView } from "@bitwarden/common/vault/models/view/folder.view";
 import { LoginView } from "@bitwarden/common/vault/models/view/login.view";
 import { AsyncActionsModule, ButtonModule, ItemModule, ToastService } from "@bitwarden/components";
-import { featureFlagModes } from "@bitwarden/storybook";
-// FIXME: remove `/apps` import from `/libs`
-// FIXME: remove `src` and fix import
-// eslint-disable-next-line no-restricted-imports
-import { PreloadedEnglishI18nModule } from "@bitwarden/web-vault/src/app/core/tests";
+import { featureFlagModes, PreloadedEnglishI18nModule } from "@bitwarden/storybook";
 
 import { CipherFormConfig, CipherFormGenerationService, PasswordRepromptService } from "..";
 import { SshImportPromptService } from "../services/ssh-import-prompt.service";

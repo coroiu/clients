@@ -4,7 +4,8 @@ import { Observable, of } from "rxjs";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { TranslationService } from "@bitwarden/common/platform/services/translation.service";
 
-import eng from "../../../locales/en/messages.json";
+// eslint-disable-next-line import/no-restricted-paths, no-restricted-imports
+import eng from "../../../../apps/web/src/locales/en/messages.json";
 
 class PreloadedEnglishI18nService extends TranslationService implements I18nService {
   translationLocale = "en";

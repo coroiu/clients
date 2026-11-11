@@ -1,1 +1,1 @@
-export { PreloadedEnglishI18nModule } from "./preloaded-english-i18n.module";
+export { PreloadedEnglishI18nModule } from "@bitwarden/storybook";

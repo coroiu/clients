@@ -181,5 +181,6 @@
         "lintFilePatterns": ["apps/web/**/*.ts", "apps/web/**/*.html"]
       }
     }
-  }
+  },
+  "implicitDependencies": ["web-locales"]
 }
