@@ -8,7 +8,6 @@ import {
   KeyService,
 } from "@bitwarden/key-management";
 import { LogService, Measurement } from "@bitwarden/logging";
-import { UserKeyRotationServiceAbstraction } from "@bitwarden/user-crypto-management";
 
 import { ClientType } from "../../enums";
 import { ConfigService } from "../../platform/abstractions/config/config.service";
@@ -20,6 +19,7 @@ import { SyncService } from "../../platform/sync";
 import { UserId } from "../../types/guid";
 import { CipherService } from "../../vault/abstractions/cipher.service";
 import { InternalMasterPasswordServiceAbstraction } from "../master-password/abstractions/master-password.service.abstraction";
+import { UserKeyRotationService as UserKeyRotationServiceAbstraction } from "../user-key-rotation/user-key-rotation.service.abstraction";
 
 import { DefaultEncryptedMigrator } from "./default-encrypted-migrator";
 import { BiometricPersistentMigration } from "./migrations/biometric-persistent-encryption-migration";

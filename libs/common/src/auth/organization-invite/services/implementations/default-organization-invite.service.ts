@@ -12,15 +12,6 @@ import {
 import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import { EncryptService, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
-// @bitwarden/organization-invite-link imports back from @bitwarden/common (BaseResponse,
-// ApiService, etc.), so this is a circular dependency in the static import graph. It
-// resolves at runtime because both libraries reach each other only through abstractions
-// that are bound at DI time. Acknowledged here per the same pattern used for the AC API
-// service imports above.
-import {
-  OrganizationInviteLinkApiService,
-  OrganizationInviteLinkValidateEmailDomainRequest,
-} from "@bitwarden/organization-invite-link";
 import {
   AcceptInviteLinkError,
   HighEntropySecret,
@@ -53,6 +44,8 @@ import { GlobalState, GlobalStateProvider } from "../../../../platform/state";
 import { OrgKey } from "../../../../types/key";
 import { DeepLinkRedirectService } from "../../../deep-link-redirect";
 import { LogoutService } from "../../../logout";
+import { OrganizationInviteLinkApiService } from "../../../organization-invite-link/organization-invite-link-api.service";
+import { OrganizationInviteLinkValidateEmailDomainRequest } from "../../../organization-invite-link/organization-invite-link-validate-email-domain.request";
 import { OrgInviteKind } from "../../enums/org-invite-kind.enum";
 import { DirectOrganizationInvite } from "../../models/direct-organization-invite";
 import {

@@ -10,7 +10,6 @@ import { newGuid } from "@bitwarden/guid";
 import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import { EncryptService, EncString, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
-import { OrganizationInviteLinkApiService } from "@bitwarden/organization-invite-link";
 import { UserId } from "@bitwarden/user-core";
 
 import { FakeGlobalStateProvider } from "../../../../../spec";
@@ -33,6 +32,7 @@ import { MockSdkService } from "../../../../platform/spec/mock-sdk.service";
 import { OrgKey } from "../../../../types/key";
 import { DeepLinkRedirectService } from "../../../deep-link-redirect";
 import { LogoutService } from "../../../logout";
+import { OrganizationInviteLinkApiService } from "../../../organization-invite-link/organization-invite-link-api.service";
 import { OrgInviteKind } from "../../enums/org-invite-kind.enum";
 import { DirectOrganizationInvite } from "../../models/direct-organization-invite";
 import { OpenOrganizationInvite } from "../../models/open-organization-invite";
