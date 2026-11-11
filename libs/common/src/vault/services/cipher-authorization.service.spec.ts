@@ -1,8 +1,6 @@
 import { mock } from "jest-mock-extended";
 import { BehaviorSubject, Observable, firstValueFrom, of } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
 import { FakeAccountService, mockAccountServiceWith } from "../../../spec";
 import { OrganizationService } from "../../admin-console/abstractions/organization/organization.service.abstraction";
 import { CollectionService } from "../../admin-console/ac-lib";

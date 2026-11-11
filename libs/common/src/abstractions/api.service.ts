@@ -1,5 +1,3 @@
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
 import { CreateCollectionRequest, UpdateCollectionRequest } from "../admin-console/ac-lib";
 import { OrganizationConnectionType } from "../admin-console/enums";
 import {

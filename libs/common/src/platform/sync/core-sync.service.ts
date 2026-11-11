@@ -2,8 +2,6 @@
 // @ts-strict-ignore
 import { firstValueFrom, map, Observable, of, switchMap } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
 import { SendId as SdkSendId } from "@bitwarden/sdk-internal";
 
 import { ApiService } from "../../abstractions/api.service";

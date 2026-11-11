@@ -1,7 +1,5 @@
 import { combineLatest, map, Observable, of, switchMap } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-
 import { OrganizationService } from "../../admin-console/abstractions/organization/organization.service.abstraction";
 import { CollectionService } from "../../admin-console/ac-lib";
 import { AccountService } from "../../auth/abstractions/account.service";
