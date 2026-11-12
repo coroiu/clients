@@ -259,7 +259,14 @@ jobs:
           sudo apt-get -y install pkg-config libxss-dev rpm flatpak flatpak-builder
 
       - name: Set up Snap
-        run: sudo snap install snapcraft --classic --channel=8.x/stable
+        # Monorepo CI experiment: the fork's runners often fail to reach the Snap Store, so retry.
+        run: |
+          for attempt in 1 2 3 4 5; do
+            sudo snap install snapcraft --classic --channel=8.x/stable && exit 0
+            echo "snap install failed (attempt ${attempt}), retrying in 30 s"
+            sleep 30
+          done
+          exit 1
 
       - name: Print environment
         run: |
@@ -449,7 +456,14 @@ jobs:
           sudo gem install --no-document fpm
 
       - name: Set up Snap
-        run: sudo snap install snapcraft --classic --channel=8.x/stable
+        # Monorepo CI experiment: the fork's runners often fail to reach the Snap Store, so retry.
+        run: |
+          for attempt in 1 2 3 4 5; do
+            sudo snap install snapcraft --classic --channel=8.x/stable && exit 0
+            echo "snap install failed (attempt ${attempt}), retrying in 30 s"
+            sleep 30
+          done
+          exit 1
 
       - name: Install snaps required by snapcraft in destructive mode
         run: |
