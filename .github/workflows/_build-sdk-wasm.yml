@@ -54,6 +54,8 @@ jobs:
         with:
           path: ${{ steps.key.outputs.path }}
           key: ${{ steps.key.outputs.key }}
+          # Saved on Linux, restored on Windows too.
+          enableCrossOsArchive: true
           restore-keys: ${{ steps.key.outputs.restore_prefix }}
           lookup-only: true
 
@@ -145,3 +147,5 @@ jobs:
         with:
           path: ${{ steps.key.outputs.path }}
           key: ${{ steps.key.outputs.key }}
+          # Saved on Linux, restored on Windows too.
+          enableCrossOsArchive: true

@@ -18,6 +18,8 @@ runs:
       with:
         path: ${{ steps.oss.outputs.path }}
         key: ${{ steps.oss.outputs.key }}
+        # Saved on Linux, restored on Windows too.
+        enableCrossOsArchive: true
         restore-keys: ${{ steps.oss.outputs.restore_prefix }}
         fail-on-cache-miss: true
 
@@ -32,5 +34,7 @@ runs:
       with:
         path: ${{ steps.commercial.outputs.path }}
         key: ${{ steps.commercial.outputs.key }}
+        # Saved on Linux, restored on Windows too.
+        enableCrossOsArchive: true
         restore-keys: ${{ steps.commercial.outputs.restore_prefix }}
         fail-on-cache-miss: true
