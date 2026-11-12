@@ -600,8 +600,8 @@ jobs:
 
   bitwarden-lite-build:
     name: Trigger Bitwarden lite build
-    # Never for fork PRs: under pull_request_target the fork-built web image would end up in a signed Bitwarden lite image.
-    if: ${{ !github.event.pull_request || github.event.pull_request.head.repo.full_name == github.repository }}
+    # Monorepo CI experiment: triggers a build in another repository through Azure, which the fork can't log in to.
+    if: false
     runs-on: ubuntu-24.04
     needs: build-containers
     permissions:
