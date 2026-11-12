@@ -157,6 +157,7 @@ jobs:
     needs:
       - setup
       - locales-test
+      - sdk-wasm
     strategy:
       matrix:
         license_type:
@@ -176,6 +177,9 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
           allow-unsafe-pr-checkout: true
+
+      - name: Restore SDK WASM packages
+        uses: ./.github/actions/restore-sdk-wasm
 
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -217,6 +221,12 @@ jobs:
             mkdir -p browser-source/bitwarden_license/bit-pam-components
             cp -r bitwarden_license/bit-pam-components/* browser-source/bitwarden_license/bit-pam-components
           fi
+
+          # Copy the SDK WASM packages, which the root package.json depends on
+          for NPM_FOLDER in npm bitwarden_license/npm; do
+            mkdir -p "browser-source/sdk/crates/bitwarden-wasm-internal/${NPM_FOLDER}"
+            rsync -a --exclude node_modules "sdk/crates/bitwarden-wasm-internal/${NPM_FOLDER}/" "browser-source/sdk/crates/bitwarden-wasm-internal/${NPM_FOLDER}/"
+          done
 
           # Copy libs to Browser source directory
           mkdir browser-source/libs
