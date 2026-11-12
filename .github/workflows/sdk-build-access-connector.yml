@@ -148,6 +148,10 @@ jobs:
           if-no-files-found: error
 
   ci-pass:
+    # No checkout: the workflow default (sdk/) does not exist in this job.
+    defaults:
+      run:
+        working-directory: .
     name: Check if build passed
     runs-on: ubuntu-24.04
     needs: build

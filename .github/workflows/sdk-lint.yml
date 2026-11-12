@@ -17,6 +17,10 @@ defaults:
 
 jobs:
   check:
+    # No checkout: the workflow default (sdk/) does not exist in this job.
+    defaults:
+      run:
+        working-directory: .
     name: Check Style
     runs-on: ubuntu-24.04
     needs: style

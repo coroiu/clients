@@ -194,6 +194,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   update:
+    # No checkout: the workflow default (sdk/) does not exist in this job.
+    defaults:
+      run:
+        working-directory: .
     name: Trigger SDK update in Android repo
     runs-on: ubuntu-24.04
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || inputs.update-android-repo
