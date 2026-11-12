@@ -37,10 +37,15 @@ function nx(args) {
   });
 }
 
+// Test targets that fail on upstream main as well and that today's CI never runs (they are not
+// in the root jest.config.js project list): TS errors under ts-jest in state-internal and
+// nx-plugin, and no spec files in libs/node.
+const EXCLUDED = new Set(["state-internal", "nx-plugin", "@bitwarden/node"]);
+
 const all = process.argv.includes("--all");
 const projects = JSON.parse(
   nx(["show", "projects", "--withTarget", "test", "--json", ...(all ? [] : ["--affected"])]),
-);
+).filter((name) => !EXCLUDED.has(name));
 
 const graphFile = join(mkdtempSync(join(tmpdir(), "nx-graph-")), "graph.json");
 nx(["graph", `--file=${graphFile}`]);
