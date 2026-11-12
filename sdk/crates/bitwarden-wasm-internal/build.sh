@@ -150,7 +150,8 @@ else
   cp ${MVP_BINDGEN_DIR}/bitwarden_wasm_internal_bg.wasm ./crates/bitwarden-wasm-internal/${NPM_FOLDER}/bitwarden_wasm_internal_bg.mvp.wasm
 fi
 
-# Typecheck the generated TypeScript definitions
+# Typecheck the generated TypeScript definitions. --ignoreConfig: only the given file is checked,
+# not a tsconfig.json found in a parent directory.
 cd crates/bitwarden-wasm-internal/${NPM_FOLDER}
 npm ci
-npx tsc --noEmit --lib es2020,dom,ESNext.Disposable,ES2025.Float16 bitwarden_wasm_internal.d.ts
+npx tsc --ignoreConfig --noEmit --lib es2020,dom,ESNext.Disposable,ES2025.Float16 bitwarden_wasm_internal.d.ts
