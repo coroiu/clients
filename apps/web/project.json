@@ -180,6 +180,15 @@
       "options": {
         "lintFilePatterns": ["apps/web/**/*.ts", "apps/web/**/*.html"]
       }
+    },
+    "build:oss": {
+      "executor": "nx:run-script",
+      "options": {
+        "script": "build:oss"
+      },
+      "cache": true,
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/build"]
     }
   },
   "implicitDependencies": ["web-locales"]

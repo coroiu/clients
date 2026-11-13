@@ -45,6 +45,14 @@
       "inputs": ["production", "^production"],
       "outputs": ["{options.outputPath}"],
       "cache": true
+    },
+    "test": {
+      "cache": true,
+      "inputs": ["default", "^production"]
+    },
+    "lint": {
+      "cache": true,
+      "inputs": ["default", "^production", "{workspaceRoot}/eslint.config.mjs"]
     }
   },
   "analytics": false
