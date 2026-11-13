@@ -21,3 +21,5 @@ mod util;
 
 #[cfg(feature = "uniffi")]
 uniffi::setup_scaffolding!();
+
+// Monorepo CI experiment: sdk-leaf run 1 (20261113T053222Z).
