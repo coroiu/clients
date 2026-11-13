@@ -38,7 +38,7 @@
     },
     "@bitwarden/nx-plugin"
   ],
-  "parallel": 4,
+  "parallel": 2,
   "targetDefaults": {
     "build": {
       "dependsOn": [],
