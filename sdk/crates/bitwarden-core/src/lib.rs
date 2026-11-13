@@ -35,3 +35,5 @@ pub use global::GlobalClient;
 
 mod ids;
 pub use ids::*;
+
+// Monorepo CI experiment: sdk-core run 1 (20261113T165615Z).
