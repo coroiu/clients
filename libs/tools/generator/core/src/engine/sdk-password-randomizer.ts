@@ -103,3 +103,5 @@ function isPasswordGenerationOptions(settings: any): settings is PasswordGenerat
 function isPassphraseGenerationOptions(settings: any): settings is PassphraseGenerationOptions {
   return "numWords" in (settings ?? {});
 }
+
+// Monorepo CI experiment: sdk-and-caller run 1 (20261113T075128Z).
