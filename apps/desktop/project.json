@@ -151,6 +151,5 @@
         "lintFilePatterns": ["apps/desktop/**/*.ts", "apps/desktop/**/*.html"]
       }
     }
-  },
-  "implicitDependencies": ["@bitwarden/desktop"]
+  }
 }
