@@ -392,8 +392,7 @@ module.exports.buildConfig = function buildConfig(params) {
     },
     resolve: {
       extensions: [".ts", ".js"],
-      symlinks: false,
-      modules: [path.resolve(__dirname, "../../node_modules")],
+      modules: ["node_modules", path.resolve(__dirname, "../../node_modules")],
       fallback: {
         assert: false,
         buffer: require.resolve("buffer/"),
@@ -531,8 +530,7 @@ module.exports.buildConfig = function buildConfig(params) {
       },
       resolve: {
         extensions: [".ts", ".js"],
-        symlinks: false,
-        modules: [path.resolve(__dirname, "../../node_modules")],
+        modules: ["node_modules", path.resolve(__dirname, "../../node_modules")],
         plugins: [new TsconfigPathsPlugin()],
         fallback: {
           fs: false,

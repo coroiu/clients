@@ -450,8 +450,8 @@ module.exports.buildConfig = function buildConfig(params) {
     },
     resolve: {
       extensions: [".ts", ".js"],
-      symlinks: false,
       modules: [
+        "node_modules",
         path.resolve(__dirname, "../../node_modules"),
         path.resolve(process.cwd(), "node_modules"),
       ],

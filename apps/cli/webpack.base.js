@@ -93,8 +93,7 @@ module.exports.buildConfig = function buildConfig(params) {
     },
     resolve: {
       extensions: [".ts", ".js"],
-      symlinks: false,
-      modules: params.modulesPath,
+      modules: ["node_modules", ...params.modulesPath],
       plugins: [new TsconfigPathsPlugin({ configFile: params.tsConfig })],
       alias: params.importAliases,
     },

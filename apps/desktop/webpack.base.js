@@ -1,4 +1,3 @@
-const fs = require("fs");
 const path = require("path");
 const webpack = require("webpack");
 const { merge } = require("webpack-merge");
@@ -58,8 +57,8 @@ module.exports.buildConfig = function buildConfig(params) {
   const commonConfig = {
     resolve: {
       extensions: [".tsx", ".ts", ".js"],
-      symlinks: false,
       modules: [
+        "node_modules",
         path.resolve(__dirname, "../../node_modules"),
         path.resolve(process.cwd(), "node_modules"),
       ],
@@ -67,28 +66,13 @@ module.exports.buildConfig = function buildConfig(params) {
     },
   };
 
-  // Pick up locally linked @bitwarden packages (notably the SDK) on `--watch`:
-  //  - unmanagedPaths: content-hash them instead of trusting package.json version,
-  //    which a local build never bumps. Mirrors apps/web and apps/browser.
-  //  - poll: resolve.symlinks is false, so the native macOS watcher misses changes
-  //    made at the symlink's real path. Gated on a local symlink since polling has a
-  //    real CPU cost on registry installs.
-  const sdkLinkPaths = [
-    path.resolve(__dirname, "../../node_modules/@bitwarden/sdk-internal"),
-    path.resolve(process.cwd(), "node_modules/@bitwarden/sdk-internal"),
-  ];
-  const isLocalLinkedSdk = sdkLinkPaths.some((p) => {
-    try {
-      return fs.lstatSync(p).isSymbolicLink();
-    } catch {
-      return false;
-    }
-  });
+  // Pick up local @bitwarden packages (notably the SDK) on `--watch`: content-hash them
+  // instead of trusting package.json version, which a local build never bumps. Mirrors
+  // apps/web and apps/browser.
   const localSdkWatch = {
     snapshot: {
       unmanagedPaths: [path.resolve(__dirname, "../../node_modules/@bitwarden/")],
     },
-    ...(isLocalLinkedSdk ? { watchOptions: { poll: 1000 } } : {}),
   };
 
   const getOutputConfig = (isDev) => ({
