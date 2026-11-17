@@ -2,11 +2,8 @@
 // @ts-strict-ignore
 import { firstValueFrom, map } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { CreateCollectionRequest, UpdateCollectionRequest } from "@bitwarden/admin-console/common";
-
 import { ApiService as ApiServiceAbstraction } from "../abstractions/api.service";
+import { CreateCollectionRequest, UpdateCollectionRequest } from "../admin-console/ac-lib";
 import { OrganizationConnectionType } from "../admin-console/enums";
 import {
   CollectionAccessDetailsResponse,

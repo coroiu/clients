@@ -4,6 +4,7 @@ import { AccountService } from "@bitwarden/common/auth/abstractions/account.serv
 import { assertNonNullish } from "@bitwarden/common/auth/utils";
 import { AccountCryptographicStateService } from "@bitwarden/common/key-management/account-cryptography/account-cryptographic-state.service";
 import { InternalMasterPasswordServiceAbstraction } from "@bitwarden/common/key-management/master-password/abstractions/master-password.service.abstraction";
+import { KeyConnectorUnlockData } from "@bitwarden/common/key-management/unlock-abstractions/key-connector-unlock-data";
 import { V2UpgradeTokenStateService } from "@bitwarden/common/key-management/upgrade-token/abstractions/v2-upgrade-token-state.service.abstraction";
 import { RegisterSdkService } from "@bitwarden/common/platform/abstractions/sdk/register-sdk.service";
 import {
@@ -25,7 +26,6 @@ import {
 import { KdfConfig, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 import { LogService, measured, PerfTrackGroup } from "@bitwarden/logging";
 import {
-  EncString,
   InitUserCryptoMethod,
   Kdf,
   MasterPasswordUnlockData,
@@ -39,17 +39,6 @@ import { UserId } from "@bitwarden/user-core";
 import { AutoUnlockService } from "./auto-unlock.service";
 import { UnlockMethod } from "./unlock-method.enum";
 import { UnlockEvent, UnlockService } from "./unlock.service";
-
-export type KeyConnectorUnlockData = {
-  /**
-   * The URL of the key connector. This should be verified by the user manually before being used to unlock.
-   */
-  url: string;
-  /**
-   * The user-key wrapped by the key-connector-key
-   */
-  keyConnectorKeyWrappedUserKey: EncString;
-};
 
 const PERF_TRACK_GROUP = PerfTrackGroup.Unlock;
 const PERF_TRACK = "Unlock Service";
@@ -367,3 +356,5 @@ export class DefaultUnlockService implements UnlockService {
     this._unlocked$.next({ userId, method });
   }
 }
+
+export type { KeyConnectorUnlockData };

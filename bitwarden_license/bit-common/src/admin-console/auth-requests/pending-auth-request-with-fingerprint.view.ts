@@ -1,6 +1,5 @@
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
-// eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 
 import { PendingAuthRequestView } from "./pending-auth-request.view";
 

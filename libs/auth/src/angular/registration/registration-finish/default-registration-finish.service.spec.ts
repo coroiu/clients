@@ -4,6 +4,7 @@ import { of } from "rxjs";
 import { AccountApiService } from "@bitwarden/common/auth/abstractions/account-api.service";
 import { RegisterFinishRequest } from "@bitwarden/common/auth/models/request/registration/register-finish.request";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordServiceAbstraction } from "@bitwarden/common/key-management/master-password/abstractions/master-password.service.abstraction";
 import {
   MasterPasswordAuthenticationData,
@@ -16,12 +17,7 @@ import { ConfigService } from "@bitwarden/common/platform/abstractions/config/co
 import { SdkService } from "@bitwarden/common/platform/abstractions/sdk/sdk.service";
 import { MasterKey, UserKey } from "@bitwarden/common/types/key";
 // eslint-disable-next-line no-restricted-imports
-import {
-  DEFAULT_KDF_CONFIG,
-  EncString,
-  LegacyCompatKeyService,
-  SymmetricCryptoKey,
-} from "@bitwarden/legacy-crypto";
+import { DEFAULT_KDF_CONFIG, EncString, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 
 import { PasswordInputResult } from "../../input-password/password-input-result";
 

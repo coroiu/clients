@@ -1,7 +1,1 @@
-export class OrganizationUserBulkRequest {
-  ids: string[];
-
-  constructor(ids: string[]) {
-    this.ids = ids == null ? [] : ids;
-  }
-}
+export * from "@bitwarden/common/admin-console/ac-lib/organization-user/models/requests/organization-user-bulk.request";

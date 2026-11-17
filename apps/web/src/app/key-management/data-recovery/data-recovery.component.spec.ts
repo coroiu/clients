@@ -22,7 +22,7 @@ import { DataRecoveryComponent, StepStatus } from "./data-recovery.component";
 import { RecoveryStep, RecoveryWorkingData } from "./steps";
 
 // Mock SdkLoadService
-jest.mock("@bitwarden/common/platform/abstractions/sdk/sdk-load.service", () => ({
+jest.mock("@bitwarden/legacy-crypto/sdk/sdk-load.service", () => ({
   SdkLoadService: {
     Ready: Promise.resolve(),
   },

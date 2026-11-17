@@ -23,7 +23,9 @@ import { AuthType } from "@bitwarden/common/tools/send/types/auth-type";
 import { SendType } from "@bitwarden/common/tools/send/types/send-type";
 import { SearchService } from "@bitwarden/common/vault/abstractions/search.service";
 import { DialogService, ToastService } from "@bitwarden/components";
-import { removeSendAuthI18nKeys, SendPolicyService } from "@bitwarden/send-ui";
+
+import { removeSendAuthI18nKeys } from "./policy/remove-send-auth-i18n";
+import { SendPolicyService } from "./policy/send-policy.service";
 
 @Directive()
 export class SendComponent implements OnInit, OnDestroy {

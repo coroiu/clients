@@ -1,10 +1,10 @@
 import { mock, MockProxy } from "jest-mock-extended";
 
+import { PasswordInputResult } from "@bitwarden/auth/angular";
 import {
   ChangePasswordService,
   InvalidCurrentPasswordError,
-} from "@bitwarden/angular/auth/password-management/change-password";
-import { PasswordInputResult } from "@bitwarden/auth/angular";
+} from "@bitwarden/auth/angular/password-management/change-password";
 import { PolicyService } from "@bitwarden/common/admin-console/abstractions/policy/policy.service.abstraction";
 import { Account } from "@bitwarden/common/auth/abstractions/account.service";
 import { MasterPasswordApiService } from "@bitwarden/common/auth/abstractions/master-password-api.service.abstraction";

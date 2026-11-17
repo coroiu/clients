@@ -2,8 +2,6 @@
 // @ts-strict-ignore
 import { combineLatest, concatMap, firstValueFrom } from "rxjs";
 
-import { LockService, LockSource } from "@bitwarden/unlock";
-
 import { AccountService } from "../../../auth/abstractions/account.service";
 import { AuthService } from "../../../auth/abstractions/auth.service";
 import { AuthenticationStatus } from "../../../auth/enums/authentication-status";
@@ -12,6 +10,7 @@ import { LogService } from "../../../platform/abstractions/log.service";
 import { PlatformUtilsService } from "../../../platform/abstractions/platform-utils.service";
 import { TaskSchedulerService, ScheduledTaskNames } from "../../../platform/scheduling";
 import { UserId } from "../../../types/guid";
+import { LockService, LockSource } from "../../unlock-abstractions";
 import { VaultTimeoutSettingsService } from "../abstractions/vault-timeout-settings.service";
 import { VaultTimeoutService as VaultTimeoutServiceAbstraction } from "../abstractions/vault-timeout.service";
 import { VaultTimeoutAction } from "../enums/vault-timeout-action.enum";

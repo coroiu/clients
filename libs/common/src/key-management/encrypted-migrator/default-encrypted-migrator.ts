@@ -1,12 +1,4 @@
-// eslint-disable-next-line no-restricted-imports
-import {
-  BiometricStateService,
-  BiometricsService,
-  KdfConfigService,
-  KeyService,
-} from "@bitwarden/key-management";
 import { LogService, measured, PerfTrackGroup } from "@bitwarden/logging";
-import { UserKeyRotationServiceAbstraction } from "@bitwarden/user-crypto-management";
 
 import { assertNonNullish } from "../../auth/utils";
 import { ClientType } from "../../enums";
@@ -18,7 +10,9 @@ import { StateProvider } from "../../platform/state";
 import { SyncService } from "../../platform/sync";
 import { UserId } from "../../types/guid";
 import { CipherService } from "../../vault/abstractions/cipher.service";
+import { BiometricStateService, BiometricsService, KdfConfigService, KeyService } from "../km-lib";
 import { InternalMasterPasswordServiceAbstraction } from "../master-password/abstractions/master-password.service.abstraction";
+import { UserKeyRotationService as UserKeyRotationServiceAbstraction } from "../user-key-rotation/user-key-rotation.service.abstraction";
 
 import { EncryptedMigrator } from "./encrypted-migrator.abstraction";
 import { BiometricPersistentMigration } from "./migrations/biometric-persistent-encryption-migration";

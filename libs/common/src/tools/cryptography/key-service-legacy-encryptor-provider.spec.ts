@@ -1,12 +1,10 @@
 import { mock } from "jest-mock-extended";
 import { BehaviorSubject, Subject } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import { CsprngArray, EncryptService, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 
+import { KeyService } from "../../key-management/km-lib";
 import { SdkService } from "../../platform/abstractions/sdk/sdk.service";
 import { OrganizationId, UserId } from "../../types/guid";
 import { OrgKey } from "../../types/key";

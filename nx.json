@@ -5,7 +5,14 @@
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": ["default", "!{projectRoot}/**/*.spec.ts", "!{projectRoot}/tsconfig.spec.json"],
-    "sharedGlobals": ["{workspaceRoot}/tsconfig.base.json", "{workspaceRoot}/package.json"]
+    "sharedGlobals": [
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/libs/shared/**/*",
+      "{workspaceRoot}/jest.preset.js",
+      "{workspaceRoot}/babel.config.json",
+      "{workspaceRoot}/tailwind.config.js"
+    ]
   },
   "plugins": [
     {
@@ -26,17 +33,26 @@
       "plugin": "@nx/eslint/plugin",
       "options": {
         "targetName": "lint"
-      }
+      },
+      "exclude": ["apps/desktop/src/**/*"]
     },
     "@bitwarden/nx-plugin"
   ],
-  "parallel": 4,
+  "parallel": 2,
   "targetDefaults": {
     "build": {
       "dependsOn": [],
       "inputs": ["production", "^production"],
       "outputs": ["{options.outputPath}"],
       "cache": true
+    },
+    "test": {
+      "cache": true,
+      "inputs": ["default", "^production"]
+    },
+    "lint": {
+      "cache": true,
+      "inputs": ["default", "^production", "{workspaceRoot}/eslint.config.mjs"]
     }
   },
   "analytics": false

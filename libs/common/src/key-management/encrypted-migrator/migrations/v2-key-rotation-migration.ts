@@ -1,11 +1,8 @@
 import { firstValueFrom } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
-// eslint-disable-next-line no-restricted-imports
 import { EncryptionType } from "@bitwarden/legacy-crypto";
 import { LogService } from "@bitwarden/logging";
-import { UserKeyRotationServiceAbstraction } from "@bitwarden/user-crypto-management";
 
 import { assertNonNullish } from "../../../auth/utils";
 import { FeatureFlag } from "../../../enums/feature-flag.enum";
@@ -15,7 +12,9 @@ import { SyncService } from "../../../platform/sync";
 import { UserId } from "../../../types/guid";
 import { CipherService } from "../../../vault/abstractions/cipher.service";
 import { CipherView } from "../../../vault/models/view/cipher.view";
+import { KeyService } from "../../km-lib";
 import { MasterPasswordServiceAbstraction } from "../../master-password/abstractions/master-password.service.abstraction";
+import { UserKeyRotationService as UserKeyRotationServiceAbstraction } from "../../user-key-rotation/user-key-rotation.service.abstraction";
 import { withPasswordManagerSdk } from "../../utils";
 
 import { EncryptedMigration, MigrationRequirement } from "./encrypted-migration";

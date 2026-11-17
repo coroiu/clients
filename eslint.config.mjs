@@ -215,8 +215,9 @@ export default tseslint.config(
                 "libs/common/src/platform/!(state)/**/*",
               ],
               from: ["./libs/common/src/platform/state/**/*"],
-              // allow module index import
-              except: ["**/state/index.ts"],
+              // allow module index import. minimatch's "**" skips dot directories, so a checkout
+              // under a dot directory (e.g. .worktrees/) needs the second pattern.
+              except: ["**/state/index.ts", "**/.worktrees/**/state/index.ts"],
             },
             {
               target: ["libs/**/*"],

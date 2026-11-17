@@ -2,20 +2,17 @@ import { mock, MockProxy } from "jest-mock-extended";
 import { of } from "rxjs";
 
 import { newGuid } from "@bitwarden/guid";
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// Marked for removal when PM-30811 feature flag is unwound.
-// eslint-disable-next-line no-restricted-imports
-import { KdfConfigService, KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import {
   CsprngArray,
   DEFAULT_KDF_CONFIG,
   KdfConfig,
-  LegacyCompatKeyService,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 
 import { ApiService } from "../../../abstractions/api.service";
+import { KdfConfigService, KeyService } from "../../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../../key-management/legacy-compat";
 import { FakeMasterPasswordService } from "../../../key-management/master-password/services/fake-master-password.service";
 import {
   MasterKeyWrappedUserKey,

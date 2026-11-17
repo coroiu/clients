@@ -5,13 +5,12 @@ import { of } from "rxjs";
 import { action } from "storybook/actions";
 
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { ValidationService } from "@bitwarden/common/platform/abstractions/validation.service";
 import { ProviderApiServiceAbstraction, ProviderResponse } from "@bitwarden/common/provider";
 import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
 import { ToastService } from "@bitwarden/components";
-// eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 import {
   EnterBillingAddressComponent,
   EnterPaymentMethodComponent,

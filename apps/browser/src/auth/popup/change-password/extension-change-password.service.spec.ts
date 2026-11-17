@@ -1,6 +1,6 @@
 import { MockProxy, mock } from "jest-mock-extended";
 
-import { ChangePasswordService } from "@bitwarden/angular/auth/password-management/change-password";
+import { ChangePasswordService } from "@bitwarden/auth/angular/password-management/change-password";
 import BrowserPopupUtils from "@bitwarden/browser/platform/browser/browser-popup-utils";
 import { PolicyService } from "@bitwarden/common/admin-console/abstractions/policy/policy.service.abstraction";
 import { MasterPasswordApiService } from "@bitwarden/common/auth/abstractions/master-password-api.service.abstraction";

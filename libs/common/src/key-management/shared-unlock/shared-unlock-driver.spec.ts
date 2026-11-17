@@ -1,13 +1,12 @@
 import { mock } from "jest-mock-extended";
 
-import { LockService, UnlockService } from "@bitwarden/unlock";
-
 import { FakeStateProvider, mockAccountServiceWith } from "../../../spec";
 import { AccountService } from "../../auth/abstractions/account.service";
 import { EnvironmentService } from "../../platform/abstractions/environment.service";
 import { PlatformUtilsService } from "../../platform/abstractions/platform-utils.service";
 import { asUuid } from "../../platform/abstractions/sdk/sdk.service";
 import { UserId } from "../../types/guid";
+import { LockService, UnlockService } from "../unlock-abstractions";
 import { VaultTimeoutSettingsService } from "../vault-timeout/abstractions/vault-timeout-settings.service";
 
 import { JsSharedUnlockDriver, LAST_MANUAL_LOCK } from "./shared-unlock-driver";

@@ -1,10 +1,10 @@
 import { mock, MockProxy } from "jest-mock-extended";
 import { BehaviorSubject, bufferCount, firstValueFrom, Subject, ObservedValueOf } from "rxjs";
 
-import { AutomaticUserConfirmationService } from "@bitwarden/auto-confirm";
 import { Measurement } from "@bitwarden/logging";
 
 import { mockAccountInfoWith } from "../../../../spec";
+import { AutomaticUserConfirmationService } from "../../../admin-console/auto-confirm/auto-confirm.service.abstraction";
 import { AccountService } from "../../../auth/abstractions/account.service";
 import { AuthRequestAnsweringService } from "../../../auth/abstractions/auth-request-answering/auth-request-answering.service.abstraction";
 import { AuthService } from "../../../auth/abstractions/auth.service";

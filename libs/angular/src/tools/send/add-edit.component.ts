@@ -36,7 +36,8 @@ import { PremiumUpgradePromptService } from "@bitwarden/common/vault/abstraction
 import { DialogService, ToastService } from "@bitwarden/components";
 // eslint-disable-next-line no-restricted-imports
 import { EncArrayBuffer } from "@bitwarden/legacy-crypto";
-import { SendPolicyService } from "@bitwarden/send-ui";
+
+import { SendPolicyService } from "./policy/send-policy.service";
 
 // Value = hours
 // FIXME: update to use a const object instead of a typescript enum

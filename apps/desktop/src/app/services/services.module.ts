@@ -6,7 +6,6 @@ import { Subject, merge } from "rxjs";
 
 import { CollectionService, OrganizationUserApiService } from "@bitwarden/admin-console/common";
 import { DeviceManagementComponentServiceAbstraction } from "@bitwarden/angular/auth/device-management/device-management-component.service.abstraction";
-import { SetInitialPasswordService } from "@bitwarden/angular/auth/password-management/set-initial-password/set-initial-password.service.abstraction";
 import { SafeProvider, safeProvider } from "@bitwarden/angular/platform/utils/safe-provider";
 import {
   SECURE_STORAGE,
@@ -23,13 +22,14 @@ import {
   INTRAPROCESS_MESSAGING_SUBJECT,
   CLIENT_TYPE,
 } from "@bitwarden/angular/services/injection-tokens";
-import { JslibServicesModule } from "@bitwarden/angular/services/jslib-services.module";
+import { JslibServicesModule } from "@bitwarden/angular/services/jslib/jslib-services.module";
 import {
   LoginComponentService,
   SsoComponentService,
   DefaultSsoComponentService,
   TwoFactorAuthDuoComponentService,
 } from "@bitwarden/auth/angular";
+import { SetInitialPasswordService } from "@bitwarden/auth/angular/password-management/set-initial-password/set-initial-password.service.abstraction";
 import {
   InternalUserDecryptionOptionsServiceAbstraction,
   LoginEmailService,
@@ -67,6 +67,7 @@ import { DomainSettingsService } from "@bitwarden/common/autofill/services/domai
 import { BillingAccountProfileStateService } from "@bitwarden/common/billing/abstractions";
 import { ClientType, DeviceType } from "@bitwarden/common/enums";
 import { AccountCryptographicStateService } from "@bitwarden/common/key-management/account-cryptography/account-cryptographic-state.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import {
   InternalMasterPasswordServiceAbstraction,
   MasterPasswordServiceAbstraction,
@@ -147,7 +148,6 @@ import {
 import {
   CryptoFunctionService as CryptoFunctionServiceAbstraction,
   EncryptService,
-  LegacyCompatKeyService,
   WebCryptoFunctionService,
 } from "@bitwarden/legacy-crypto";
 import { FlightRecorderLogRecorderService } from "@bitwarden/logging-angular";

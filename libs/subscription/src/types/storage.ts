@@ -1,7 +1,1 @@
-export const MAX_STORAGE_GB = 100;
-
-export type Storage = {
-  available: number;
-  readableUsed: string;
-  used: number;
-};
+export * from "@bitwarden/common/billing/subscription-types/storage";

@@ -1,7 +1,6 @@
 import * as forge from "node-forge";
 
-import { Utils } from "@bitwarden/common/platform/misc/utils";
-
+import { Utils } from "../misc/utils";
 import { Aes256CbcHmacKey } from "../models/symmetric-crypto-key";
 
 /**

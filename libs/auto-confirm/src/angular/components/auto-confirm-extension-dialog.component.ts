@@ -2,7 +2,6 @@ import { DialogRef } from "@angular/cdk/dialog";
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component } from "@angular/core";
 
-import { JslibModule } from "@bitwarden/angular/jslib.module";
 import {
   BadgeComponent,
   ButtonModule,
@@ -10,6 +9,7 @@ import {
   DialogModule,
   DialogService,
 } from "@bitwarden/components";
+import { I18nPipe } from "@bitwarden/ui-common";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,7 +68,7 @@ import {
       </ng-container>
     </bit-simple-dialog>
   `,
-  imports: [ButtonModule, DialogModule, CommonModule, JslibModule, BadgeComponent],
+  imports: [ButtonModule, DialogModule, CommonModule, I18nPipe, BadgeComponent],
 })
 export class AutoConfirmExtensionSetupDialogComponent {
   constructor(readonly dialogRef: DialogRef<boolean>) {}

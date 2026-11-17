@@ -22,11 +22,7 @@ import { PasswordGenerationServiceAbstraction } from "@bitwarden/generator-legac
 import { KdfConfigService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import { DEFAULT_KDF_CONFIG } from "@bitwarden/legacy-crypto";
-
-// FIXME: remove `/apps` import from `/libs`
-// FIXME: remove `src` and fix import
-// eslint-disable-next-line import/no-restricted-paths, no-restricted-imports
-import { PreloadedEnglishI18nModule } from "../../../../../apps/web/src/app/core/tests";
+import { PreloadedEnglishI18nModule } from "@bitwarden/storybook";
 
 import { InputPasswordComponent, InputPasswordFlow } from "./input-password.component";
 

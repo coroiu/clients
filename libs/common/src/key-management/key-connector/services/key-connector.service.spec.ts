@@ -1,23 +1,15 @@
 import { mock } from "jest-mock-extended";
 import { firstValueFrom, of, timeout, TimeoutError } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import {
-  InternalUserDecryptionOptionsServiceAbstraction,
-  UserDecryptionOptions,
-} from "@bitwarden/auth/common";
 // eslint-disable-next-line no-restricted-imports
 import {
   Argon2KdfConfig,
   EncString,
   KdfType,
-  LegacyCompatKeyService,
   PBKDF2KdfConfig,
   SymmetricCryptoKey,
 } from "@bitwarden/legacy-crypto";
 import { BitwardenClient, PureCrypto } from "@bitwarden/sdk-internal";
-import { UnlockService } from "@bitwarden/unlock";
 
 import { FakeAccountService, FakeStateProvider, mockAccountServiceWith } from "../../../../spec";
 import { ApiService } from "../../../abstractions/api.service";
@@ -26,6 +18,10 @@ import { OrganizationUserType } from "../../../admin-console/enums";
 import { OrganizationData } from "../../../admin-console/models/data/organization.data";
 import { Organization } from "../../../admin-console/models/domain/organization";
 import { ProfileOrganizationResponse } from "../../../admin-console/models/response/profile-organization.response";
+import {
+  InternalUserDecryptionOptionsServiceAbstraction,
+  UserDecryptionOptions,
+} from "../../../auth/auth-lib";
 import { TokenService } from "../../../auth/services/token.service";
 import { KeysRequest } from "../../../models/request/keys.request";
 import { ConfigService } from "../../../platform/abstractions/config/config.service";
@@ -38,8 +34,10 @@ import { Utils } from "../../../platform/misc/utils";
 import { OrganizationId, UserId } from "../../../types/guid";
 import { MasterKey, UserKey } from "../../../types/key";
 import { AccountCryptographicStateService } from "../../account-cryptography/account-cryptographic-state.service";
+import { LegacyCompatKeyService } from "../../legacy-compat";
 import { FakeMasterPasswordService } from "../../master-password/services/fake-master-password.service";
 import { MasterPasswordSalt } from "../../master-password/types/master-password.types";
+import { UnlockService } from "../../unlock-abstractions";
 import { KeyConnectorUserKeyRequest } from "../models/key-connector-user-key.request";
 import { NewSsoUserKeyConnectorConversion } from "../models/new-sso-user-key-connector-conversion";
 import { SetKeyConnectorKeyRequest } from "../models/set-key-connector-key.request";

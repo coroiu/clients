@@ -1,7 +1,7 @@
 import { Component } from "@angular/core";
 
-import { ChangePasswordComponent } from "@bitwarden/angular/auth/password-management/change-password";
 import { InputPasswordFlow } from "@bitwarden/auth/angular";
+import { ChangePasswordComponent } from "@bitwarden/auth/angular/password-management/change-password";
 import { I18nPipe } from "@bitwarden/ui-common";
 
 import { PopOutComponent } from "../../../platform/popup/components/pop-out.component";

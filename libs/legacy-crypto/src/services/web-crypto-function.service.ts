@@ -1,11 +1,11 @@
 import * as forge from "node-forge";
 
-import { SdkLoadService } from "@bitwarden/common/platform/abstractions/sdk/sdk-load.service";
-import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { measured, PerfTrackGroup } from "@bitwarden/logging";
 import { PureCrypto } from "@bitwarden/sdk-internal";
 
 import { CryptoFunctionService } from "../abstractions/crypto-function.service";
+import { Utils } from "../misc/utils";
+import { SdkLoadService } from "../sdk/sdk-load.service";
 import { UnsignedPublicKey } from "../types/key-types";
 
 const PERF_TRACK_GROUP = PerfTrackGroup.Crypto;

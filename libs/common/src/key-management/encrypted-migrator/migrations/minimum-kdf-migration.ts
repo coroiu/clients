@@ -1,6 +1,4 @@
 // eslint-disable-next-line no-restricted-imports
-import { KdfConfigService } from "@bitwarden/key-management";
-// eslint-disable-next-line no-restricted-imports
 import { KdfType, PBKDF2KdfConfig } from "@bitwarden/legacy-crypto";
 import { LogService } from "@bitwarden/logging";
 
@@ -8,6 +6,7 @@ import { assertNonNullish } from "../../../auth/utils";
 import { SdkService } from "../../../platform/abstractions/sdk/sdk.service";
 import { SyncService } from "../../../platform/sync";
 import { UserId } from "../../../types/guid";
+import { KdfConfigService } from "../../km-lib";
 import { InternalMasterPasswordServiceAbstraction } from "../../master-password/abstractions/master-password.service.abstraction";
 import { withPasswordManagerSdk } from "../../utils";
 

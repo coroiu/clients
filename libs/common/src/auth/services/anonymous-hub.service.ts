@@ -10,8 +10,7 @@ import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { firstValueFrom } from "rxjs";
 
 // FIXME: remove `src` and fix import
-// eslint-disable-next-line no-restricted-imports
-import { AuthRequestServiceAbstraction } from "../../../../auth/src/common/abstractions";
+
 import { NotificationType } from "../../enums";
 import {
   AuthRequestPushNotification,
@@ -21,6 +20,7 @@ import { EnvironmentService } from "../../platform/abstractions/environment.serv
 import { PlatformUtilsService } from "../../platform/abstractions/platform-utils.service";
 import { InsecureUrlNotAllowedError } from "../../services/api-errors";
 import { AnonymousHubService as AnonymousHubServiceAbstraction } from "../abstractions/anonymous-hub.service";
+import { AuthRequestServiceAbstraction } from "../auth-lib";
 
 export class AnonymousHubService implements AnonymousHubServiceAbstraction {
   private anonHubConnection: HubConnection;

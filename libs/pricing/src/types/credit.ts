@@ -1,5 +1,1 @@
-export type Credit = {
-  translationKey: string;
-  translationParams?: Array<string | number>;
-  value: number;
-};
+export * from "@bitwarden/common/billing/pricing-types/credit";

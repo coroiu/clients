@@ -15,8 +15,6 @@ import {
   unauthGuardFn,
 } from "@bitwarden/angular/auth/guards";
 import { LoginViaWebAuthnComponent } from "@bitwarden/angular/auth/login-via-webauthn/login-via-webauthn.component";
-import { ChangePasswordComponent } from "@bitwarden/angular/auth/password-management/change-password";
-import { SetInitialPasswordComponent } from "@bitwarden/angular/auth/password-management/set-initial-password/set-initial-password.component";
 import { canAccessFeature } from "@bitwarden/angular/platform/guard/feature-flag.guard";
 import { featureFlaggedRoute } from "@bitwarden/angular/platform/utils/feature-flagged-route";
 import {
@@ -43,6 +41,8 @@ import {
   TwoFactorAuthComponent,
   TwoFactorAuthGuard,
 } from "@bitwarden/auth/angular";
+import { ChangePasswordComponent } from "@bitwarden/auth/angular/password-management/change-password";
+import { SetInitialPasswordComponent } from "@bitwarden/auth/angular/password-management/set-initial-password/set-initial-password.component";
 import { canAccessAutoConfirmSettings } from "@bitwarden/auto-confirm/angular";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
 import { RestrictedCipherAction } from "@bitwarden/common/vault/utils/restricted-cipher-policy";

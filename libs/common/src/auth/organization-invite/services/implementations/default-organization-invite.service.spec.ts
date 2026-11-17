@@ -1,16 +1,9 @@
 import { MockProxy, mock } from "jest-mock-extended";
 import { BehaviorSubject, firstValueFrom } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { OrganizationUserApiService } from "@bitwarden/admin-console/common";
 import { newGuid } from "@bitwarden/guid";
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 // eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
-// eslint-disable-next-line no-restricted-imports
-import { EncryptService, EncString, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
-import { OrganizationInviteLinkApiService } from "@bitwarden/organization-invite-link";
+import { EncryptService, EncString } from "@bitwarden/legacy-crypto";
 import { UserId } from "@bitwarden/user-core";
 
 import { FakeGlobalStateProvider } from "../../../../../spec";
@@ -18,12 +11,15 @@ import { ApiService } from "../../../../abstractions/api.service";
 import { OrganizationApiServiceAbstraction } from "../../../../admin-console/abstractions/organization/organization-api.service.abstraction";
 import { PolicyApiServiceAbstraction } from "../../../../admin-console/abstractions/policy/policy-api.service.abstraction";
 import { PolicyService } from "../../../../admin-console/abstractions/policy/policy.service.abstraction";
+import { OrganizationUserApiService } from "../../../../admin-console/ac-lib";
 import { PolicyType } from "../../../../admin-console/enums";
 import { MasterPasswordPolicyOptions } from "../../../../admin-console/models/domain/master-password-policy-options";
 import { Policy } from "../../../../admin-console/models/domain/policy";
 import { ResetPasswordPolicyOptions } from "../../../../admin-console/models/domain/reset-password-policy-options";
 import { OrganizationKeysResponse } from "../../../../admin-console/models/response/organization-keys.response";
 import { FeatureFlag } from "../../../../enums/feature-flag.enum";
+import { KeyService } from "../../../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../../../key-management/legacy-compat";
 import { ErrorResponse } from "../../../../models/response/error.response";
 import { ConfigService } from "../../../../platform/abstractions/config/config.service";
 import { I18nService } from "../../../../platform/abstractions/i18n.service";
@@ -33,6 +29,7 @@ import { MockSdkService } from "../../../../platform/spec/mock-sdk.service";
 import { OrgKey } from "../../../../types/key";
 import { DeepLinkRedirectService } from "../../../deep-link-redirect";
 import { LogoutService } from "../../../logout";
+import { OrganizationInviteLinkApiService } from "../../../organization-invite-link/organization-invite-link-api.service";
 import { OrgInviteKind } from "../../enums/org-invite-kind.enum";
 import { DirectOrganizationInvite } from "../../models/direct-organization-invite";
 import { OpenOrganizationInvite } from "../../models/open-organization-invite";

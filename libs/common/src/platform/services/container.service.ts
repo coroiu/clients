@@ -1,8 +1,15 @@
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
 // eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
-// eslint-disable-next-line no-restricted-imports
-import { EncryptService, LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
+import { EncryptService } from "@bitwarden/legacy-crypto";
+
+import { KeyService } from "../../key-management/km-lib";
+import { LegacyCompatKeyService } from "../../key-management/legacy-compat";
+
+declare global {
+  interface BitwardenContainerService {
+    getKeyService: () => KeyService;
+    getLegacyCompatKeyService: () => LegacyCompatKeyService;
+  }
+}
 
 export class ContainerService {
   constructor(

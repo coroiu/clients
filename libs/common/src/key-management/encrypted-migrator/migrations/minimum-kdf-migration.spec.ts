@@ -2,8 +2,6 @@ import { mock } from "jest-mock-extended";
 import { of } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import { KdfConfigService } from "@bitwarden/key-management";
-// eslint-disable-next-line no-restricted-imports
 import { Argon2KdfConfig, KdfType, PBKDF2KdfConfig } from "@bitwarden/legacy-crypto";
 import { LogService } from "@bitwarden/logging";
 
@@ -11,6 +9,7 @@ import { makeEncString } from "../../../../spec";
 import { SdkService } from "../../../platform/abstractions/sdk/sdk.service";
 import { SyncService } from "../../../platform/sync";
 import { UserId } from "../../../types/guid";
+import { KdfConfigService } from "../../km-lib";
 import { InternalMasterPasswordServiceAbstraction } from "../../master-password/abstractions/master-password.service.abstraction";
 import {
   MasterKeyWrappedUserKey,

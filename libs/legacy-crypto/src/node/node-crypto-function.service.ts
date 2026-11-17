@@ -1,10 +1,10 @@
 import * as crypto from "crypto";
 
-import { SdkLoadService } from "@bitwarden/common/platform/abstractions/sdk/sdk-load.service";
-import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { PureCrypto } from "@bitwarden/sdk-internal";
 
 import { CryptoFunctionService } from "../abstractions/crypto-function.service";
+import { Utils } from "../misc/utils";
+import { SdkLoadService } from "../sdk/sdk-load.service";
 import { UnsignedPublicKey } from "../types/key-types";
 
 export class NodeCryptoFunctionService implements CryptoFunctionService {

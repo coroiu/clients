@@ -1,7 +1,5 @@
 import { firstValueFrom } from "rxjs";
 
-// eslint-disable-next-line no-restricted-imports
-import { BiometricStateService, BiometricsService, KeyService } from "@bitwarden/key-management";
 import { LogService } from "@bitwarden/logging";
 import { CryptoClient } from "@bitwarden/sdk-internal";
 
@@ -11,6 +9,7 @@ import { SdkLoadService } from "../../../platform/abstractions/sdk/sdk-load.serv
 import { Utils } from "../../../platform/misc/utils";
 import { UserId } from "../../../types/guid";
 import { UserKey } from "../../../types/key";
+import { BiometricStateService, BiometricsService, KeyService } from "../../km-lib";
 
 import { EncryptedMigration, MigrationRequirement } from "./encrypted-migration";
 

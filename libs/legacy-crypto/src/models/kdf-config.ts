@@ -1,10 +1,10 @@
 import { Jsonify } from "type-fest";
 
-import { assertNonNullish } from "@bitwarden/common/auth/utils";
-import { RangeWithDefault } from "@bitwarden/common/platform/misc/range-with-default";
 import { Kdf } from "@bitwarden/sdk-internal";
 
 import { KdfType } from "../enums/kdf-type.enum";
+import { assertNonNullish } from "../misc/assert-non-nullish.util";
+import { RangeWithDefault } from "../misc/range-with-default";
 
 /**
  * Represents a type safe KDF configuration.

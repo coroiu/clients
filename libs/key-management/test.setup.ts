@@ -1,7 +1,20 @@
 import "core-js/proposals/explicit-resource-management";
 
 import { webcrypto } from "crypto";
-import "@bitwarden/ui-common/setup-jest";
+
+import { setupZoneTestEnv } from "jest-preset-angular/setup-env/zone";
+
+setupZoneTestEnv({ errorOnUnknownElements: true, errorOnUnknownProperties: true });
+
+// JSDOM has no ResizeObserver, which `bitOverflowList` constructs on init. Suites
+// that assert on packing install their own over this one.
+class ResizeObserverStub implements ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+global.ResizeObserver ??= ResizeObserverStub;
 
 Object.defineProperty(window, "CSS", { value: null });
 Object.defineProperty(window, "getComputedStyle", {

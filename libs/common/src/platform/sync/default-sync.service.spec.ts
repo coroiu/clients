@@ -1,18 +1,6 @@
 import { mock, MockProxy } from "jest-mock-extended";
 import { BehaviorSubject, Observable, of, Subject } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { CollectionService } from "@bitwarden/admin-console/common";
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import {
-  UserDecryptionOptions,
-  InternalUserDecryptionOptionsServiceAbstraction,
-} from "@bitwarden/auth/common";
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
 import { Measurement } from "@bitwarden/logging";
 import { CryptoSyncData } from "@bitwarden/sdk-internal";
 
@@ -20,18 +8,24 @@ import { Matrix } from "../../../spec/matrix";
 import { ApiService } from "../../abstractions/api.service";
 import { InternalOrganizationServiceAbstraction } from "../../admin-console/abstractions/organization/organization.service.abstraction";
 import { InternalPolicyService } from "../../admin-console/abstractions/policy/policy.service.abstraction";
+import { CollectionService } from "../../admin-console/ac-lib";
 import { OrganizationUserStatusType } from "../../admin-console/enums";
 import { Collection } from "../../admin-console/models/collections";
 import { Account, AccountService } from "../../auth/abstractions/account.service";
 import { AuthService } from "../../auth/abstractions/auth.service";
 import { AvatarService } from "../../auth/abstractions/avatar.service";
 import { TokenService } from "../../auth/abstractions/token.service";
+import {
+  UserDecryptionOptions,
+  InternalUserDecryptionOptionsServiceAbstraction,
+} from "../../auth/auth-lib";
 import { AuthenticationStatus } from "../../auth/enums/authentication-status";
 import { LogoutReason } from "../../auth/logout";
 import { DomainSettingsService } from "../../autofill/services/domain-settings.service";
 import { BillingAccountProfileStateService } from "../../billing/abstractions";
 import { FeatureFlag } from "../../enums/feature-flag.enum";
 import { KeyConnectorService } from "../../key-management/key-connector/abstractions/key-connector.service";
+import { KeyService } from "../../key-management/km-lib";
 import { InternalMasterPasswordServiceAbstraction } from "../../key-management/master-password/abstractions/master-password.service.abstraction";
 import {
   SyncCipherNotification,

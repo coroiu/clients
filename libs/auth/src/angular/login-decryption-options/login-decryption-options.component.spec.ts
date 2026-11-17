@@ -24,6 +24,7 @@ import { LogoutService } from "@bitwarden/common/auth/logout";
 import { ClientType } from "@bitwarden/common/enums";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
 import { DeviceTrustServiceAbstraction } from "@bitwarden/common/key-management/device-trust/abstractions/device-trust.service.abstraction";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { SharedUnlockSettingsService } from "@bitwarden/common/key-management/shared-unlock";
 import { AppIdService } from "@bitwarden/common/platform/abstractions/app-id.service";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
@@ -41,11 +42,7 @@ import { UserKey } from "@bitwarden/common/types/key";
 import { AnonLayoutWrapperDataService, DialogService, ToastService } from "@bitwarden/components";
 import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
-import {
-  LegacyCompatKeyService,
-  SignedSecurityState,
-  SymmetricCryptoKey,
-} from "@bitwarden/legacy-crypto";
+import { SignedSecurityState, SymmetricCryptoKey } from "@bitwarden/legacy-crypto";
 import { PureCrypto } from "@bitwarden/sdk-internal";
 import { UnlockService } from "@bitwarden/unlock";
 

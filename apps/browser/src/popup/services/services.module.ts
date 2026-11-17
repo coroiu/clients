@@ -6,7 +6,6 @@ import { merge, of, Subject } from "rxjs";
 import { CollectionService } from "@bitwarden/admin-console/common";
 import { DeviceManagementComponentServiceAbstraction } from "@bitwarden/angular/auth/device-management/device-management-component.service.abstraction";
 import { LoginViaWebAuthnComponentService } from "@bitwarden/angular/auth/login-via-webauthn/login-via-webauthn-component.service";
-import { ChangePasswordService } from "@bitwarden/angular/auth/password-management/change-password";
 import { AngularThemingService } from "@bitwarden/angular/platform/services/theming/angular-theming.service";
 import { SafeProvider, safeProvider } from "@bitwarden/angular/platform/utils/safe-provider";
 import { ViewCacheService } from "@bitwarden/angular/platform/view-cache";
@@ -23,7 +22,7 @@ import {
   SYSTEM_THEME_OBSERVABLE,
   WINDOW,
 } from "@bitwarden/angular/services/injection-tokens";
-import { JslibServicesModule } from "@bitwarden/angular/services/jslib-services.module";
+import { JslibServicesModule } from "@bitwarden/angular/services/jslib/jslib-services.module";
 import {
   AUTOFILL_NUDGE_SERVICE,
   AUTO_CONFIRM_NUDGE_SERVICE,
@@ -38,6 +37,7 @@ import {
   SsoComponentService,
   NewDeviceVerificationComponentService,
 } from "@bitwarden/auth/angular";
+import { ChangePasswordService } from "@bitwarden/auth/angular/password-management/change-password";
 import { LoginEmailService, UserDecryptionOptionsServiceAbstraction } from "@bitwarden/auth/common";
 import { AutomaticUserConfirmationService } from "@bitwarden/auto-confirm";
 import { ExtensionAuthRequestAnsweringService } from "@bitwarden/browser/auth/services/auth-request-answering/extension-auth-request-answering.service";
@@ -84,6 +84,10 @@ import { PhishingDetectionSettingsServiceAbstraction } from "@bitwarden/common/d
 import { PhishingDetectionSettingsService } from "@bitwarden/common/dirt/services/phishing-detection/phishing-detection-settings.service";
 import { ClientType } from "@bitwarden/common/enums";
 import { AccountCryptographicStateService } from "@bitwarden/common/key-management/account-cryptography/account-cryptographic-state.service";
+import {
+  DefaultLegacyCompatKeyService,
+  LegacyCompatKeyService,
+} from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordUnlockService } from "@bitwarden/common/key-management/master-password/abstractions/master-password-unlock.service";
 import {
   InternalMasterPasswordServiceAbstraction,
@@ -176,10 +180,8 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import {
   CryptoFunctionService,
-  DefaultLegacyCompatKeyService,
   EncryptService,
   KeyGenerationService,
-  LegacyCompatKeyService,
   WebCryptoFunctionService,
 } from "@bitwarden/legacy-crypto";
 import { FlightRecorderLogRecorderService } from "@bitwarden/logging-angular";

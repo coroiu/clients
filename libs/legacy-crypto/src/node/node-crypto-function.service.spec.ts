@@ -1,5 +1,5 @@
-import { SdkLoadService } from "@bitwarden/common/platform/abstractions/sdk/sdk-load.service";
-import { Utils } from "@bitwarden/common/platform/misc/utils";
+import { Utils } from "../misc/utils";
+import { SdkLoadService } from "../sdk/sdk-load.service";
 
 import { NodeCryptoFunctionService } from "./node-crypto-function.service";
 

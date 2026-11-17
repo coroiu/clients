@@ -2,8 +2,6 @@ import { mock, MockProxy } from "jest-mock-extended";
 import { firstValueFrom } from "rxjs";
 
 // eslint-disable-next-line no-restricted-imports
-import { USER_DECRYPTION_OPTIONS } from "@bitwarden/auth/common";
-// eslint-disable-next-line no-restricted-imports
 import {
   Argon2KdfConfig,
   CryptoFunctionService,
@@ -19,6 +17,7 @@ import {
   makeSymmetricCryptoKey,
   mockAccountServiceWith,
 } from "../../../../spec";
+import { USER_DECRYPTION_OPTIONS } from "../../../auth/auth-lib";
 import { ForceSetPasswordReason } from "../../../auth/models/domain/force-set-password-reason";
 import { FeatureFlag } from "../../../enums/feature-flag.enum";
 import { ServerConfig } from "../../../platform/abstractions/config/server-config";

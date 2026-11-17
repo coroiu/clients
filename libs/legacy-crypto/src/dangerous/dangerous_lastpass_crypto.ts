@@ -1,6 +1,6 @@
 import forge from "node-forge";
 
-import { Utils } from "@bitwarden/common/platform/misc/utils";
+import { Utils } from "../misc/utils";
 
 /**
  * Decrypts data using AES-ECB with the given key.

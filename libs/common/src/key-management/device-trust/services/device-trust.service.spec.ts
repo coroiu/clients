@@ -3,15 +3,6 @@
 import { matches, mock } from "jest-mock-extended";
 import { BehaviorSubject, firstValueFrom, of } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import {
-  UserDecryptionOptionsServiceAbstraction,
-  UserDecryptionOptions,
-} from "@bitwarden/auth/common";
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { KeyService } from "@bitwarden/key-management";
 // eslint-disable-next-line no-restricted-imports
 import {
   CryptoFunctionService,
@@ -28,6 +19,10 @@ import { FakeActiveUserState } from "../../../../spec/fake-state";
 import { FakeStateProvider } from "../../../../spec/fake-state-provider";
 import { DeviceResponse } from "../../../auth/abstractions/devices/responses/device.response";
 import { DevicesApiServiceAbstraction } from "../../../auth/abstractions/devices-api.service.abstraction";
+import {
+  UserDecryptionOptionsServiceAbstraction,
+  UserDecryptionOptions,
+} from "../../../auth/auth-lib";
 import { UpdateDevicesTrustRequest } from "../../../auth/models/request/update-devices-trust.request";
 import { ProtectedDeviceResponse } from "../../../auth/models/response/protected-device.response";
 import { DeviceType } from "../../../enums";
@@ -44,6 +39,7 @@ import { Utils } from "../../../platform/misc/utils";
 import { StorageOptions } from "../../../platform/models/domain/storage-options";
 import { UserId } from "../../../types/guid";
 import { DeviceKey, UserKey } from "../../../types/key";
+import { KeyService } from "../../km-lib";
 
 import {
   SHOULD_TRUST_DEVICE,

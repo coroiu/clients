@@ -34,6 +34,7 @@ import { Account, AccountService } from "@bitwarden/common/auth/abstractions/acc
 import { BillingApiServiceAbstraction } from "@bitwarden/common/billing/abstractions";
 import { OrganizationMetadataServiceAbstraction } from "@bitwarden/common/billing/abstractions/organization-metadata.service.abstraction";
 import { OrganizationBillingMetadataResponse } from "@bitwarden/common/billing/models/response/organization-billing-metadata.response";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
 import { FileDownloadService } from "@bitwarden/common/platform/abstractions/file-download/file-download.service";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
@@ -49,9 +50,6 @@ import {
   IconModule,
   ToastService,
 } from "@bitwarden/components";
-// Imported only as a DI token to mock out — MemberActionsService injects it. No crypto runs here.
-// eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 import { I18nPipe } from "@bitwarden/ui-common";
 import { Vfo1I18nPipe, Vfo1TerminologyService } from "@bitwarden/vault";
 import { GroupApiService } from "@bitwarden/web-vault/app/admin-console/organizations/core";

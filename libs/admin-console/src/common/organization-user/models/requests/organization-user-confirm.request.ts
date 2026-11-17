@@ -1,7 +1,1 @@
-// eslint-disable-next-line no-restricted-imports
-import { EncryptedString } from "@bitwarden/legacy-crypto";
-
-export class OrganizationUserConfirmRequest {
-  key: EncryptedString | undefined;
-  defaultUserCollectionName: EncryptedString | undefined;
-}
+export * from "@bitwarden/common/admin-console/ac-lib/organization-user/models/requests/organization-user-confirm.request";

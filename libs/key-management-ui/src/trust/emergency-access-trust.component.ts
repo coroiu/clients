@@ -4,6 +4,7 @@ import { Component, OnInit, Inject } from "@angular/core";
 import { FormBuilder, FormsModule, ReactiveFormsModule } from "@angular/forms";
 
 import { JslibModule } from "@bitwarden/angular/jslib.module";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import {
   AsyncActionsModule,
@@ -15,8 +16,6 @@ import {
   LinkModule,
   TypographyModule,
 } from "@bitwarden/components";
-// eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 
 type EmergencyAccessTrustDialogData = {
   /** display name of the user */

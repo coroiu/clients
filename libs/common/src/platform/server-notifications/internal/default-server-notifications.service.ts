@@ -13,9 +13,9 @@ import {
   tap,
 } from "rxjs";
 
-import { AutomaticUserConfirmationService } from "@bitwarden/auto-confirm";
 import { PerfTrackGroup } from "@bitwarden/logging";
 
+import { AutomaticUserConfirmationService } from "../../../admin-console/auto-confirm/auto-confirm.service.abstraction";
 import { AccountInfo, AccountService } from "../../../auth/abstractions/account.service";
 import { AuthRequestAnsweringService } from "../../../auth/abstractions/auth-request-answering/auth-request-answering.service.abstraction";
 import { AuthService } from "../../../auth/abstractions/auth.service";

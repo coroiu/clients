@@ -4,9 +4,8 @@ import { Router, provideRouter } from "@angular/router";
 import { mock } from "jest-mock-extended";
 import { BehaviorSubject, of } from "rxjs";
 
-// eslint-disable-next-line no-restricted-imports
-import { UserDecryptionOptionsServiceAbstraction } from "@bitwarden/auth/common";
 import { Account, AccountService } from "@bitwarden/common/auth/abstractions/account.service";
+import { UserDecryptionOptionsServiceAbstraction } from "@bitwarden/common/auth/auth-lib";
 import { mockAccountInfoWith } from "@bitwarden/common/spec";
 import { UserId } from "@bitwarden/common/types/guid";
 

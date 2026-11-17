@@ -4,10 +4,9 @@ import { Component, OnInit, Inject } from "@angular/core";
 import { FormBuilder } from "@angular/forms";
 
 import { OrganizationManagementPreferencesService } from "@bitwarden/common/admin-console/abstractions/organization-management-preferences/organization-management-preferences.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { DialogConfig, DialogRef, DIALOG_DATA, DialogService } from "@bitwarden/components";
-// eslint-disable-next-line no-restricted-imports
-import { LegacyCompatKeyService } from "@bitwarden/legacy-crypto";
 
 import { SharedModule } from "../../../../shared";
 

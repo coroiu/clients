@@ -2,18 +2,12 @@
 // @ts-strict-ignore
 import { firstValueFrom, map } from "rxjs";
 
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
-import { UserDecryptionOptionsServiceAbstraction } from "@bitwarden/auth/common";
-// This import has been flagged as unallowed for this class. It may be involved in a circular dependency loop.
-// eslint-disable-next-line no-restricted-imports
 import {
   BiometricsService,
   BiometricsStatus,
   KdfConfigService,
   KeyService,
-} from "@bitwarden/key-management";
-
+} from "../../../key-management/km-lib";
 import { MasterPasswordUnlockService } from "../../../key-management/master-password/abstractions/master-password-unlock.service";
 import { InternalMasterPasswordServiceAbstraction } from "../../../key-management/master-password/abstractions/master-password.service.abstraction";
 import { PinServiceAbstraction } from "../../../key-management/pin/pin.service.abstraction";
@@ -22,6 +16,7 @@ import { UserId } from "../../../types/guid";
 import { AccountService } from "../../abstractions/account.service";
 import { UserVerificationApiServiceAbstraction } from "../../abstractions/user-verification/user-verification-api.service.abstraction";
 import { UserVerificationService as UserVerificationServiceAbstraction } from "../../abstractions/user-verification/user-verification.service.abstraction";
+import { UserDecryptionOptionsServiceAbstraction } from "../../auth-lib";
 import { VerificationType } from "../../enums/verification-type";
 import { SecretVerificationRequest } from "../../models/request/secret-verification.request";
 import { VerifyOTPRequest } from "../../models/request/verify-otp.request";

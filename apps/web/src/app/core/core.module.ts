@@ -14,8 +14,6 @@ import {
 } from "@bitwarden/admin-console/common";
 import { DefaultLoginViaWebAuthnComponentService } from "@bitwarden/angular/auth/login-via-webauthn/default-login-via-webauthn-component.service";
 import { LoginViaWebAuthnComponentService } from "@bitwarden/angular/auth/login-via-webauthn/login-via-webauthn-component.service";
-import { ChangePasswordService } from "@bitwarden/angular/auth/password-management/change-password";
-import { SetInitialPasswordService } from "@bitwarden/angular/auth/password-management/set-initial-password/set-initial-password.service.abstraction";
 import { PremiumInterestStateService } from "@bitwarden/angular/billing/services/premium-interest/premium-interest-state.service.abstraction";
 import { SafeProvider, safeProvider } from "@bitwarden/angular/platform/utils/safe-provider";
 import {
@@ -32,7 +30,7 @@ import {
   SYSTEM_LANGUAGE,
   WINDOW,
 } from "@bitwarden/angular/services/injection-tokens";
-import { JslibServicesModule } from "@bitwarden/angular/services/jslib-services.module";
+import { JslibServicesModule } from "@bitwarden/angular/services/jslib/jslib-services.module";
 import {
   LoginComponentService,
   LoginDecryptionOptionsService,
@@ -40,6 +38,8 @@ import {
   SsoComponentService,
   TwoFactorAuthDuoComponentService,
 } from "@bitwarden/auth/angular";
+import { ChangePasswordService } from "@bitwarden/auth/angular/password-management/change-password";
+import { SetInitialPasswordService } from "@bitwarden/auth/angular/password-management/set-initial-password/set-initial-password.service.abstraction";
 import {
   InternalUserDecryptionOptionsServiceAbstraction,
   LoginEmailService,
@@ -72,6 +72,7 @@ import { DefaultChangeEmailService } from "@bitwarden/common/auth/services/chang
 import { BillingAccountProfileStateService } from "@bitwarden/common/billing/abstractions/account/billing-account-profile-state.service";
 import { ClientType } from "@bitwarden/common/enums";
 import { AccountCryptographicStateService } from "@bitwarden/common/key-management/account-cryptography/account-cryptographic-state.service";
+import { LegacyCompatKeyService } from "@bitwarden/common/key-management/legacy-compat";
 import { MasterPasswordUnlockService } from "@bitwarden/common/key-management/master-password/abstractions/master-password-unlock.service";
 import {
   InternalMasterPasswordServiceAbstraction,
@@ -144,11 +145,7 @@ import {
   KeyManagementUiModule,
 } from "@bitwarden/key-management-ui";
 // eslint-disable-next-line no-restricted-imports
-import {
-  CryptoFunctionService,
-  EncryptService,
-  LegacyCompatKeyService,
-} from "@bitwarden/legacy-crypto";
+import { CryptoFunctionService, EncryptService } from "@bitwarden/legacy-crypto";
 import { OrganizationInviteLinkApiService } from "@bitwarden/organization-invite-link";
 import { SerializedMemoryStorageService } from "@bitwarden/storage-core";
 import {

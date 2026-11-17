@@ -1,0 +1,23 @@
+{
+  "name": "bit-web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "bitwarden_license/bit-web/src",
+  "projectType": "library",
+  "tags": ["scope:bitwarden-license"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["bitwarden_license/bit-web/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "bitwarden_license/bit-web/jest.config.js"
+      }
+    }
+  }
+}

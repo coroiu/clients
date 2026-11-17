@@ -1,4 +1,4 @@
-import type { Cart } from "@bitwarden/pricing";
+import type { Cart } from "../../pricing-types";
 
 import { SubscriptionPreviewResponse } from "./subscription-preview.response";
 
