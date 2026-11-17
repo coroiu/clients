@@ -21,6 +21,8 @@
     "lint:rust:fix": "node scripts/lint-rust.mjs --fix",
     "prettier": "prettier --cache --write .",
     "test": "jest",
+    "test:changed": "node scripts/test-changed.mjs",
+    "nx-cache-server": "node scripts/nx-cache-server.mjs",
     "test:watch": "jest --clearCache && jest --watch",
     "test:watch:all": "jest --watchAll",
     "test:e2e:web": "pnpm --filter @bitwarden/e2e run test:web",
