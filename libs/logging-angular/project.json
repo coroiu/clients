@@ -26,5 +26,6 @@
         "jestConfig": "libs/logging-angular/jest.config.js"
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

@@ -19,5 +19,6 @@
         "jestConfig": "bitwarden_license/bit-web/jest.config.js"
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

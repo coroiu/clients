@@ -379,5 +379,6 @@
         "lintFilePatterns": ["apps/browser/**/*.ts", "apps/browser/**/*.html"]
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

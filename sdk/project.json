@@ -1,0 +1,51 @@
+{
+  "name": "sdk-wasm",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": ["scope:sdk"],
+  "namedInputs": {
+    "rust": [
+      "{projectRoot}/crates/**/*",
+      "{projectRoot}/bitwarden_license/**/*",
+      "{projectRoot}/support/**/*",
+      "{projectRoot}/Cargo.toml",
+      "{projectRoot}/Cargo.lock",
+      "{projectRoot}/rust-toolchain.toml",
+      "{projectRoot}/.cargo/**/*",
+      "!{projectRoot}/**/*.md",
+      "!{projectRoot}/**/node_modules/**"
+    ]
+  },
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["rust"],
+      "outputs": [
+        "{projectRoot}/crates/bitwarden-wasm-internal/npm/bitwarden_wasm_internal*",
+        "{projectRoot}/crates/bitwarden-wasm-internal/npm/snippets",
+        "{projectRoot}/crates/bitwarden-wasm-internal/npm/node",
+        "{projectRoot}/crates/bitwarden-wasm-internal/npm/VERSION"
+      ],
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "./crates/bitwarden-wasm-internal/build.sh"
+      }
+    },
+    "build-commercial": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["rust"],
+      "outputs": [
+        "{projectRoot}/crates/bitwarden-wasm-internal/bitwarden_license/npm/bitwarden_wasm_internal*",
+        "{projectRoot}/crates/bitwarden-wasm-internal/bitwarden_license/npm/snippets",
+        "{projectRoot}/crates/bitwarden-wasm-internal/bitwarden_license/npm/node",
+        "{projectRoot}/crates/bitwarden-wasm-internal/bitwarden_license/npm/VERSION"
+      ],
+      "options": {
+        "cwd": "{projectRoot}",
+        "command": "./crates/bitwarden-wasm-internal/build.sh -b"
+      }
+    }
+  }
+}

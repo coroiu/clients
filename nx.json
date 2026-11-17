@@ -48,11 +48,38 @@
     },
     "test": {
       "cache": true,
-      "inputs": ["default", "^production"]
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "dependentTasksOutputFiles": "**/*.{js,ts,wasm}",
+          "transitive": true
+        }
+      ],
+      "dependsOn": [
+        {
+          "projects": ["sdk-wasm"],
+          "target": "build"
+        }
+      ]
     },
     "lint": {
       "cache": true,
-      "inputs": ["default", "^production", "{workspaceRoot}/eslint.config.mjs"]
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/eslint.config.mjs",
+        {
+          "dependentTasksOutputFiles": "**/*.{js,ts,wasm}",
+          "transitive": true
+        }
+      ],
+      "dependsOn": [
+        {
+          "projects": ["sdk-wasm"],
+          "target": "build"
+        }
+      ]
     }
   },
   "analytics": false

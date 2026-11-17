@@ -82,5 +82,6 @@
         "lintFilePatterns": ["apps/cli/**/*.ts"]
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

@@ -187,9 +187,22 @@
         "script": "build:oss"
       },
       "cache": true,
-      "inputs": ["production", "^production"],
-      "outputs": ["{projectRoot}/build"]
+      "inputs": [
+        "production",
+        "^production",
+        {
+          "dependentTasksOutputFiles": "**/*.{js,ts,wasm}",
+          "transitive": true
+        }
+      ],
+      "outputs": ["{projectRoot}/build"],
+      "dependsOn": [
+        {
+          "projects": ["sdk-wasm"],
+          "target": "build"
+        }
+      ]
     }
   },
-  "implicitDependencies": ["web-locales"]
+  "implicitDependencies": ["sdk-wasm", "web-locales"]
 }

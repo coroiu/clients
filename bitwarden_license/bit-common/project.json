@@ -17,7 +17,18 @@
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "bitwarden_license/bit-common/jest.config.js"
-      }
+      },
+      "dependsOn": [
+        {
+          "projects": ["sdk-wasm"],
+          "target": "build"
+        },
+        {
+          "projects": ["sdk-wasm"],
+          "target": "build-commercial"
+        }
+      ]
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

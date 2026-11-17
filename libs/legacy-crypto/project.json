@@ -30,5 +30,6 @@
         "jestConfig": "libs/legacy-crypto/jest.config.js"
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

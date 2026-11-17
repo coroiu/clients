@@ -30,5 +30,6 @@
         "jestConfig": "libs/automation-driver/jest.config.js"
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

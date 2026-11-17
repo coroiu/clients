@@ -25,5 +25,6 @@
         "script": "test"
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

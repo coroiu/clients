@@ -30,5 +30,6 @@
         "jestConfig": "libs/organization-invite-link/jest.config.js"
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

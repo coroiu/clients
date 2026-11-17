@@ -30,5 +30,6 @@
         "jestConfig": "libs/managed-settings/jest.config.js"
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

@@ -30,5 +30,6 @@
         "jestConfig": "libs/user-crypto-management/jest.config.js"
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }

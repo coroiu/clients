@@ -30,5 +30,6 @@
         "jestConfig": "libs/state/jest.config.js"
       }
     }
-  }
+  },
+  "implicitDependencies": ["sdk-wasm"]
 }
