@@ -6,7 +6,7 @@ global.IntersectionObserver = jest.fn().mockImplementation(() => ({
 })) as any;
 
 import { DialogRef as CdkDialogRef } from "@angular/cdk/dialog";
-import { NO_ERRORS_SCHEMA } from "@angular/core";
+import { NO_ERRORS_SCHEMA, NgZone } from "@angular/core";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { FormControl, ReactiveFormsModule, UntypedFormGroup } from "@angular/forms";
 import { Router } from "@angular/router";
@@ -97,14 +97,26 @@ describe("MultiStepPolicyEditDialogComponent", () => {
 
     fixture = TestBed.createComponent(MultiStepPolicyEditDialogComponent);
     component = fixture.componentInstance;
-    // Intentionally skip detectChanges() to avoid triggering ngAfterViewInit,
-    // which calls load() and policyFormViewRef() in the real component.
+    // These tests set the component state directly (see setupSteps()). Any change detection,
+    // including flushEffects(), runs ngAfterViewInit, which would load the bare test policy and
+    // overwrite that state asynchronously. A load() that never resolves keeps it from continuing.
+    jest.spyOn(component, "load").mockReturnValue(new Promise(() => {}));
   });
 
   /** Sets up the component state as if ngAfterViewInit had run with the given steps. */
   function setupSteps(steps: PolicyStep[]) {
     (component as any).policySteps.set(steps);
     (component as any).policyComponent.set(policyComponent);
+  }
+
+  /**
+   * Flushes effects from inside the NgZone. The component's effects are created in the NgZone,
+   * so flushing them from the test zone makes each effect re-enter the NgZone. Leaving it again
+   * makes the zone scheduler call ApplicationRef.tick() while TestBed's own tick is still running,
+   * which Angular reports as NG0101 ("ApplicationRef.tick is called recursively").
+   */
+  function flushEffects() {
+    TestBed.inject(NgZone).run(() => TestBed.flushEffects());
   }
 
   /** Records the policy form's initial state, then edits it. */
@@ -213,13 +225,12 @@ describe("MultiStepPolicyEditDialogComponent", () => {
   });
 
   describe("saveDisabled signal", () => {
-    // These tests set state directly via setupSteps() and use TestBed.flushEffects() to
-    // propagate signal changes. This avoids detectChanges(), which would trigger the async
-    // ngAfterViewInit and its createComponent() call against the bare (undecorated) test class.
+    // These tests set state directly via setupSteps() and use flushEffects() to
+    // propagate signal changes.
 
     it("is true when the current step's disableSave observable emits true", () => {
       setupSteps([{ disableSave: of(true) }]);
-      TestBed.flushEffects();
+      flushEffects();
 
       expect((component as any).saveDisabled()).toBe(true);
     });
@@ -227,7 +238,7 @@ describe("MultiStepPolicyEditDialogComponent", () => {
     it("is true on the first step when the policy form has not changed", () => {
       policyComponent.data = new UntypedFormGroup({});
       setupSteps([{}]);
-      TestBed.flushEffects();
+      flushEffects();
 
       expect((component as any).saveDisabled()).toBe(true);
     });
@@ -236,7 +247,7 @@ describe("MultiStepPolicyEditDialogComponent", () => {
       policyComponent.data = undefined;
       changePolicy();
       setupSteps([{}]);
-      TestBed.flushEffects();
+      flushEffects();
 
       expect((component as any).saveDisabled()).toBe(false);
     });
@@ -245,7 +256,7 @@ describe("MultiStepPolicyEditDialogComponent", () => {
       policyComponent.data = new UntypedFormGroup({});
       changePolicy();
       setupSteps([{}]);
-      TestBed.flushEffects();
+      flushEffects();
 
       expect((component as any).saveDisabled()).toBe(false);
     });
@@ -253,10 +264,10 @@ describe("MultiStepPolicyEditDialogComponent", () => {
     it("does not require policy changes on steps after the first", () => {
       policyComponent.data = new UntypedFormGroup({});
       setupSteps([{}, {}]);
-      TestBed.flushEffects();
+      flushEffects();
 
       component.currentStep.set(1);
-      TestBed.flushEffects();
+      flushEffects();
 
       expect((component as any).saveDisabled()).toBe(false);
     });
@@ -264,10 +275,10 @@ describe("MultiStepPolicyEditDialogComponent", () => {
     it("reflects the new step's disableSave after advancing to the next step", () => {
       policyComponent.data = undefined;
       setupSteps([{}, { disableSave: of(true) }]);
-      TestBed.flushEffects();
+      flushEffects();
 
       component.currentStep.set(1);
-      TestBed.flushEffects();
+      flushEffects();
 
       expect((component as any).saveDisabled()).toBe(true);
     });
@@ -370,18 +381,18 @@ describe("MultiStepPolicyEditDialogComponent", () => {
         ["OrganizationDataOwnershipPolicy", () => new OrganizationDataOwnershipPolicy()],
       ])("%s is disabled on load and enabled once edited", async (_name, createPolicy) => {
         const { fixture, component } = await setupRealPolicy(createPolicy());
-        TestBed.flushEffects();
+        flushEffects();
 
         expect(component.saveDisabled()).toBe(true);
 
         component.policyComponent().enabled.setValue(true);
-        TestBed.flushEffects();
+        flushEffects();
         fixture.detectChanges();
 
         expect(component.saveDisabled()).toBe(false);
 
         component.policyComponent().enabled.setValue(false);
-        TestBed.flushEffects();
+        flushEffects();
 
         expect(component.saveDisabled()).toBe(true);
       });
@@ -391,11 +402,11 @@ describe("MultiStepPolicyEditDialogComponent", () => {
         const policyComponent = component.policyComponent();
 
         policyComponent.data.controls.minLength.setValue(20);
-        TestBed.flushEffects();
+        flushEffects();
         expect(component.saveDisabled()).toBe(false);
 
         policyComponent.data.controls.minLength.setValue(12);
-        TestBed.flushEffects();
+        flushEffects();
         expect(component.saveDisabled()).toBe(true);
       });
     });
