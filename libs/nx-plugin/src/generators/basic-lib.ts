@@ -60,11 +60,9 @@ export async function basicLibGenerator(
   await formatFiles(tree);
 
   const tasks: GeneratorCallback[] = [];
-  // Run npm i after generation. Nx ships a helper function for this called
-  // installPackagesTask. When used here it was leaving package-lock in a
-  // broken state, so a manual approach was used instead.
+  // Install after generation, so pnpm links the new workspace package.
   tasks.push(() => {
-    execSync("npm install", { stdio: "inherit" });
+    execSync("pnpm install", { stdio: "inherit" });
     return Promise.resolve();
   });
   return runTasksInSerial(...tasks);

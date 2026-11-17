@@ -30,7 +30,7 @@ export const baseConfig: PlaywrightTestConfig = {
   },
 };
 
-const SERVE_COMMAND = "npm run build:bit:watch --workspace @bitwarden/web-vault";
+const SERVE_COMMAND = "pnpm --filter @bitwarden/web-vault run build:bit:watch";
 const BUILD_TIMEOUT_MS = 600_000;
 
 /** Builds and serves the web vault for suites that drive it, unless one is deployed. */

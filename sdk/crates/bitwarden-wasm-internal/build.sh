@@ -151,7 +151,7 @@ else
 fi
 
 # Typecheck the generated TypeScript definitions. --ignoreConfig: only the given file is checked,
-# not a tsconfig.json found in a parent directory.
+# not a tsconfig.json found in a parent directory. The npm folder is a pnpm workspace package, so
+# `pnpm install` at the repository root installs its TypeScript.
 cd crates/bitwarden-wasm-internal/${NPM_FOLDER}
-npm ci
 npx tsc --ignoreConfig --noEmit --lib es2020,dom,ESNext.Disposable,ES2025.Float16 bitwarden_wasm_internal.d.ts
