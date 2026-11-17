@@ -22,6 +22,7 @@
     "prettier": "prettier --cache --write .",
     "test": "jest",
     "test:changed": "node scripts/test-changed.mjs",
+    "nx": "node scripts/nx.mjs",
     "nx-cache-server": "node scripts/nx-cache-server.mjs",
     "test:watch": "jest --clearCache && jest --watch",
     "test:watch:all": "jest --watchAll",

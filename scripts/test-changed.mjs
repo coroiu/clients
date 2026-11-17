@@ -3,13 +3,15 @@
 // `nx affected` also runs every project that depends on a changed project (for libs/common that is
 // almost the whole repository). That is the right check before pushing, but too slow while editing.
 // This script runs only the owners of the changed files, the way `npm test -- libs/foo` does
-// without Nx, but through Nx so results come from (and go to) the Nx cache.
+// without Nx, but through Nx (and scripts/nx.mjs, which uses the local cache server when it is
+// available), so results come from and go to the Nx cache.
 //
 // Changed files: unstaged, staged and untracked files, plus the commits since the merge base with
 // --base (default: nx.json `defaultBase`). `--base=HEAD` limits it to uncommitted changes.
 // A file belongs to the project with the longest root that contains it. Files outside every project
 // (root config such as package.json or tsconfig.base.json) are listed but not mapped; they can
-// affect everything, so use `nx affected` for those.
+// affect everything, so use `nx affected` for those. Projects without any of the targets are
+// skipped (e.g. sdk-wasm, which only builds).
 //
 // Files under sdk/crates/<crate>/ or sdk/bitwarden_license/<crate>/ (when the SDK is in the
 // repository) also select that Rust crate: `cargo test -p` and `cargo clippy -p` for it, from sdk/.
@@ -47,8 +49,13 @@ if (files.length === 0) {
 const require = createRequire(join(root, "package.json"));
 const { createProjectGraphAsync } = require("@nx/devkit");
 const graph = await createProjectGraphAsync({ exitOnError: true });
+const targets = args.targets.split(",");
 const roots = Object.values(graph.nodes)
-  .map((node) => ({ name: node.name, root: `${node.data.root}/` }))
+  .map((node) => ({
+    name: node.name,
+    root: `${node.data.root}/`,
+    runnable: targets.some((t) => t in (node.data.targets ?? {})),
+  }))
   .sort((a, b) => b.root.length - a.root.length);
 
 const projects = new Set();
@@ -61,7 +68,9 @@ for (const file of files) {
   }
   const owner = roots.find((p) => file.startsWith(p.root));
   if (owner) {
-    projects.add(owner.name);
+    if (owner.runnable) {
+      projects.add(owner.name);
+    }
   } else if (!crate) {
     unowned.push(file);
   }
@@ -75,15 +84,15 @@ if (unowned.length > 0) {
 let status = 0;
 if (projects.size > 0) {
   const cmd = [
-    "nx",
+    join(root, "scripts", "nx.mjs"),
     "run-many",
     "-t",
-    ...args.targets.split(","),
+    ...targets,
     "-p",
     [...projects].join(","),
     ...nxArgs,
   ];
-  status = run("npx", cmd, root) || status;
+  status = run(process.execPath, cmd, root) || status;
 }
 for (const crate of crates) {
   status = run("cargo", ["test", "-p", crate], join(root, "sdk")) || status;
@@ -95,7 +104,7 @@ for (const crate of crates) {
     ) || status;
 }
 if (projects.size === 0 && crates.size === 0) {
-  console.log("No project owns the changed files.");
+  console.log("No project with these targets owns the changed files.");
 }
 process.exit(status);
 

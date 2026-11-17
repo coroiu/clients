@@ -15,11 +15,16 @@
 // the user's token file (and requests from web pages, which also fail the Host check below).
 //
 // Usage:
-//   node scripts/nx-cache-server.mjs [--port 3725] [--dir ~/.cache/bitwarden-nx-cache] [--max-size-gib 20]
-// The token is read from <dir>/token (created with mode 0600 on first start). In each shell that
-// runs Nx:
+//   node scripts/nx-cache-server.mjs [--port 3725] [--dir ~/.cache/bitwarden-nx-cache]
+//     [--max-size-gib 20] [--idle-exit-minutes 0]
+// The token is read from <dir>/token (created with mode 0600 on first start). `scripts/nx.mjs`
+// (`npm run nx -- ...`) finds or starts this server and passes the address and token to Nx. To use
+// it with a plain `nx` instead, set in the shell:
 //   export NX_SELF_HOSTED_REMOTE_CACHE_SERVER=http://127.0.0.1:3725
 //   export NX_SELF_HOSTED_REMOTE_CACHE_ACCESS_TOKEN="$(cat ~/.cache/bitwarden-nx-cache/token)"
+// Nx fails every run while those are set and the server is not running; the wrapper avoids that.
+//
+// With --idle-exit-minutes N (N > 0) the server exits after N minutes without a request.
 //
 // When the stored entries exceed --max-size-gib, the least recently used ones (by mtime, which a
 // GET refreshes) are deleted until the total is below 90% of the limit.
@@ -50,12 +55,15 @@ const { values: args } = parseArgs({
     port: { type: "string", default: "3725" },
     dir: { type: "string", default: join(homedir(), ".cache", "bitwarden-nx-cache") },
     "max-size-gib": { type: "string", default: "20" },
+    "idle-exit-minutes": { type: "string", default: "0" },
   },
 });
 const port = Number(args.port);
 const root = args.dir;
 const entriesDir = join(root, "entries");
 const maxBytes = Number(args["max-size-gib"]) * 1024 ** 3;
+const idleExitMs = Number(args["idle-exit-minutes"]) * 60_000;
+let lastRequest = Date.now();
 
 // Nx task hashes are decimal strings; the stricter check also rules out path traversal.
 const HASH = /^\/v1\/cache\/([0-9A-Za-z]{1,128})$/;
@@ -78,6 +86,9 @@ for (const name of await readdir(entriesDir)) {
 }
 
 const server = createServer(async (req, res) => {
+  lastRequest = Date.now();
+  // scripts/nx.mjs checks this header to tell this server from another program on the port.
+  res.setHeader("X-Bitwarden-Nx-Cache", "1");
   try {
     await handle(req, res);
   } catch (e) {
@@ -94,6 +105,20 @@ server.listen(port, HOST, () => {
     `listening on http://${HOST}:${port}, ${sizes.size} entries, ${gib(totalBytes)} GiB in ${entriesDir}`,
   );
 });
+server.on("error", (e) => {
+  // EADDRINUSE: another instance (or another program) has the port. scripts/nx.mjs relies on this
+  // exit when two worktrees start the server at the same time.
+  log(`cannot listen on ${HOST}:${port}: ${e.message}`);
+  process.exit(1);
+});
+if (idleExitMs > 0) {
+  setInterval(() => {
+    if (Date.now() - lastRequest > idleExitMs) {
+      log(`idle for ${args["idle-exit-minutes"]} minutes, exiting`);
+      process.exit(0);
+    }
+  }, 30_000).unref();
+}
 
 async function handle(req, res) {
   // A web page can make the browser send requests to 127.0.0.1 (directly or through DNS
@@ -118,7 +143,10 @@ async function handle(req, res) {
 
   if (req.method === "GET") {
     if (!sizes.has(hash)) {
-      log(`miss ${hash}`);
+      // Hash "0" is the availability probe of scripts/nx.mjs, not an Nx lookup.
+      if (hash !== "0") {
+        log(`miss ${hash}`);
+      }
       return reply(res, 404, "not found");
     }
     const now = new Date();
