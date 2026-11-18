@@ -14,7 +14,9 @@
 // skipped (e.g. sdk-wasm, which only builds).
 //
 // Files under sdk/crates/<crate>/ or sdk/bitwarden_license/<crate>/ (when the SDK is in the
-// repository) also select that Rust crate: `cargo test -p` and `cargo clippy -p` for it, from sdk/.
+// repository) also select that Rust crate: `cargo test -p` and `cargo clippy -p` for it, from sdk/,
+// with --all-features like the SDK's CI. Clippy's `-D warnings` also covers the workspace crates it
+// depends on, and some of those have dead code unless their features are on.
 //
 // Usage:
 //   npm run test:changed [-- --base=<ref>] [--targets=test,lint] [--dry-run] [-- <extra nx args>]
@@ -95,11 +97,11 @@ if (projects.size > 0) {
   status = run(process.execPath, cmd, root) || status;
 }
 for (const crate of crates) {
-  status = run("cargo", ["test", "-p", crate], join(root, "sdk")) || status;
+  status = run("cargo", ["test", "-p", crate, "--all-features"], join(root, "sdk")) || status;
   status =
     run(
       "cargo",
-      ["clippy", "-p", crate, "--all-targets", "--", "-D", "warnings"],
+      ["clippy", "-p", crate, "--all-features", "--all-targets", "--", "-D", "warnings"],
       join(root, "sdk"),
     ) || status;
 }
