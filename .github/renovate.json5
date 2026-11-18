@@ -278,6 +278,7 @@
         "@jest/globals",
         "@jest/environment-jsdom-abstract",
         "jest-mock",
+        "esbuild",
         "app-builder-lib",
         "dotenv",
         "fs-extra",
