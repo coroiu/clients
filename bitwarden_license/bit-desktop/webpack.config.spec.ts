@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import * as path from "path";
 
 import { webpack } from "webpack";
@@ -9,9 +10,9 @@ jest.mock("../../apps/desktop/config/config", () => ({ load: () => ({}), log: ()
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const buildCommercialConfigs = require("./webpack.config");
 
-const commercialSdkDir = path.resolve(
-  __dirname,
-  "../../node_modules/@bitwarden/commercial-sdk-internal",
+// webpack resolves symlinks, so compare against the package's real directory.
+const commercialSdkDir = fs.realpathSync(
+  path.resolve(__dirname, "../../node_modules/@bitwarden/commercial-sdk-internal"),
 );
 const importerDir = path.resolve(__dirname, "../../apps/desktop/src/services");
 
