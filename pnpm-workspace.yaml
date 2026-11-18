@@ -3,14 +3,16 @@ packages:
   - "apps/desktop/desktop_native/napi"
   - "e2e"
   - "libs/**/*"
+  - "sdk"
   - "sdk/crates/bitwarden-wasm-internal/npm"
   - "sdk/crates/bitwarden-wasm-internal/bitwarden_license/npm"
 
 saveExact: true
 
-# Versions shared by package.json and the overrides below.
+# Versions shared by several package.json files and the overrides below.
 catalog:
   eslint: "9.39.4"
+  prettier: "3.9.5"
   tailwindcss: "3.4.18"
 
 # Increase available heap size to avoid running out of memory when compiling.
@@ -39,6 +41,7 @@ overrides:
 # Dependencies whose install scripts run. Packages that only print a message are denied.
 allowBuilds:
   "@compodoc/compodoc": false
+  "@openapitools/openapi-generator-cli": false
   "@parcel/watcher": true
   "@swc/core": true
   bufferutil: true

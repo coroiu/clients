@@ -156,7 +156,7 @@
     "postcss-import": "14.1.0",
     "postcss-loader": "8.2.1",
     "postcss-nested": "6.2.0",
-    "prettier": "3.9.5",
+    "prettier": "catalog:",
     "prettier-plugin-tailwindcss": "0.8.0",
     "process": "0.11.10",
     "react": "18.3.1",

@@ -1,5 +1,6 @@
 {
-  "name": "@bitwarden/sdk-internal",
+  "name": "@bitwarden/sdk-internal-workspace",
+  "private": true,
   "version": "0.0.0",
   "description": "",
   "homepage": "https://github.com/bitwarden/sdk-internal#readme",
@@ -21,16 +22,14 @@
     "prettier": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "e2e:wasm": "npm ci --prefix e2e/wasm && npm run build:test --prefix e2e/wasm",
-    "e2e:swift": "bash crates/bitwarden-uniffi/swift/build.sh && bash e2e/swift/test.sh",
-    "prepare": "husky"
+    "e2e:swift": "bash crates/bitwarden-uniffi/swift/build.sh && bash e2e/swift/test.sh"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "2.42.0",
     "@types/node": "26.6.6",
-    "husky": "9.1.7",
     "json5": "2.2.3",
     "lint-staged": "17.6.0",
-    "prettier": "3.9.3",
+    "prettier": "catalog:",
     "tsx": "4.22.4"
   },
   "nx": {
