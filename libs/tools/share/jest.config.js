@@ -22,7 +22,7 @@ module.exports = {
   displayName: "tools/share tests",
   // oauth4webapi is ESM-only; allow jest-preset-angular's transformer to compile it.
   transformIgnorePatterns: [
-    "node_modules/(?!(.*\\.mjs$|@angular/common/locales/.*\\.js$|oauth4webapi/.*))",
+    "node_modules/(?!(\\.pnpm|.*\\.mjs$|@angular/common/locales/.*\\.js$|oauth4webapi/.*))",
   ],
   setupFilesAfterEnv: ["<rootDir>/test.setup.ts"],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions?.paths || {}, {
