@@ -2,7 +2,7 @@
 //
 // `nx affected` also runs every project that depends on a changed project (for libs/common that is
 // almost the whole repository). That is the right check before pushing, but too slow while editing.
-// This script runs only the owners of the changed files, the way `npm test -- libs/foo` does
+// This script runs only the owners of the changed files, the way `pnpm test libs/foo` does
 // without Nx, but through Nx (and scripts/nx.mjs, which uses the local cache server when it is
 // available), so results come from and go to the Nx cache.
 //
@@ -19,7 +19,9 @@
 // depends on, and some of those have dead code unless their features are on.
 //
 // Usage:
-//   npm run test:changed [-- --base=<ref>] [--targets=test,lint] [--dry-run] [-- <extra nx args>]
+//   pnpm run test:changed [--base=<ref>] [--targets=test,lint] [--dry-run] [-- <extra nx args>]
+// pnpm passes a `--` right after the script name on to the script; a leading `--` is dropped, so
+// `pnpm run test:changed -- --base=<ref>` works too.
 
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -30,9 +32,13 @@ import { parseArgs } from "node:util";
 const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
 const nxJson = JSON.parse(readFileSync(join(root, "nx.json"), "utf8"));
 
-const separator = process.argv.indexOf("--");
-const ownArgs = separator === -1 ? process.argv.slice(2) : process.argv.slice(2, separator);
-const nxArgs = separator === -1 ? [] : process.argv.slice(separator + 1);
+const argv = process.argv.slice(2);
+if (argv[0] === "--") {
+  argv.shift();
+}
+const separator = argv.indexOf("--");
+const ownArgs = separator === -1 ? argv : argv.slice(0, separator);
+const nxArgs = separator === -1 ? [] : argv.slice(separator + 1);
 const { values: args } = parseArgs({
   args: ownArgs,
   options: {

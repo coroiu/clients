@@ -1,5 +1,7 @@
 // Runs Nx with the local cache server (scripts/nx-cache-server.mjs) when it can be reached, and
-// without it when it cannot. Usage: `npm run nx -- <nx arguments>`.
+// without it when it cannot. Usage: `pnpm run nx <nx arguments>`.
+// pnpm passes a `--` after the script name on to the script, so a leading `--` is dropped and
+// `pnpm run nx -- <nx arguments>` works too.
 //
 // Nx fails every run when NX_SELF_HOSTED_REMOTE_CACHE_SERVER is set and the server does not answer.
 // So this wrapper sets that variable (and the token) only for its own Nx process, and only after a
@@ -45,7 +47,11 @@ if (mode !== "off" && !env.NX_SELF_HOSTED_REMOTE_CACHE_SERVER) {
 }
 
 const nxBin = createRequire(join(repoRoot, "package.json")).resolve("nx/bin/nx.js");
-const child = spawn(process.execPath, [nxBin, ...process.argv.slice(2)], { stdio: "inherit", env });
+const nxArgs = process.argv.slice(2);
+if (nxArgs[0] === "--") {
+  nxArgs.shift();
+}
+const child = spawn(process.execPath, [nxBin, ...nxArgs], { stdio: "inherit", env });
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => child.kill(signal));
 }

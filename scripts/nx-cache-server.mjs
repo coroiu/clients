@@ -18,7 +18,7 @@
 //   node scripts/nx-cache-server.mjs [--port 3725] [--dir ~/.cache/bitwarden-nx-cache]
 //     [--max-size-gib 20] [--idle-exit-minutes 0]
 // The token is read from <dir>/token (created with mode 0600 on first start). `scripts/nx.mjs`
-// (`npm run nx -- ...`) finds or starts this server and passes the address and token to Nx. To use
+// (`pnpm run nx ...`) finds or starts this server and passes the address and token to Nx. To use
 // it with a plain `nx` instead, set in the shell:
 //   export NX_SELF_HOSTED_REMOTE_CACHE_SERVER=http://127.0.0.1:3725
 //   export NX_SELF_HOSTED_REMOTE_CACHE_ACCESS_TOKEN="$(cat ~/.cache/bitwarden-nx-cache/token)"
